@@ -1,10 +1,11 @@
 import json
 import requests
+import secrets
 import csv
 
-baseURL = '[ArchivesSpace URL]'
-user='[username]'
-password='[password]'
+baseURL = secrets.baseURL
+user = secrets.user
+password = secrets.password
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]

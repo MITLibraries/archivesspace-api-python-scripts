@@ -1,15 +1,16 @@
 import json
 import requests
+import secrets
 
-baseURL = '[ArchivesSpace URL]'
-user='[username]'
-password='[password]'
+baseURL = secrets.baseURL
+user = secrets.user
+password = secrets.password
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
 headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 
-archivalObjects = json.load(open('[JSON Filename]'))
+archivalObjects = json.load(open('archival_objects.json'))
 for i in range (0, len (archivalObjects)):
     archivalObject = json.dumps(archivalObjects[i])
     uri = archivalObjects[i]['uri']
