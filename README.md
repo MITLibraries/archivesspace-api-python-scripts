@@ -1,4 +1,3 @@
-# archivesspace-api
 Python scripts used to perform various tasks with the ArchivesSpace API
 
 ##Authenticating to the API
