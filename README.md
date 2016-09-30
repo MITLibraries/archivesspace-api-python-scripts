@@ -21,12 +21,13 @@ All of these scripts require a secrets.py file in the same directory that must c
 ###getResources.py
 
 ###getSingleRecord.py
+This GET script retrieves a single ArchivesSpace record based on the record's 'uri,' which is specified in the 'endpoint' variable on line 13.
 
 ###postNew.py
-This post script will post new records to a generic API endpoint based the record type, 'agents/people' in this example .  This script can be modified to accommodate other data types (e.g. 'repositories/[repo ID]/resources' or 'agents/corporate_entities'). It requires a properly formatted JSON file (specified where [JSON File] appears in the 'records' variable on line 13) for the particular ArchivesSpace record type you are trying to post.  
+This POST script will post new records to a generic API endpoint based the record type, 'agents/people' in this example .  This script can be modified to accommodate other data types (e.g. 'repositories/[repo ID]/resources' or 'agents/corporate_entities'). It requires a properly formatted JSON file (specified where [JSON File] appears in the 'records' variable on line 13) for the particular ArchivesSpace record type you are trying to post.  
 
 ###postOverwrite.py
-This post script will overwrite existing ArchivesSpace records based the 'uri' and can be used with any ArchivesSpace record type (e.g. resource, accession, subject, agent_people, agent_corporate_entity, archival_object, etc.). It requires a properly formatted JSON file (specified where [JSON File] appears in the 'records' variable on line 13) for the particular ArchivesSpace record type you are trying to post. 
+This POST script will overwrite existing ArchivesSpace records based the 'uri' and can be used with any ArchivesSpace record type (e.g. resource, accession, subject, agent_people, agent_corporate_entity, archival_object, etc.). It requires a properly formatted JSON file (specified where [JSON File] appears in the 'records' variable on line 13) for the particular ArchivesSpace record type you are trying to post. 
 
 ###searchArchivalObjectsByResource.py
-A script to extract all of the archival objects associated with a particular resource. To set the resource you want to search for, adjust the 'resourceNumber' variable on line 13
+A GET script to extract all of the archival objects associated with a particular resource. To set the resource you want to search for, adjust the 'resourceNumber' variable on line 13
