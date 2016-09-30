@@ -9,9 +9,6 @@ All of these scripts require a secrets.py file in the same directory that must c
 	user='[user name]'
 	password='[password]'
 
-
-###getArchivalObjects.py
-
 ###getElementsFromAgentsCorporate.py
 
 ###getElementsFromAgentsPeople.py
