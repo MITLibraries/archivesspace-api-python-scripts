@@ -13,5 +13,6 @@ headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 records = json.load(open('[JSON File].json'))
 for i in range (0, len (records)):
     record = json.dumps(records[i])
-    post = requests.post(baseURL + '/agents/people', headers=headers, data=record).json()
+    uri = records[i]['uri']
+    post = requests.post(baseURL + uri, headers=headers, data=record).json()
     print post
