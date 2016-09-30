@@ -11,10 +11,10 @@ All of these scripts require a secrets.py file in the same directory that must c
 
 ##Scripts
 
-###getResources.py
+####getResources.py
 This GET scripts retrieves all of the resources from a particular repository into a JSON file which is specified in variable 'f' on line 16. This GET script can be adapted to other record types by editing the 'endpoint' variable on line 13 (e.g. 'repositories/[repo ID]/accessions' or 'agents/corporate_entities'). Note: The 'page_size' is set to 3000 here, this can be adjusted higher in the ArchivesSpace config file if you have more than 3000 resources. 
 
-###getSingleRecord.py
+####getSingleRecord.py
 This GET script retrieves a single ArchivesSpace record based on the record's 'uri,' which is specified in the 'endpoint' variable on line 13.
 
 ###postNew.py
