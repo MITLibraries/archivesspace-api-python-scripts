@@ -2,6 +2,9 @@ import json
 import requests
 import secrets
 import csv
+import time
+
+startTime = time.time()
 
 baseURL = secrets.baseURL
 user = secrets.user
@@ -12,10 +15,15 @@ session = auth["session"]
 headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 print 'authenticated'
 
-endpoint = '/agents/people'
-arguments = '?page=1&page_size=3000'
-output = requests.get(baseURL + endpoint + arguments, headers=headers).json()
-records = output['results']
+endpoint = '/agents/people?all_ids=true'
+
+ids = requests.get(baseURL + endpoint, headers=headers).json()
+
+records = []
+for id in ids:
+    endpoint = '/agents/people/'+str(id)
+    output = requests.get(baseURL + endpoint, headers=headers).json()
+    records.append(output)
 
 f=csv.writer(open('asResults.csv', 'wb'))
 f.writerow(['uri']+['sort_name']+['authority_id'])
@@ -24,3 +32,8 @@ for i in range (0, len (records)):
 	sort_name = records[i]['names'][0]['sort_name'].encode('utf-8')
 	authority_id = records[i]['names'][0].get('authority_id', '')
 	f.writerow([uri]+[sort_name]+[authority_id])
+
+elapsedTime = time.time() - startTime
+m, s = divmod(elapsedTime, 60)
+h, m = divmod(m, 60)
+print 'Total script run time: ', '%d:%02d:%02d' % (h, m, s)
