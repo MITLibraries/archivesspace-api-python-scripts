@@ -5,7 +5,6 @@ import time
 
 startTime = time.time()
 
-
 baseURL = secrets.baseURL
 user = secrets.user
 password = secrets.password
