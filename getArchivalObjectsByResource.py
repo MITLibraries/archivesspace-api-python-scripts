@@ -5,32 +5,43 @@ import time
 
 startTime = time.time()
 
+def findKey(d, key):
+    if key in d:
+        yield d[key]
+    for k in d:
+        if isinstance(d[k], list):
+            for i in d[k]:
+                for j in findKey(i, key):
+                    yield j
+
 baseURL = secrets.baseURL
 user = secrets.user
 password = secrets.password
 
+resourceID= raw_input('Enter resource ID: ')
+
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session}
+headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 
-resourceNumber = '1051'#Update 'resourceNumber' with the resource number for which you wish to find all of the archival objects
-search ='\"/repositories/3/resources/'+resourceNumber+'\"'
-payload = {'page': '1', 'page_size': '5000', 'q': search, 'type[]': 'archival_object'}
+endpoint = '/repositories/3/resources/'+resourceID+'/tree'
 
-search = requests.get(baseURL+'/search', headers=headers, params=payload).json()
-arrayURI = []
+output = requests.get(baseURL + endpoint, headers=headers).json()
 
-for i in range (0, len (search['results'])):
-    uri = search['results'][i]['uri']
-    arrayURI.append(uri)
+archivalObjects = []
+for value in findKey(output, 'record_uri'):
+    if 'archival_objects' in value:
+        archivalObjects.append(value)
 
-f=open('asSearchResults.json', 'w')
-arrayJSON = []
-for j in arrayURI:
-    output = requests.get(baseURL+j, headers=headers).json()
-    arrayJSON.append(output)
+records = []
+for archivalObject in archivalObjects:
+    output = requests.get(baseURL + archivalObject, headers=headers).json()
+    records.append(output)
 
-json.dump(arrayJSON, f)
+f=open('archivalObjects.json', 'w')
+json.dump(records, f)
+f.close()
+
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
