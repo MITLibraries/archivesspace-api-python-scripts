@@ -46,3 +46,6 @@ Network Trash Folder
 Temporary Items
 .apdisk
 secrets.py
+*.pyc
+data/*
+!data/.keep
