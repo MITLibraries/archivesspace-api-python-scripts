@@ -10,6 +10,9 @@ All of these scripts require a secrets.py file in the same directory that must c
 
 ## Scripts
 
+#### [eadToCsv.py](/eadToCsv.py)
+Based on a specified file name and a specified file path, this script extracts selected elements from an EAD XML file and prints them to a CSV file.
+
 #### [getArchivalObjectsByResource.py](/getArchivalObjectsByResource.py)
 A GET script to extract all of the archival objects associated with a particular resource. Upon running the script, you will be prompted enter the resource ID (just the number, not the full URI).
 
@@ -31,4 +34,4 @@ This script works to create instances (consisting of top_containers) from a sepa
 This POST script will post new records to a generic API endpoint based the record type, 'agents/people' in this example. This script can be modified to accommodate other data types (e.g. 'repositories/[repo ID]/resources' or 'agents/corporate_entities'). It requires a properly formatted JSON file (specified where [JSON File] appears in the 'records' variable on line 13) for the particular ArchivesSpace record type you are trying to post.  
 
 #### [postOverwrite.py](/postOverwrite.py)
-This POST script will overwrite existing ArchivesSpace records based the 'uri' and can be used with any ArchivesSpace record type (e.g. resource, accession, subject, agent_people, agent_corporate_entity, archival_object, etc.). It requires a properly formatted JSON file (specified where [JSON File] appears in the 'records' variable on line 13) for the particular ArchivesSpace record type you are trying to post. 
+This POST script will overwrite existing ArchivesSpace records based the 'uri' and can be used with any ArchivesSpace record type (e.g. resource, accession, subject, agent_people, agent_corporate_entity, archival_object, etc.). It requires a properly formatted JSON file (specified where [JSON File] appears in the 'records' variable on line 13) for the particular ArchivesSpace record type you are trying to post.
