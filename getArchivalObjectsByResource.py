@@ -9,7 +9,7 @@ def findKey(d, key):
     if key in d:
         yield d[key]
     for k in d:
-        if isinstance(d[k], list):
+        if isinstance(d[k], list) and k == 'children':
             for i in d[k]:
                 for j in findKey(i, key):
                     yield j
@@ -27,21 +27,23 @@ headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 endpoint = '/repositories/3/resources/'+resourceID+'/tree'
 
 output = requests.get(baseURL + endpoint, headers=headers).json()
-
 archivalObjects = []
 for value in findKey(output, 'record_uri'):
+    print value
     if 'archival_objects' in value:
         archivalObjects.append(value)
 
+print 'downloading aos'
 records = []
 for archivalObject in archivalObjects:
     output = requests.get(baseURL + archivalObject, headers=headers).json()
     records.append(output)
 
+print 'creating file'
 f=open('archivalObjects.json', 'w')
 json.dump(records, f)
 f.close()
-
+print 'file done'
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
