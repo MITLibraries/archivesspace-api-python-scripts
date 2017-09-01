@@ -71,7 +71,17 @@ for topContainerLink in topContainerLinks:
 f3=csv.writer(open('uniqueTopContainersNoAOs.csv', 'wb'))
 f3.writerow(['topContainer'])
 for topContainer in uniqueTopContainers:
-    f3.writerow([topContainer])
+    search = requests.get(baseURL+topContainer, headers=headers).json()
+    try:
+        indicator = search['indicator']
+    except:
+        indicator = ''
+
+    try:
+        barcode = search['barcode']
+    except:
+        barcode = ''
+    f3.writerow([topContainer]+[indicator]+[barcode])
 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
