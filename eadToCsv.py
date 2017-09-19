@@ -10,6 +10,10 @@ def extractValuesFromComponentLevel (componentLevel):
         except:
             unitdate = ''
         try:
+            scopecontent = componentLevel.find('scopecontent').text.encode('utf-8')
+        except:
+            scopecontent = ''
+        try:
             container1 = componentLevel.find('did').find_all('container')[0].text.encode('utf-8')
         except:
             container1 = ''
@@ -34,14 +38,14 @@ def extractValuesFromComponentLevel (componentLevel):
         except:
             containerType2 = ''
 
-        f.writerow([level]+[componentLevelLabel]+[unittitle]+[unitdate]+[containerType1]+[container1]+[containerId1]+[containerType2]+[container2]+[containerId2])
+        f.writerow([level]+[componentLevelLabel]+[unittitle]+[unitdate]+[scopecontent]+[containerType1]+[container1]+[containerId1]+[containerType2]+[container2]+[containerId2])
 
 filepath =  raw_input('Enter file path: ')
 fileName = raw_input('Enter file name: ')
 xml = open(filepath+fileName)
 
 f=csv.writer(open(filepath+'eadFields.csv', 'wb'))
-f.writerow(['<co?>']+['<co?> level']+['<unittitle>']+['<unitdate>']+['containerType1']+['container1']+['containerId1']+['containerType2']+['container2']+['containerId2'])
+f.writerow(['<co?>']+['<co?> level']+['<unittitle>']+['<unitdate>']+['<scopecontent>']+['containerType1']+['container1']+['containerId1']+['containerType2']+['container2']+['containerId2'])
 upperComponentLevels = BeautifulSoup(xml, 'lxml').find('dsc').find_all('c01')
 for upperComponentLevel in upperComponentLevels:
     componentLevelLabel = upperComponentLevel['level']
