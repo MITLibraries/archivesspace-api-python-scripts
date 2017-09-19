@@ -10,7 +10,7 @@ def extractValuesFromComponentLevel (componentLevel):
         except:
             unitdate = ''
         try:
-            scopecontent = componentLevel.find('scopecontent').replace('<head>','').replace('</head>','').replace('<p>','').replace('</p>',' ').encode('utf-8')
+            scopecontent = componentLevel.find('scopecontent').content.replace('<head>','').replace('</head>','').replace('<p>','').replace('</p>',' ').encode('utf-8')
         except:
             scopecontent = ''
         try:
