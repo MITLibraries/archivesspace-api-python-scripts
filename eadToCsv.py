@@ -10,11 +10,16 @@ def extractValuesFromComponentLevel (componentLevel):
         except:
             unitdate = ''
         try:
-            scopecontent = componentLevel.find('scopecontent').content.replace('<head>','').replace('</head>','').replace('<p>','').replace('</p>',' ').encode('utf-8')
+            scopecontentElement = componentLevel.find('scopecontent').find_all('p')
+            scopecontent = ''
+            for paragraph in scopecontentElement:
+                paragraphText = paragraph.text.replace('\\n','').replace('              ',' ').encode('utf-8')
+                scopecontent = scopecontent + paragraphText
+            print scopecontent
         except:
             scopecontent = ''
         try:
-            container1 = componentLevel.find('did').find_all('container')[0].text.encode('utf-8')
+            container1 = componentLevel.find('did').find_all('container')[0].textparagraph.text.replace('\\n','')
         except:
             container1 = ''
         try:
@@ -50,7 +55,17 @@ upperComponentLevels = BeautifulSoup(xml, 'lxml').find('dsc').find_all('c01')
 for upperComponentLevel in upperComponentLevels:
     componentLevelLabel = upperComponentLevel['level']
     unittitle = upperComponentLevel.find('did').find('unittitle').text.encode('utf-8')
-    f.writerow(['c01']+[componentLevelLabel]+[unittitle]+['']+['']+[''])
+    try:
+        scopecontentElement = upperComponentLevel.find('scopecontent').find_all('p')
+        scopecontent = ''
+        for paragraph in scopecontentElement:
+            paragraphText = paragraph.text.replace('\\n','').replace('              ',' ').encode('utf-8')
+            scopecontent = scopecontent + paragraphText
+            print scopecontent
+    except:
+        scopecontent = ''
+    f.writerow(['c01']+[componentLevelLabel]+[unittitle]+['']+[scopecontent]+['']+['']+['']+['']+['']+[''])
+
     componentLevelArray = upperComponentLevel.find_all('c02')
     for componentLevel in componentLevelArray:
         extractValuesFromComponentLevel(componentLevel)
