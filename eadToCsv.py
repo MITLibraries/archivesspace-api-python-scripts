@@ -13,7 +13,7 @@ def extractValuesFromComponentLevel (componentLevel):
             scopecontentElement = componentLevel.find('scopecontent').find_all('p')
             scopecontent = ''
             for paragraph in scopecontentElement:
-                paragraphText = paragraph.text.replace('\\n','').replace('              ',' ').encode('utf-8')
+                paragraphText = paragraph.text.replace('\\n','').replace('              ',' ').replace('            ',' ').encode('utf-8')
                 scopecontent = scopecontent + paragraphText
             print scopecontent
         except:
@@ -59,7 +59,7 @@ for upperComponentLevel in upperComponentLevels:
         scopecontentElement = upperComponentLevel.find('scopecontent').find_all('p')
         scopecontent = ''
         for paragraph in scopecontentElement:
-            paragraphText = paragraph.text.replace('\\n','').replace('              ',' ').encode('utf-8')
+            paragraphText = paragraph.text.replace('\\n','').replace('              ',' ').replace('            ',' ').encode('utf-8')
             scopecontent = scopecontent + paragraphText
             print scopecontent
     except:
