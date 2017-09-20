@@ -19,7 +19,7 @@ def extractValuesFromComponentLevel (componentLevel):
         except:
             scopecontent = ''
         try:
-            container1 = componentLevel.find('did').find_all('container')[0].text
+            container1 = componentLevel.find('did').find_all('container')[0].text.encode('utf-8')
         except:
             container1 = ''
         try:
