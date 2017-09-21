@@ -1,6 +1,8 @@
 import csv
 from bs4 import BeautifulSoup
 
+
+
 def extractValuesFromComponentLevel (componentLevel):
         level = componentLevel.name
         componentLevelLabel = componentLevel['level']
@@ -13,9 +15,8 @@ def extractValuesFromComponentLevel (componentLevel):
             scopecontentElement = componentLevel.find('scopecontent').find_all('p')
             scopecontent = ''
             for paragraph in scopecontentElement:
-                paragraphText = paragraph.text.replace('\\n','').replace('              ',' ').replace('            ',' ').encode('utf-8')
+                paragraphText = paragraph.text.replace('\n','').replace('              ',' ').replace('            ',' ').encode('utf-8')
                 scopecontent = scopecontent + paragraphText
-            print scopecontent
         except:
             scopecontent = ''
         try:
@@ -42,16 +43,18 @@ def extractValuesFromComponentLevel (componentLevel):
             containerType2 = componentLevel.find('did').find_all('container')[1]['type']
         except:
             containerType2 = ''
-
-        f.writerow([level]+[componentLevelLabel]+[unittitle]+[unitdate]+[scopecontent]+[containerType1]+[container1]+[containerId1]+[containerType2]+[container2]+[containerId2])
+        global sortOrder
+        sortOrder += 1
+        f.writerow([sortOrder]+[level]+[componentLevelLabel]+[unittitle]+[unitdate]+[scopecontent]+[containerType1]+[container1]+[containerId1]+[containerType2]+[container2]+[containerId2])
 
 filepath =  raw_input('Enter file path: ')
 fileName = raw_input('Enter file name: ')
 xml = open(filepath+fileName)
 
 f=csv.writer(open(filepath+'eadFields.csv', 'wb'))
-f.writerow(['<co?>']+['<co?> level']+['<unittitle>']+['<unitdate>']+['<scopecontent>']+['containerType1']+['container1']+['containerId1']+['containerType2']+['container2']+['containerId2'])
+f.writerow(['sortOrder']+['<co?>']+['<co?> level']+['<unittitle>']+['<unitdate>']+['<scopecontent>']+['containerType1']+['container1']+['containerId1']+['containerType2']+['container2']+['containerId2'])
 upperComponentLevels = BeautifulSoup(xml, 'lxml').find('dsc').find_all('c01')
+sortOrder = 0
 for upperComponentLevel in upperComponentLevels:
     componentLevelLabel = upperComponentLevel['level']
     unittitle = upperComponentLevel.find('did').find('unittitle').text.encode('utf-8')
@@ -61,10 +64,10 @@ for upperComponentLevel in upperComponentLevels:
         for paragraph in scopecontentElement:
             paragraphText = paragraph.text.replace('\\n','').replace('              ',' ').replace('            ',' ').encode('utf-8')
             scopecontent = scopecontent + paragraphText
-            print scopecontent
     except:
         scopecontent = ''
-    f.writerow(['c01']+[componentLevelLabel]+[unittitle]+['']+[scopecontent]+['']+['']+['']+['']+['']+[''])
+    sortOrder += 1
+    f.writerow([sortOrder]+['c01']+[componentLevelLabel]+[unittitle]+['']+[scopecontent]+['']+['']+['']+['']+['']+[''])
 
     componentLevelArray = upperComponentLevel.find_all('c02')
     for componentLevel in componentLevelArray:
