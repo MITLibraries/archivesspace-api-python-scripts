@@ -10,6 +10,8 @@ All of these scripts require a secrets.py file in the same directory that must c
 
 ## Scripts
 
+#### [addBibNumbersAndPost.py](/addBibNumbersAndPost.py)
+
 #### [eadToCsv.py](/eadToCsv.py)
 Based on a specified file name and a specified file path, this script extracts selected elements from an EAD XML file and prints them to a CSV file.
 
