@@ -12,8 +12,18 @@ All of these scripts require a secrets.py file in the same directory that must c
 
 #### [addBibNumbersAndPost.py](/addBibNumbersAndPost.py)
 
+#### [dateCheck.py](/dateCheck.py)
+
 #### [eadToCsv.py](/eadToCsv.py)
 Based on a specified file name and a specified file path, this script extracts selected elements from an EAD XML file and prints them to a CSV file.
+
+
+#### [getAccessionUDFs.py](/getAccessionUDFs.py)
+
+#### [getAccessions.py](/getAccessions.py)
+#### [getAllArchivalObjectTitles.py](/getAllArchivalObjectTitles.py)
+
+#### [getArchivalObjectCountByResource.py](/getArchivalObjectCountByResource.py)
 
 #### [getArchivalObjectsByResource.py](/getArchivalObjectsByResource.py)
 A GET script to extract all of the archival objects associated with a particular resource. Upon running the script, you will be prompted enter the resource ID (just the number, not the full URI).
@@ -30,6 +40,12 @@ This GET scripts retrieves all of the resources from a particular repository int
 #### [getSingleRecord.py](/getSingleRecord.py)
 This GET script retrieves a single ArchivesSpace record based on the record's 'uri,' which is specified in the 'endpoint' variable on line 13.
 
+#### [getTopContainerCountByResource.py](/getTopContainerCountByResource.py)
+
+#### [getTopContainerCountByResourceNoAOs.py](/getTopContainerCountByResourceNoAOs.py)
+
+#### [getTopContainers.py](/getTopContainers.py)
+
 #### [getUrisAndIds.py](getUrisAndIds.py)
 
 #### [postContainersFromCSV.py](/postContainersFromCSV.py)
@@ -42,3 +58,11 @@ This POST script will post new records to a generic API endpoint based the recor
 This POST script will overwrite existing ArchivesSpace records based the 'uri' and can be used with any ArchivesSpace record type (e.g. resource, accession, subject, agent_people, agent_corporate_entity, archival_object, etc.). It requires a properly formatted JSON file (specified where [JSON File] appears in the 'records' variable on line 13) for the particular ArchivesSpace record type you are trying to post.
 
 #### [resourcesWithNoBibNum.py](/resourcesWithNoBibNum.py)
+
+#### [searchForUnassociatedContainers.py](/searchForUnassociatedContainers.py)
+
+#### [unpublishArchivalObjectsByResource.py](/unpublishArchivalObjectsByResource.py)
+
+#### [updateFindingAidData.py](/updateFindingAidData.py)
+
+#### [updateResourceWithCSV.py](/updateResourceWithCSV.py)
