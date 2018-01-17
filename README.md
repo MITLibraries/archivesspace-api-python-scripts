@@ -23,11 +23,13 @@ Based on a specified file name and a specified file path, this script extracts s
 This GET script retrieves all of the user-defined fields from all of the accessions in the specified repository.
 
 #### [getAccessions.py](/getAccessions.py)
-This GET script retrieves all of the accessions from a particular repository into a JSON file
+This GET script retrieves all of the accessions from a particular repository into a JSON file.
 
 #### [getAllArchivalObjectTitles.py](/getAllArchivalObjectTitles.py)
+Retrieves titles from all archival objects in a repository. Upon running the script, you will be prompted enter the resource ID (just the number, not the full URI).
 
 #### [getArchivalObjectCountByResource.py](/getArchivalObjectCountByResource.py)
+Retrieves a count of archival objects associated with a particular resource. Upon running the script, you will be prompted enter the resource ID (just the number, not the full URI).
 
 #### [getArchivalObjectsByResource.py](/getArchivalObjectsByResource.py)
 A GET script to extract all of the archival objects associated with a particular resource. Upon running the script, you will be prompted enter the resource ID (just the number, not the full URI).
@@ -45,14 +47,16 @@ This GET scripts retrieves all of the resources from a particular repository int
 This GET script retrieves a single ArchivesSpace record based on the record's 'uri,' which is specified in the 'endpoint' variable on line 13.
 
 #### [getTopContainerCountByResource.py](/getTopContainerCountByResource.py)
-Retrives a count of top containers associated with archival objects associated with a particular resource. Upon running the script, you will be prompted enter the resource ID (just the number, not the full URI).
+Retrieves a count of top containers associated with archival objects associated with a particular resource. Upon running the script, you will be prompted enter the resource ID (just the number, not the full URI).
 
 #### [getTopContainerCountByResourceNoAOs.py](/getTopContainerCountByResourceNoAOs.py)
-Retrives a count of top containers directly associated (not through an archival object) with a particular resource. Upon running the script, you will be prompted enter the resource ID (just the number, not the full URI).
+Retrieves a count of top containers directly associated (not through an archival object) with a particular resource. Upon running the script, you will be prompted enter the resource ID (just the number, not the full URI).
 
 #### [getTopContainers.py](/getTopContainers.py)
+This GET script retrieves all of the top containers from a particular repository into a JSON file.
 
 #### [getUrisAndIds.py](getUrisAndIds.py)
+For the specified record type, this script retrieves URI and the 'id_0,' 'id_1,' 'id_2,' 'id_3,' and a concatenated version of all the 'id' fields.
 
 #### [postContainersFromCSV.py](/postContainersFromCSV.py)
 This script works to create instances (consisting of top_containers) from a separate CSV file. The CSV file should have two columns, indicator and barcode. The directory where this file is stored must match the directory in the filePath variable. The script will prompt you first for the exact name of the CSV file, and then for the exact resource or accession to attach the containers to.
