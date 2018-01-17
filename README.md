@@ -11,16 +11,20 @@ All of these scripts require a secrets.py file in the same directory that must c
 ## Scripts
 
 #### [addBibNumbersAndPost.py](/addBibNumbersAndPost.py)
+Based on a specified CSV file with URIs and bib numbers, this script posts the specified bib number to the ['user_defined]['real_1'] field for record specified by the URI.
 
 #### [dateCheck.py](/dateCheck.py)
+Retrieves 'begin,' 'end,' 'expression,' and 'date_type' for all dates associated with all resources in a repository
 
 #### [eadToCsv.py](/eadToCsv.py)
 Based on a specified file name and a specified file path, this script extracts selected elements from an EAD XML file and prints them to a CSV file.
 
-
 #### [getAccessionUDFs.py](/getAccessionUDFs.py)
+This GET script retrieves all of the user-defined fields from all of the accessions in the specified repository.
 
 #### [getAccessions.py](/getAccessions.py)
+This GET script retrieves all of the accessions from a particular repository into a JSON file
+
 #### [getAllArchivalObjectTitles.py](/getAllArchivalObjectTitles.py)
 
 #### [getArchivalObjectCountByResource.py](/getArchivalObjectCountByResource.py)
@@ -41,8 +45,10 @@ This GET scripts retrieves all of the resources from a particular repository int
 This GET script retrieves a single ArchivesSpace record based on the record's 'uri,' which is specified in the 'endpoint' variable on line 13.
 
 #### [getTopContainerCountByResource.py](/getTopContainerCountByResource.py)
+Retrives a count of top containers associated with archival objects associated with a particular resource. Upon running the script, you will be prompted enter the resource ID (just the number, not the full URI).
 
 #### [getTopContainerCountByResourceNoAOs.py](/getTopContainerCountByResourceNoAOs.py)
+Retrives a count of top containers directly associated (not through an archival object) with a particular resource. Upon running the script, you will be prompted enter the resource ID (just the number, not the full URI).
 
 #### [getTopContainers.py](/getTopContainers.py)
 
