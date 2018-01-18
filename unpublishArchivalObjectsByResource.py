@@ -2,6 +2,7 @@ import json
 import requests
 import secrets
 import time
+import csv
 
 startTime = time.time()
 
@@ -18,32 +19,28 @@ baseURL = secrets.baseURL
 user = secrets.user
 password = secrets.password
 
-resourceID= raw_input('Enter resource ID: ')
-
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
 headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 
-endpoint = '/repositories/3/resources/'+resourceID+'/tree'
+id = raw_input('Enter resource ID: ')
 
-output = requests.get(baseURL + endpoint, headers=headers).json()
+treeEndpoint = '/repositories/3/resources/'+str(id)+'/tree'
+
+output = requests.get(baseURL + treeEndpoint, headers=headers).json()
 archivalObjects = []
 for value in findKey(output, 'record_uri'):
-    print value
     if 'archival_objects' in value:
         archivalObjects.append(value)
+print archivalObjects
 
-print 'downloading aos'
-records = []
 for archivalObject in archivalObjects:
     output = requests.get(baseURL + archivalObject, headers=headers).json()
-    records.append(output)
+    output['publish'] = False
+    asRecord = json.dumps(output)
+    post = requests.post(baseURL + archivalObject, headers=headers, data=asRecord).json()
+    print post
 
-print 'creating file'
-f=open('archivalObjects.json', 'w')
-json.dump(records, f)
-f.close()
-print 'file done'
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
