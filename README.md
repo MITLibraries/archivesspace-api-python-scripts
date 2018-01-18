@@ -67,7 +67,7 @@ This POST script will post new records to a generic API endpoint based the recor
 #### [postOverwrite.py](/postOverwrite.py)
 This POST script will overwrite existing ArchivesSpace records based the 'uri' and can be used with any ArchivesSpace record type (e.g. resource, accession, subject, agent_people, agent_corporate_entity, archival_object, etc.). It requires a properly formatted JSON file (specified where [JSON File] appears in the 'records' variable on line 13) for the particular ArchivesSpace record type you are trying to post.
 
-#### [resourcesWithNoBibNum.py](/resourcesWithNoBibNum.py
+#### [resourcesWithNoBibNum.py](/resourcesWithNoBibNum.py)
 Prints the URIs to a CSV file of all resources in a repository without a bib number stored in the ['user_defined']['real_1'] field.
 
 #### [searchForUnassociatedContainers.py](/searchForUnassociatedContainers.py)
