@@ -63,6 +63,7 @@ for record in records:
     extractMarcField('245')
     extractMarcField('520')
     extractMarcField('540')
+    extractMarcField('544')
     extractMarcField('545')
     extractMarcField('561')
     extractMarcFieldStartsWith('6')
