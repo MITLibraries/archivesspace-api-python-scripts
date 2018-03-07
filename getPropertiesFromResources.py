@@ -57,6 +57,9 @@ for id in ids:
         scopecontent = ''
         acqinfo = ''
         custodhist = ''
+        bioghist = ''
+        accessrestrict = ''
+        relatedmaterial = ''
         try:
             if note['type'] == 'abstract':
                 abstract = note['content'][0].encode('utf-8')
@@ -78,15 +81,20 @@ for id in ids:
                     custodhist = custodhist + subnote['content'].encode('utf-8') + ' '
                 f.writerow([title]+[uri]+[bibnum]+['custodhist']+[custodhist])
             if note['type'] == 'bioghist':
-                custodhistSubnotes = note['subnotes']
-                for subnote in custodhistSubnotes:
-                    custodhist = custodhist + subnote['content'].encode('utf-8') + ' '
-                f.writerow([title]+[uri]+[bibnum]+['bioghist']+[custodhist])
+                bioghistSubnotes = note['subnotes']
+                for subnote in bioghistSubnotes:
+                    bioghist = bioghist + subnote['content'].encode('utf-8') + ' '
+                f.writerow([title]+[uri]+[bibnum]+['bioghist']+[bioghist])
             if note['type'] == 'accessrestrict':
-                custodhistSubnotes = note['subnotes']
-                for subnote in custodhistSubnotes:
-                    custodhist = custodhist + subnote['content'].encode('utf-8') + ' '
-                f.writerow([title]+[uri]+[bibnum]+['accessrestrict']+[custodhist])
+                accessrestrictSubnotes = note['subnotes']
+                for subnote in accessrestrictSubnotes:
+                    accessrestrict = accessrestrict + subnote['content'].encode('utf-8') + ' '
+                f.writerow([title]+[uri]+[bibnum]+['accessrestrict']+[accessrestrict])
+            if note['type'] == 'relatedmaterial':
+                relatedmaterialtSubnotes = note['subnotes']
+                for subnote in relatedmaterialSubnotes:
+                    relatedmaterial = relatedmaterial + subnote['content'].encode('utf-8') + ' '
+                f.writerow([title]+[uri]+[bibnum]+['relatedmaterial']+[relatedmaterial])
         except:
             f.writerow([title]+[uri]+[bibnum]+['']+[custodhist])
 
