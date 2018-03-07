@@ -91,7 +91,7 @@ for id in ids:
                     accessrestrict = accessrestrict + subnote['content'].encode('utf-8') + ' '
                 f.writerow([title]+[uri]+[bibnum]+['accessrestrict']+[accessrestrict])
             if note['type'] == 'relatedmaterial':
-                relatedmaterialtSubnotes = note['subnotes']
+                relatedmaterialSubnotes = note['subnotes']
                 for subnote in relatedmaterialSubnotes:
                     relatedmaterial = relatedmaterial + subnote['content'].encode('utf-8') + ' '
                 f.writerow([title]+[uri]+[bibnum]+['relatedmaterial']+[relatedmaterial])
