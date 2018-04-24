@@ -63,10 +63,6 @@ def extractValuesFromComponentLevel (componentLevel):
 
 filepath =  raw_input('Enter file path: ')
 fileName = raw_input('Enter file name: ')
-
-filepath = 'C:/Users/ehanson8/Documents/GitHub/archivesspaceAPI/'
-fileName = 'MS.0037.xml'
-
 xml = open(filepath+fileName)
 
 f=csv.writer(open(filepath+'eadFields.csv', 'wb'))
