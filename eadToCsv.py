@@ -73,6 +73,25 @@ for upperComponentLevel in upperComponentLevels:
     componentLevelLabel = upperComponentLevel['level']
     unittitle = upperComponentLevel.find('did').find('unittitle').text.encode('utf-8')
     try:
+        unitdate = componentLevel.find('did').find('unitdate')
+        dateExpression = unitdate.text.encode('utf-8').replace('\n','').replace('              ',' ').replace('            ',' ').encode('utf-8')
+        try:
+            dateType = unitdate['type']
+        except:
+            dateType = ''
+        try:
+            dateNormal = unitdate['normal']
+            beginDate = dateNormal[:dateNormal.index('/')]
+            endDate = dateNormal[dateNormal.index('/')+1:]
+        except:
+            beginDate = ''
+            endDate = ''
+    except:
+        dateExpression = ''
+        dateType = ''
+        beginDate = ''
+        endDate = ''
+    try:
         scopecontentElement = upperComponentLevel.find('scopecontent').find_all('p')
         scopecontent = ''
         for paragraph in scopecontentElement:
@@ -81,7 +100,7 @@ for upperComponentLevel in upperComponentLevels:
     except:
         scopecontent = ''
     sortOrder += 1
-    f.writerow([sortOrder]+['c01']+[componentLevelLabel]+['']+['']+['']+['']+[unittitle]+['']+['']+['']+['']+[scopecontent]+['']+[''])
+    f.writerow([sortOrder]+['c01']+[componentLevelLabel]+['']+['']+['']+['']+[unittitle]+[dateExpression]+[dateType]+[beginDate]+[endDate]+[scopecontent]+['']+[''])
 
     componentLevelArray = upperComponentLevel.find_all('c02')
     for componentLevel in componentLevelArray:
