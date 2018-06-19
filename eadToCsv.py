@@ -62,18 +62,20 @@ def extractValuesFromComponentLevel (componentLevel):
         f.writerow([sortOrder]+[level]+[componentLevelLabel]+[containerType1]+[container1]+[containerType2]+[container2]+[unittitle]+[dateExpression]+[dateType]+[beginDate]+[endDate]+[scopecontent]+[containerId1]+[containerId2])
 
 filepath =  raw_input('Enter file path: ')
+filepath = ''
 fileName = raw_input('Enter file name: ')
+fileName = 'Coll.011.xml'
 xml = open(filepath+fileName)
 
 f=csv.writer(open(filepath+'eadFields.csv', 'wb'))
-f.writerow(['sortOrder']+['hierarchy']+['level']+['containerType1']+['container1']+['containerType2']+['container2']+['unittitle']+['dateexpression']+['datetype']+['begindate']+['enddate']+['scopecontent']+['containerId1']+['containerId2'])
+f.writerow(['sortOrder']+['hierarchy']+['level']+['containerType1']+['container1']+['containerType2']+['container2']+['unittitle']+['dateexpression']+['datetype']+['begindate']+['enddate']+['scopecontent']+['controlAccess']+['origination']+['containerId1']+['containerId2'])
 upperComponentLevels = BeautifulSoup(xml, 'lxml').find('dsc').find_all('c01')
 sortOrder = 0
 for upperComponentLevel in upperComponentLevels:
     componentLevelLabel = upperComponentLevel['level']
     unittitle = upperComponentLevel.find('did').find('unittitle').text.encode('utf-8')
     try:
-        unitdate = componentLevel.find('did').find('unitdate')
+        unitdate = upperComponentLevel.find('did').find('unitdate')
         dateExpression = unitdate.text.encode('utf-8').replace('\n','').replace('              ',' ').replace('            ',' ').encode('utf-8')
         try:
             dateType = unitdate['type']

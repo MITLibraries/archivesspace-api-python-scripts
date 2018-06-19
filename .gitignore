@@ -52,3 +52,5 @@ data/*
 .profile
 *.csv
 *.json
+local/*
+*.xml

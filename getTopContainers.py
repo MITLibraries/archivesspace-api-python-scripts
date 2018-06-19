@@ -17,9 +17,11 @@ print 'authenticated'
 endpoint = '/repositories/3/top_containers?all_ids=true'
 
 ids = requests.get(baseURL + endpoint, headers=headers).json()
+print len(ids)
 
 records = []
 for id in ids:
+    print id
     endpoint = '/repositories/3/top_containers/'+str(id)
     output = requests.get(baseURL + endpoint, headers=headers).json()
     records.append(output)
