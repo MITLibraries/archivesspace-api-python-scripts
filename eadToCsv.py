@@ -5,6 +5,8 @@ def extractValuesFromComponentLevel (componentLevel):
         level = componentLevel.name
         componentLevelLabel = componentLevel['level']
         unittitle = componentLevel.find('did').find('unittitle').text.replace('\n','').encode('utf-8')
+        controlAccess = []
+        originationList = []
         try:
             unitdate = componentLevel.find('did').find('unitdate')
             dateExpression = unitdate.text.encode('utf-8').replace('\n','').replace('              ',' ').replace('            ',' ').encode('utf-8')
@@ -33,6 +35,12 @@ def extractValuesFromComponentLevel (componentLevel):
         except:
             scopecontent = ''
         try:
+            subjects = componentLevel.find('controlaccess').find_all()
+            for subject in subjects:
+                controlAccess.append(subject.text.encode('utf-8'))
+        except:
+            subjects = ''
+        try:
             container1 = componentLevel.find('did').find_all('container')[0].text.encode('utf-8')
         except:
             container1 = ''
@@ -56,16 +64,23 @@ def extractValuesFromComponentLevel (componentLevel):
             containerType2 = componentLevel.find('did').find_all('container')[1]['type']
         except:
             containerType2 = ''
+        try:
+            originations = componentLevel.find('did').find_all('origination')
+            for origination in originations:
+                if origination.find()['role'] == 'spn':
+                    originationList.append(origination.text.encode('utf-8'))
+        except:
+            originationList = ''
         global sortOrder
         sortOrder += 1
+        f.writerow([sortOrder]+[level]+[componentLevelLabel]+[containerType1]+[container1]+[containerType2]+[container2]+[unittitle]+[dateExpression]+[dateType]+[beginDate]+[endDate]+[scopecontent]+[controlAccess]+[originationList]+[containerId1]+[containerId2])
 
-        f.writerow([sortOrder]+[level]+[componentLevelLabel]+[containerType1]+[container1]+[containerType2]+[container2]+[unittitle]+[dateExpression]+[dateType]+[beginDate]+[endDate]+[scopecontent]+[containerId1]+[containerId2])
-
-filepath =  raw_input('Enter file path: ')
+filepath = '/home/mjanowi3/archivesspace-api'
 filepath = ''
-fileName = raw_input('Enter file name: ')
 fileName = 'Coll.011.xml'
 xml = open(filepath+fileName)
+
+
 
 f=csv.writer(open(filepath+'eadFields.csv', 'wb'))
 f.writerow(['sortOrder']+['hierarchy']+['level']+['containerType1']+['container1']+['containerType2']+['container2']+['unittitle']+['dateexpression']+['datetype']+['begindate']+['enddate']+['scopecontent']+['controlAccess']+['origination']+['containerId1']+['containerId2'])
@@ -102,7 +117,7 @@ for upperComponentLevel in upperComponentLevels:
     except:
         scopecontent = ''
     sortOrder += 1
-    f.writerow([sortOrder]+['c01']+[componentLevelLabel]+['']+['']+['']+['']+[unittitle]+[dateExpression]+[dateType]+[beginDate]+[endDate]+[scopecontent]+['']+[''])
+    f.writerow([sortOrder]+['c01']+[componentLevelLabel]+['']+['']+['']+['']+[unittitle]+[dateExpression]+[dateType]+[beginDate]+[endDate]+[scopecontent]+['']+['']+['']+[''])
 
     componentLevelArray = upperComponentLevel.find_all('c02')
     for componentLevel in componentLevelArray:
