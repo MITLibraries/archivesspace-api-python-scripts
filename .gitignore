@@ -54,3 +54,4 @@ data/*
 *.json
 local/*
 *.xml
+*.xslx
