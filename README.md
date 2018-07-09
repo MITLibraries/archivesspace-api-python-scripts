@@ -44,7 +44,7 @@ This GET script retrieves specific properties from the JSON of ArchivesSpace age
 This GET scripts retrieves all of the resources from a particular repository into a JSON file which is specified in variable 'f' on line 16. This GET script can be adapted to other record types by editing the 'endpoint' variable on line 13 (e.g. 'repositories/[repo ID]/accessions' or 'agents/corporate_entities').
 
 #### [getSingleRecord.py](/getSingleRecord.py)
-This GET script retrieves a single ArchivesSpace record based on the record's 'uri,' which is specified in the 'endpoint' variable on line 13.
+Based on user input, this GET script retrieves a single ArchivesSpace record based on the specified record's 'uri.'
 
 #### [getTopContainerCountByResource.py](/getTopContainerCountByResource.py)
 Retrieves a count of top containers associated with archival objects associated with a particular resource. Upon running the script, you will be prompted enter the resource ID (just the number, not the full URI).
