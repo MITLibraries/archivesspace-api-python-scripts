@@ -11,13 +11,13 @@ All of these scripts require a secrets.py file in the same directory that must c
 ## Scripts
 
 #### [addBibNumbersAndPost.py](/addBibNumbersAndPost.py)
-Based on a specified CSV file with URIs and bib numbers, this script posts the specified bib number to the ['user_defined]['real_1'] field for record specified by the URI.
+Based on a specified CSV file with URIs and bib numbers, posts the specified bib number to the ['user_defined]['real_1'] field for record specified by the URI.
 
 #### [dateCheck.py](/dateCheck.py)
 Retrieves 'begin,' 'end,' 'expression,' and 'date_type' for all dates associated with all resources in a repository
 
 #### [eadToCsv.py](/eadToCsv.py)
-Based on a specified file name and a specified file path, this script extracts selected elements from an EAD XML file and prints them to a CSV file.
+Based on a specified file name and a specified file path, extracts selected elements from an EAD XML file and prints them to a CSV file.
 
 #### [getAccessionUDFs.py](/getAccessionUDFs.py)
 This GET script retrieves all of the user-defined fields from all of the accessions in the specified repository.
