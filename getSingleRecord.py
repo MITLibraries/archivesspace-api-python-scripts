@@ -21,6 +21,7 @@ auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json(
 session = auth["session"]
 headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 
+print baseURL+uri
 output = requests.get(baseURL + uri, headers=headers).json()
 uri = uri.replace('/repositories/3/','').replace('/','-')
 f=open(uri+'.json', 'w')
