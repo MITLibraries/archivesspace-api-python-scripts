@@ -40,6 +40,10 @@ Retrieves specific properties, including proprerties that have arrays as values,
 #### [getPropertiesFromAgentsPeopleCSV.py](/getPropertiesFromAgentsPeopleCSV.py)
 Retrieves specific properties from the JSON of ArchivesSpace agent_people records into a CSV file which is specified in variable 'f' on line 17. In this example, the script retrieves the 'uri,' 'sort_name,' 'authority_id,' and 'names' properties from the JSON records by iterating through the JSON records with the function 'for i in range (...)' on line 19. The f.writerow(....) function on line 20 specifies which properties are retrieved from the JSON and the f.writerow(....) on line 18 specifies header row of the CSV file.  
 
+#### [getPropertiesFromResources.py](/getPropertiesFromResources.py)
+
+#### [getPropertiesFromSingleResource.py](/getPropertiesFromSingleResource.py)
+
 #### [getResources.py](/getResources.py)
 Retrieves all of the resources from a particular repository into a JSON file which is specified in variable 'f' on line 16. This GET script can be adapted to other record types by editing the 'endpoint' variable on line 13 (e.g. 'repositories/[repo ID]/accessions' or 'agents/corporate_entities').
 
@@ -61,11 +65,23 @@ For the specified record type, retrieves URI and the 'id_0,' 'id_1,' 'id_2,' 'id
 #### [postContainersFromCSV.py](/postContainersFromCSV.py)
 Creates instances (consisting of top_containers) from a separate CSV file. The CSV file should have two columns, indicator and barcode. The directory where this file is stored must match the directory in the filePath variable. The script will prompt you first for the exact name of the CSV file, and then for the exact resource or accession to attach the containers to.
 
+#### [postContainersToRecords.py](/postContainersToRecords.py)
+
+#### [postCorporateAgentsFromCSV.py](/postCorporateAgentsFromCSV.py)
+
+#### [postFamilyAgentsFromCSV.py](/postFamilyAgentsFromCSV.py)
+
 #### [postNew.py](/postNew.py)
 Posts new records to a generic API endpoint based the record type, 'agents/people' in this example. This script can be modified to accommodate other data types (e.g. 'repositories/[repo ID]/resources' or 'agents/corporate_entities'). It requires a properly formatted JSON file (specified where [JSON File] appears in the 'records' variable on line 13) for the particular ArchivesSpace record type you are trying to post.  
 
 #### [postOverwrite.py](/postOverwrite.py)
 Overwrites existing ArchivesSpace records based the 'uri' and can be used with any ArchivesSpace record type (e.g. resource, accession, subject, agent_people, agent_corporate_entity, archival_object, etc.). It requires a properly formatted JSON file (specified where [JSON File] appears in the 'records' variable on line 13) for the particular ArchivesSpace record type you are trying to post.
+
+#### [postPeopleAgentsFromCSV.py](/postPeopleAgentsFromCSV.py)
+
+#### [postSubjectsFromCSV.py](/postSubjectsFromCSV.py)
+
+#### [resourcesWithBibNum.py](/resourcesWithBibNum.py)
 
 #### [resourcesWithNoBibNum.py](/resourcesWithNoBibNum.py)
 Prints the URIs to a CSV file of all resources in a repository without a bib number stored in the ['user_defined']['real_1'] field.
@@ -76,6 +92,6 @@ Prints the URIs to a CSV file of all top containers that are not associated with
 #### [unpublishArchivalObjectsByResource.py](/unpublishArchivalObjectsByResource.py)
 Unpublishes all archival objects associated with the specified resource. Upon running the script, you will be prompted enter the resource ID (just the number, not the full URI).
 
-#### [updateFindingAidData.py](/updateFindingAidData.py)
+#### [updateResourceWithAgentOrSubjectLinks.py](/updateResourceWithAgentOrSubjectLinks.py)
 
 #### [updateResourceWithCSV.py](/updateResourceWithCSV.py)
