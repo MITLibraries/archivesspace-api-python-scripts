@@ -11,14 +11,14 @@ args = parser.parse_args()
 if args.uri:
     uri = args.uri
 else:
-    uri = raw_input('Enter handle: ')
+    uri = raw_input('Enter handle (\'/repositories/3/resources/564\'): ')
 
 baseURL = secrets.baseURL
 user = secrets.user
 password = secrets.password
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
-session = auth["session"]
+session = auth['session']
 headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 
 print baseURL+uri
