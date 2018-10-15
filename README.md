@@ -67,6 +67,9 @@ Retrieves all of the top containers from a particular repository into a JSON fil
 #### [getUrisAndIds.py](getUrisAndIds.py)
 For the specified record type, retrieves URI and the 'id_0,' 'id_1,' 'id_2,' 'id_3,' and a concatenated version of all the 'id' fields.
 
+#### [modifyDigitalObjectUrls.py](/modifyDigitalObjectUrls.py)
+Based on user input, replaces a string in the URLs in both the 'Identifier' and 'File URI' fields for digital objects across the repository.
+
 #### [postContainersFromCSV.py](/postContainersFromCSV.py)
 Creates instances (consisting of top_containers) from a separate CSV file. The CSV file should have two columns, indicator and barcode. The directory where this file is stored must match the directory in the filePath variable. The script will prompt you first for the exact name of the CSV file, and then for the exact resource or accession to attach the containers to.
 
