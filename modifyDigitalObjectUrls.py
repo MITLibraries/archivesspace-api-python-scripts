@@ -4,6 +4,7 @@ import secrets
 import time
 import csv
 import argparse
+from datetime import datetime
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-1', '--replacedValue', help='the value to be replaced. optional - if not provided, the script will ask for input')
@@ -35,8 +36,8 @@ endpoint = '/repositories/3/digital_objects?all_ids=true'
 ids = requests.get(baseURL + endpoint, headers=headers).json()
 print len(ids)
 
-f=csv.writer(open('doUrlEdits.csv', 'wb'))
-f.writerow(['uri']+['orignalValue']+['editedValue'])
+f=csv.writer(open('doUrlEdits'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'wb'))
+f.writerow(['uri']+['originalValue']+['editedValue']+['doPost'])
 
 for id in ids:
     endpoint = '/repositories/3/digital_objects/'+str(id)
@@ -52,7 +53,7 @@ for id in ids:
         output = json.dumps(output)
         doPost = requests.post(baseURL + '/repositories/3/digital_objects/'+str(id), headers=headers, data=output).json()
         print doPost
-        f.writerow([endpoint]+[value]+[editedValue])
+        f.writerow([endpoint]+[value]+[editedValue]+[doPost])
 
 
 elapsedTime = time.time() - startTime

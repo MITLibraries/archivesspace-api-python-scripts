@@ -3,6 +3,7 @@ import requests
 import secrets
 import time
 import csv
+from datetime import datetime
 
 startTime = time.time()
 
@@ -16,7 +17,7 @@ headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 
 urisBibs = csv.DictReader(open(''))
 
-f=csv.writer(open('bibNumberPush.csv', 'wb'))
+f=csv.writer(open('bibNumberPush'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'wb'))
 f.writerow(['uri']+['existingValue']+['bibNum'])
 
 for row in urisBibs:

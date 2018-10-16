@@ -3,6 +3,7 @@ import requests
 import secrets
 import time
 import csv
+from datetime import datetime
 
 startTime = time.time()
 
@@ -34,12 +35,17 @@ for value in findKey(output, 'record_uri'):
         archivalObjects.append(value)
 print archivalObjects
 
+f=csv.writer(open('unpublishedAOs'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'wb'))
+f.writerow(['uri']+['post'])
+
 for archivalObject in archivalObjects:
     output = requests.get(baseURL + archivalObject, headers=headers).json()
     output['publish'] = False
     asRecord = json.dumps(output)
     post = requests.post(baseURL + archivalObject, headers=headers, data=asRecord).json()
+    post = json.dumps(post)
     print post
+    f.writerow([archivalObject]+[post])
 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)

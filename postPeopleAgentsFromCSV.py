@@ -3,6 +3,7 @@ import requests
 import time
 import csv
 import secrets
+from datetime import datetime
 
 startTime = time.time()
 
@@ -16,7 +17,7 @@ auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json(
 session = auth['session']
 headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 
-f=csv.writer(open('postNewPersonalAgents.csv', 'wb'))
+f=csv.writer(open('postNewPersonalAgents'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'wb'))
 f.writerow(['sortName']+['uri'])
 
 csvfile = csv.DictReader(open(targetFile))
