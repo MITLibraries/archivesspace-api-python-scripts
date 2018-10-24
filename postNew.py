@@ -5,6 +5,16 @@ import time
 import argparse
 from datetime import datetime
 
+secretsVersion = raw_input('To edit production server, enter the name of the secrets file: ')
+if secretsVersion != '':
+    try:
+        secrets = __import__(secretsVersion)
+        print 'Editing Production'
+    except ImportError:
+        print 'Editing Development'
+else:
+    print 'Editing Development'
+
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--file', help='the JSON file of records to post (including ".json"). optional - if not provided, the script will ask for input')
 parser.add_argument('-e', '--endpoint', help='the endpoint for the type of records being posted (e.g "resources" or "agents/people"). optional - if not provided, the script will ask for input')
