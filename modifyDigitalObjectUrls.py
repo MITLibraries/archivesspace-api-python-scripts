@@ -6,6 +6,16 @@ import csv
 import argparse
 from datetime import datetime
 
+secretsVersion = raw_input('To edit production server, enter the name of the secrets file: ')
+if secretsVersion != '':
+    try:
+        secrets = __import__(secretsVersion)
+        print 'Editing Production'
+    except ImportError:
+        print 'Editing Development'
+else:
+    print 'Editing Development'
+
 parser = argparse.ArgumentParser()
 parser.add_argument('-1', '--replacedValue', help='the value to be replaced. optional - if not provided, the script will ask for input')
 parser.add_argument('-2', '--replacementValue', help='the replacement value. optional - if not provided, the script will ask for input')
@@ -37,24 +47,31 @@ ids = requests.get(baseURL + endpoint, headers=headers).json()
 print len(ids)
 
 f=csv.writer(open('doUrlEdits'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'wb'))
-f.writerow(['uri']+['originalValue']+['editedValue']+['doPost'])
+f.writerow(['endpoint']+['doPost'])
 
 for id in ids:
+    print id
     endpoint = '/repositories/3/digital_objects/'+str(id)
     output = requests.get(baseURL + endpoint, headers=headers).json()
-    value = output['digital_object_id']
-    editedValue = value.replace(replacedValue, replacementValue)
-    output['digital_object_id'] = editedValue
+    originalOutput = output
+    originalIdValue = output['digital_object_id']
+    editedIdValue = originalIdValue.replace(replacedValue, replacementValue)
+    output['digital_object_id'] = editedIdValue
     file_versions = output['file_versions']
-    if value != editedValue:
-        for file_version in file_versions:
-            file_version['file_uri'] = editedValue
-        output['file_versions'] = file_versions
+    fileUriChange = False
+    for file_version in file_versions:
+        originalUriValue = file_version['file_uri']
+        print originalUriValue
+        editedUriValue = originalUriValue.replace(replacedValue, replacementValue)
+        if originalUriValue != editedUriValue:
+            file_version['file_uri'] = editedUriValue
+            fileUriChange = True
+    output['file_versions'] = file_versions
+    if originalIdValue != editedIdValue or fileUriChange == True:
         output = json.dumps(output)
         doPost = requests.post(baseURL + '/repositories/3/digital_objects/'+str(id), headers=headers, data=output).json()
         print doPost
-        f.writerow([endpoint]+[value]+[editedValue]+[doPost])
-
+        f.writerow([endpoint]+[doPost])
 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
