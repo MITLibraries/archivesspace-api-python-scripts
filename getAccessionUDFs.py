@@ -16,15 +16,6 @@ else:
 
 startTime = time.time()
 
-def findKey(d, key):
-    if key in d:
-        yield d[key]
-    for k in d:
-        if isinstance(d[k], list) and k == 'children':
-            for i in d[k]:
-                for j in findKey(i, key):
-                    yield j
-
 baseURL = secrets.baseURL
 user = secrets.user
 password = secrets.password

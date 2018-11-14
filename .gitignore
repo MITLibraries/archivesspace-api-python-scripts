@@ -56,3 +56,4 @@ data/*
 local/*
 *.xml
 *.xslx
+*.txt
