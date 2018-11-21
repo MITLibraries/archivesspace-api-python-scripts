@@ -3,7 +3,27 @@ import requests
 import secrets
 import time
 import csv
+import argparse
 from datetime import datetime
+
+secretsVersion = raw_input('To edit production server, enter the name of the secrets file: ')
+if secretsVersion != '':
+    try:
+        secrets = __import__(secretsVersion)
+        print 'Editing Production'
+    except ImportError:
+        print 'Editing Development'
+else:
+    print 'Editing Development'
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-t', '--type', help='the type of links to create ("subject" or "agent"). optional - if not provided, the script will ask for input')
+args = parser.parse_args()
+
+if args.type:
+    type = args.type
+else:
+    type = raw_input('Enter the type of links to create ("subject" or "agent"): ')
 
 def addUriLink (key, valueSource):
     uri = '/repositories/3/resources/'+row['ResourceUri']
@@ -81,8 +101,15 @@ f.writerow(['uri']+['links']+['post'])
 with open(filename) as csvfile:
     reader = csv.DictReader(csvfile)
     for row in reader:
-        addUriLink ('linked_agents', 'agentUri')
-        #addUriLink ('subjects', 'SubjectUri')
+        if type == 'agent':
+            addUriLink ('linked_agents', 'agentUri')
+        elif type == 'subject':
+            addUriLink ('subjects', 'subjectUri')
+        else:
+            f.writerow(['error - invalid type entered (should be "subject" or "agent")']+[]+[])
+            print 'error - invalid type entered (should be "subject" or "agent")'
+            break
+
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)

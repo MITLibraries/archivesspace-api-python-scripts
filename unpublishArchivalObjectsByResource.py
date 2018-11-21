@@ -3,6 +3,17 @@ import requests
 import secrets
 import time
 import csv
+from datetime import datetime
+
+secretsVersion = raw_input('To edit production server, enter the name of the secrets file: ')
+if secretsVersion != '':
+    try:
+        secrets = __import__(secretsVersion)
+        print 'Editing Production'
+    except ImportError:
+        print 'Editing Development'
+else:
+    print 'Editing Development'
 
 startTime = time.time()
 
@@ -34,12 +45,17 @@ for value in findKey(output, 'record_uri'):
         archivalObjects.append(value)
 print archivalObjects
 
+f=csv.writer(open('unpublishedAOs'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'wb'))
+f.writerow(['uri']+['post'])
+
 for archivalObject in archivalObjects:
     output = requests.get(baseURL + archivalObject, headers=headers).json()
     output['publish'] = False
     asRecord = json.dumps(output)
     post = requests.post(baseURL + archivalObject, headers=headers, data=asRecord).json()
+    post = json.dumps(post)
     print post
+    f.writerow([archivalObject]+[post])
 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)

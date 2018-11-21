@@ -3,6 +3,17 @@ import requests
 import csv
 import secrets
 import time
+from datetime import datetime
+
+secretsVersion = raw_input('To edit production server, enter the name of the secrets file: ')
+if secretsVersion != '':
+    try:
+        secrets = __import__(secretsVersion)
+        print 'Editing Production'
+    except ImportError:
+        print 'Editing Development'
+else:
+    print 'Editing Development'
 
 startTime = time.time()
 
@@ -16,7 +27,7 @@ auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json(
 session = auth['session']
 headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 
-f=csv.writer(open('postNewFamilyAgents.csv', 'wb'))
+f=csv.writer(open('postNewFamilyAgents'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'wb'))
 f.writerow(['sortName']+['uri'])
 
 csvfile = csv.DictReader(open(targetFile))

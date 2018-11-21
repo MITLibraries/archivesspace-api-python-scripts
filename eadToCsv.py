@@ -8,6 +8,10 @@ def extractValuesFromComponentLevel (componentLevel):
         controlAccess = []
         originationList = []
         try:
+            physdesc = componentLevel.find('did').find('physdesc').text.replace('\n','').encode('utf-8')
+        except:
+            physdesc = ''
+        try:
             unitdate = componentLevel.find('did').find('unitdate')
             dateExpression = unitdate.text.encode('utf-8').replace('\n','').replace('              ',' ').replace('            ',' ').encode('utf-8')
             try:
@@ -73,22 +77,19 @@ def extractValuesFromComponentLevel (componentLevel):
             originationList = ''
         global sortOrder
         sortOrder += 1
-        f.writerow([sortOrder]+[level]+[componentLevelLabel]+[containerType1]+[container1]+[containerType2]+[container2]+[unittitle]+[dateExpression]+[dateType]+[beginDate]+[endDate]+[scopecontent]+[controlAccess]+[originationList]+[containerId1]+[containerId2])
+        f.writerow([sortOrder]+[level]+[componentLevelLabel]+[containerType1]+[container1]+[containerType2]+[container2]+[unittitle]+[physdesc]+[dateExpression]+[dateType]+[beginDate]+[endDate]+[scopecontent]+[controlAccess]+[originationList]+[containerId1]+[containerId2])
 
-filepath = '/home/mjanowi3/archivesspace-api'
 filepath = ''
-fileName = 'Coll.011.xml'
+fileName = 'Coll.004_20181012_144804_UTC__ead.xml'
 xml = open(filepath+fileName)
 
-
-
 f=csv.writer(open(filepath+'eadFields.csv', 'wb'))
-f.writerow(['sortOrder']+['hierarchy']+['level']+['containerType1']+['container1']+['containerType2']+['container2']+['unittitle']+['dateexpression']+['datetype']+['begindate']+['enddate']+['scopecontent']+['controlAccess']+['origination']+['containerId1']+['containerId2'])
+f.writerow(['sortOrder']+['hierarchy']+['level']+['containerType1']+['container1']+['containerType2']+['container2']+['unittitle']+['physdesc']+['dateexpression']+['datetype']+['begindate']+['enddate']+['scopecontent']+['controlAccess']+['origination']+['containerId1']+['containerId2'])
 upperComponentLevels = BeautifulSoup(xml, 'lxml').find('dsc').find_all('c01')
 sortOrder = 0
 for upperComponentLevel in upperComponentLevels:
     componentLevelLabel = upperComponentLevel['level']
-    unittitle = upperComponentLevel.find('did').find('unittitle').text.encode('utf-8')
+    unittitle = upperComponentLevel.find('did').find('unittitle').text.encode('utf-8').replace('\n','').replace('              ', ' ')
     try:
         unitdate = upperComponentLevel.find('did').find('unitdate')
         dateExpression = unitdate.text.encode('utf-8').replace('\n','').replace('              ',' ').replace('            ',' ').encode('utf-8')
@@ -117,7 +118,7 @@ for upperComponentLevel in upperComponentLevels:
     except:
         scopecontent = ''
     sortOrder += 1
-    f.writerow([sortOrder]+['c01']+[componentLevelLabel]+['']+['']+['']+['']+[unittitle]+[dateExpression]+[dateType]+[beginDate]+[endDate]+[scopecontent]+['']+['']+['']+[''])
+    f.writerow([sortOrder]+['c01']+[componentLevelLabel]+['']+['']+['']+['']+[unittitle]+['']+[dateExpression]+[dateType]+[beginDate]+[endDate]+[scopecontent]+['']+['']+['']+[''])
 
     componentLevelArray = upperComponentLevel.find_all('c02')
     for componentLevel in componentLevelArray:

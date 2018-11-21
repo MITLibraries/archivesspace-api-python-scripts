@@ -8,6 +8,10 @@ All of these scripts require a secrets.py file in the same directory that must c
 	user='[user name]'
 	password='[password]'
 
+This secrets.py file will be ignored according to the repository's .gitignore file so that ArchivesSpace login details will not be inadvertently exposed through GitHub.
+
+If you are using both a development server and a production server, you can create a separate secrets.py file with a different name (e.g. secretsProd.py) and containing the production server information. When running each of these scripts, you will be prompted to enter the file name (e.g 'secretsProd' without '.py') of an alternate secrets file. If you skip the prompt or incorrectly type the file name, the scripts will default to the information in the secrets.py file. This ensures that you will only access the production server if you really intend to.
+
 ## Scripts
 
 #### [addBibNumbersAndPost.py](/addBibNumbersAndPost.py)
@@ -66,6 +70,9 @@ Retrieves all of the top containers from a particular repository into a JSON fil
 
 #### [getUrisAndIds.py](getUrisAndIds.py)
 For the specified record type, retrieves URI and the 'id_0,' 'id_1,' 'id_2,' 'id_3,' and a concatenated version of all the 'id' fields.
+
+#### [modifyDigitalObjectUrls.py](/modifyDigitalObjectUrls.py)
+Based on user input, replaces a string in the URLs in both the 'Identifier' and 'File URI' fields for digital objects across the repository.
 
 #### [postContainersFromCSV.py](/postContainersFromCSV.py)
 Creates instances (consisting of top_containers) from a separate CSV file. The CSV file should have two columns, indicator and barcode. The directory where this file is stored must match the directory in the filePath variable. The script will prompt you first for the exact name of the CSV file, and then for the exact resource or accession to attach the containers to.

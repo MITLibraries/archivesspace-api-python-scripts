@@ -3,6 +3,16 @@ import requests
 import secrets
 import csv
 
+secretsVersion = raw_input('To edit production server, enter the name of the secrets file: ')
+if secretsVersion != '':
+    try:
+        secrets = __import__(secretsVersion)
+        print 'Editing Production'
+    except ImportError:
+        print 'Editing Development'
+else:
+    print 'Editing Development'
+
 targetFile = raw_input('Enter file name: ')
 targetRecord = raw_input('Enter record type and id (e.g. \'accessions/2049\'): ')
 

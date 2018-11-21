@@ -4,16 +4,17 @@ import secrets
 import time
 import csv
 
-startTime = time.time()
+secretsVersion = raw_input('To edit production server, enter the name of the secrets file: ')
+if secretsVersion != '':
+    try:
+        secrets = __import__(secretsVersion)
+        print 'Editing Production'
+    except ImportError:
+        print 'Editing Development'
+else:
+    print 'Editing Development'
 
-def findKey(d, key):
-    if key in d:
-        yield d[key]
-    for k in d:
-        if isinstance(d[k], list) and k == 'children':
-            for i in d[k]:
-                for j in findKey(i, key):
-                    yield j
+startTime = time.time()
 
 baseURL = secrets.baseURL
 user = secrets.user

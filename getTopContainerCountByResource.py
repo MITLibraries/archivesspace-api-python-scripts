@@ -4,6 +4,16 @@ import secrets
 import time
 import csv
 
+secretsVersion = raw_input('To edit production server, enter the name of the secrets file: ')
+if secretsVersion != '':
+    try:
+        secrets = __import__(secretsVersion)
+        print 'Editing Production'
+    except ImportError:
+        print 'Editing Development'
+else:
+    print 'Editing Development'
+
 startTime = time.time()
 
 baseURL = secrets.baseURL
@@ -105,7 +115,7 @@ for topContainer in uniqueTopContainers:
     except:
         barcode = ''
     f3.writerow([topContainer]+[indicator]+[barcode])
-
+    
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
