@@ -60,15 +60,6 @@ for id in ids:
         id3= ''
     page = 1
     resultsPage = ''
-    # while resultsPage != []:
-    #     payload = {'page': page, 'offset': offset, 'page_size': '100', 'root_record': endpoint}
-    #     print payload
-    #     search = requests.get(baseURL+'/search', headers=headers, params=payload).json()
-    #     print search
-
-    # resultsPage = search['results']
-    # for result in resultsPage:
-    #     results.append(result)
     results = []
     while resultsPage != []:
         print page
