@@ -36,9 +36,10 @@ headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 endpoint = '/repositories/3/resources?all_ids=true'
 
 ids = requests.get(baseURL + endpoint, headers=headers).json()
+print len(ids)
 
 f=csv.writer(open('archivalObjectCountByResource.csv', 'wb'))
-f.writerow(['title']+['uri']+['id_0']+['id_1']+['id_2']+['id_3']+['aoCount'])
+f.writerow(['title']+['bib']+['uri']+['id_0']+['id_1']+['id_2']+['id_3']+['aoCount'])
 
 records = []
 for id in ids:
@@ -48,6 +49,10 @@ for id in ids:
     title = output['title'].encode('utf-8')
     uri = output['uri']
     id0 = output['id_0']
+    try:
+        bib = output['user_defined']['real_1']
+    except:
+        bib = ''
     try:
         id1 = output['id_1']
     except:
@@ -70,7 +75,7 @@ for id in ids:
         if 'archival_objects' in value:
             archivalObjects.append(value)
     aoCount = len(archivalObjects)
-    f.writerow([title]+[uri]+[id0]+[id1]+[id2]+[id3]+[aoCount])
+    f.writerow([title]+[bib]+[uri]+[id0]+[id1]+[id2]+[id3]+[aoCount])
 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
