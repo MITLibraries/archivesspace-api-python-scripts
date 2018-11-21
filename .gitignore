@@ -55,4 +55,3 @@ data/*
 local/*
 *.xml
 *.xslx
-FamilyAgentsFromCSV.py
