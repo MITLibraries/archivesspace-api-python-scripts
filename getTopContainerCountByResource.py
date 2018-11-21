@@ -29,7 +29,7 @@ endpoint = '/repositories/3/resources?all_ids=true'
 ids = requests.get(baseURL + endpoint, headers=headers).json()
 
 f=csv.writer(open('topContainerCountByResource.csv', 'wb'))
-f.writerow(['title']+['uri']+['id_0']+['id_1']+['id_2']+['id_3']+['topContainerCount'])
+f.writerow(['title']+['bib']+['uri']+['id_0']+['id_1']+['id_2']+['id_3']+['topContainerCount'])
 
 f2=csv.writer(open('topContainersLinks.csv', 'wb'))
 f2.writerow(['resourceUri']+['topContainerUri'])
@@ -42,14 +42,19 @@ total = len(ids)
 topContainerLinks = []
 uniqueTopContainers = []
 for id in ids:
-
     resourceTopContainers = []
     print 'id', id, total, 'records remaining'
     total = total - 1
     endpoint = '/repositories/3/resources/'+str(id)
     output = requests.get(baseURL + endpoint, headers=headers).json()
     title = output['title'].encode('utf-8')
+    print title
     uri = output['uri']
+    try:
+        bib = output['user_defined']['real_1']
+    except:
+        bib =''
+    print bib
     id0 = output['id_0']
     try:
         id1 = output['id_1']
@@ -62,23 +67,18 @@ for id in ids:
     try:
         id3 = output['id_3']
     except:
-        id3=''
-    # ###searchEndpoint = '/repositories/3/top_containers/search'
-    # ###output = requests.get(baseURL + searchEndpoint, headers=headers).json()
+        id3= ''
     page = 1
-    payload = {'page': page, 'page_size': '3000', 'root_record': endpoint}
-    search = requests.get(baseURL+'/search', headers=headers, params=payload).json()
+    resultsPage = ''
     results = []
-    resultsPage = search['results']
-    for result in resultsPage:
-        results.append(result)
     while resultsPage != []:
-        page = page + 1
-        payload = {'page': page, 'page_size': '3000', 'root_record': endpoint}
+        print page
+        payload = {'page': page, 'page_size': '100', 'root_record': endpoint}
         search = requests.get(baseURL+'/search', headers=headers, params=payload).json()
         resultsPage = search['results']
         for result in resultsPage:
             results.append(result)
+        page = page + 1
 
     for result in results:
         try:
@@ -95,24 +95,27 @@ for id in ids:
             topContainers = []
     topContainerCount = len(resourceTopContainers)
     print 'top containers', topContainerCount
-    f.writerow([title]+[uri]+[id0]+[id1]+[id2]+[id3]+[topContainerCount])
+    f.writerow([title]+[bib]+[uri]+[id0]+[id1]+[id2]+[id3]+[topContainerCount])
 
+print 'top container links'
 for topContainerLink in topContainerLinks:
     f2.writerow([topContainerLink[:topContainerLink.index('|')]]+[topContainerLink[topContainerLink.index('|')+1:]])
 
+print 'unique top containers'
 for topContainer in uniqueTopContainers:
-        search = requests.get(baseURL+topContainer, headers=headers).json()
-        try:
-            indicator = search['indicator']
-        except:
-            indicator = ''
+    print topContainer
+    search = requests.get(baseURL+topContainer, headers=headers).json()
+    try:
+        indicator = search['indicator']
+    except:
+        indicator = ''
 
-        try:
-            barcode = search['barcode']
-        except:
-            barcode = ''
-        f3.writerow([topContainer]+[indicator]+[barcode])
-
+    try:
+        barcode = search['barcode']
+    except:
+        barcode = ''
+    f3.writerow([topContainer]+[indicator]+[barcode])
+    
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
