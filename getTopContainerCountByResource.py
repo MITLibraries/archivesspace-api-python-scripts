@@ -19,12 +19,13 @@ startTime = time.time()
 baseURL = secrets.baseURL
 user = secrets.user
 password = secrets.password
+repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
 headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 
-endpoint = '/repositories/3/resources?all_ids=true'
+endpoint = '/repositories/'+repository+'/resources?all_ids=true'
 
 ids = requests.get(baseURL + endpoint, headers=headers).json()
 
@@ -45,7 +46,7 @@ for id in ids:
     resourceTopContainers = []
     print 'id', id, total, 'records remaining'
     total = total - 1
-    endpoint = '/repositories/3/resources/'+str(id)
+    endpoint = '/repositories/'+repository+'/resources/'+str(id)
     output = requests.get(baseURL + endpoint, headers=headers).json()
     title = output['title'].encode('utf-8')
     print title
@@ -115,7 +116,7 @@ for topContainer in uniqueTopContainers:
     except:
         barcode = ''
     f3.writerow([topContainer]+[indicator]+[barcode])
-    
+
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)

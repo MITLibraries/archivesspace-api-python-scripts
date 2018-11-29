@@ -19,6 +19,7 @@ startTime = time.time()
 baseURL = secrets.baseURL
 user = secrets.user
 password = secrets.password
+repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]

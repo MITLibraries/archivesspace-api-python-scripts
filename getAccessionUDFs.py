@@ -19,19 +19,20 @@ startTime = time.time()
 baseURL = secrets.baseURL
 user = secrets.user
 password = secrets.password
+repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
 headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 
-endpoint = '/repositories/3/accessions?all_ids=true'
+endpoint = '/repositories/'+repository+'/accessions?all_ids=true'
 
 ids = requests.get(baseURL + endpoint, headers=headers).json()
 
 udfs = []
 for id in ids:
     print id
-    endpoint = '/repositories/3/accessions/'+str(id)
+    endpoint = '/repositories/'+repository+'/accessions/'+str(id)
     output = requests.get(baseURL + endpoint, headers=headers).json()
     try:
         userDefined = output['user_defined']
@@ -47,7 +48,7 @@ f.writerow(udfsHeader)
 
 for id in ids:
     print id
-    endpoint = '/repositories/3/accessions/'+str(id)
+    endpoint = '/repositories/'+repository+'/accessions/'+str(id)
     output = requests.get(baseURL + endpoint, headers=headers).json()
     title = output['title'].encode('utf-8')
     uri = output['uri']

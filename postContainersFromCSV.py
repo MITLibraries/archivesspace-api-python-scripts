@@ -25,6 +25,7 @@ targetRecord = raw_input('Enter record type and id (e.g. \'accessions/2049\'): '
 baseURL = secrets.baseURL
 user = secrets.user
 password = secrets.password
+repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
@@ -38,11 +39,11 @@ for row in csv:
     containerRecord['barcode'] = row['barcode']
     containerRecord['indicator'] = row['indicator']
     containerRecord = json.dumps(containerRecord)
-    post = requests.post(baseURL + '/repositories/3/top_containers', headers=headers, data=containerRecord).json()
+    post = requests.post(baseURL + '/repositories/'+repository+'/top_containers', headers=headers, data=containerRecord).json()
     print post
     containerList.append(post['uri'].encode('utf-8'))
 
-asRecord = requests.get(baseURL+'/repositories/3/'+targetRecord, headers=headers).json()
+asRecord = requests.get(baseURL+'/repositories/'+repository+'/'+targetRecord, headers=headers).json()
 instanceArray = asRecord['instances']
 
 for i in range (0, len (containerList)):
@@ -57,5 +58,5 @@ for i in range (0, len (containerList)):
 
 asRecord['instances'] = instanceArray
 asRecord = json.dumps(asRecord)
-post = requests.post(baseURL+'/repositories/3/'+targetRecord, headers=headers, data=asRecord).json()
+post = requests.post(baseURL+'/repositories/'+repository+'/'+targetRecord, headers=headers, data=asRecord).json()
 print post

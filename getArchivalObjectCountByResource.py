@@ -28,12 +28,13 @@ def findKey(d, key):
 baseURL = secrets.baseURL
 user = secrets.user
 password = secrets.password
+repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
 headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 
-endpoint = '/repositories/3/resources?all_ids=true'
+endpoint = '/repositories/'+repository+'/resources?all_ids=true'
 
 ids = requests.get(baseURL + endpoint, headers=headers).json()
 print len(ids)
@@ -44,7 +45,7 @@ f.writerow(['title']+['bib']+['uri']+['id_0']+['id_1']+['id_2']+['id_3']+['aoCou
 records = []
 for id in ids:
     print id
-    endpoint = '/repositories/3/resources/'+str(id)
+    endpoint = '/repositories/'+repository+'/resources/'+str(id)
     output = requests.get(baseURL + endpoint, headers=headers).json()
     title = output['title'].encode('utf-8')
     uri = output['uri']
@@ -66,7 +67,7 @@ for id in ids:
     except:
         id3=''
 
-    treeEndpoint = '/repositories/3/resources/'+str(id)+'/tree'
+    treeEndpoint = '/repositories/'+repository+'/resources/'+str(id)+'/tree'
 
     output2 = requests.get(baseURL + treeEndpoint, headers=headers).json()
     archivalObjects = []

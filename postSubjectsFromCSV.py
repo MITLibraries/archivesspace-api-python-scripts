@@ -19,6 +19,7 @@ startTime = time.time()
 baseURL = secrets.baseURL
 user = secrets.user
 password = secrets.password
+repository = secrets.repository
 
 targetFile = raw_input('Enter file name: ')
 
