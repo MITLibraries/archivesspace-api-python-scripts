@@ -19,6 +19,7 @@ targetRecord = raw_input('Enter record type and id (e.g. \'accessions/2049\'): '
 baseURL = secrets.baseURL
 user = secrets.user
 password = secrets.password
+repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
@@ -26,8 +27,8 @@ headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 
 csv = csv.DictReader(open(targetFile))
 
-asRecord = requests.get(baseURL+'/repositories/3/'+targetRecord, headers=headers).json()
-print baseURL+'/repositories/3/'+targetRecord
+asRecord = requests.get(baseURL+'/repositories/'+repository+'/'+targetRecord, headers=headers).json()
+print baseURL+'/repositories/'+repository+'/'+targetRecord
 f=open(targetRecord+'asRecordBackup.json', 'w')
 json.dump(asRecord, f)
 instanceArray = asRecord['instances']
@@ -47,5 +48,5 @@ asRecord['instances'] = instanceArray
 f2=open(targetRecord+'asRecordModified.json', 'w')
 json.dump(asRecord, f2)
 asRecord = json.dumps(asRecord)
-post = requests.post(baseURL+'/repositories/3/'+targetRecord, headers=headers, data=asRecord).json()
+post = requests.post(baseURL+'/repositories/'+repository+'/'+targetRecord, headers=headers, data=asRecord).json()
 print post

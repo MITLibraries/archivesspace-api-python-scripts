@@ -27,6 +27,7 @@ def findKey(d, key):
 baseURL = secrets.baseURL
 user = secrets.user
 password = secrets.password
+repository = secrets.repository
 
 resourceID= raw_input('Enter resource ID: ')
 
@@ -34,7 +35,7 @@ auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json(
 session = auth["session"]
 headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 
-endpoint = '/repositories/3/resources/'+resourceID+'/tree'
+endpoint = '/repositories/'+repository+'/resources/'+resourceID+'/tree'
 
 output = requests.get(baseURL + endpoint, headers=headers).json()
 archivalObjects = []

@@ -19,13 +19,14 @@ startTime = time.time()
 baseURL = secrets.baseURL
 user = secrets.user
 password = secrets.password
+repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
 headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 print 'authenticated'
 
-endpoint = '/repositories/3/archival_objects?all_ids=true'
+endpoint = '/repositories/'+repository+'/archival_objects?all_ids=true'
 
 ids = requests.get(baseURL + endpoint, headers=headers).json()
 print len(ids)
@@ -35,7 +36,7 @@ f.writerow(['title']+['uri'])
 
 for id in ids:
     print id
-    endpoint = '/repositories/3/archival_objects/'+str(id)
+    endpoint = '/repositories/'+repository+'/archival_objects/'+str(id)
     output = requests.get(baseURL + endpoint, headers=headers).json()
     try:
         title = output['title'].encode('utf-8')

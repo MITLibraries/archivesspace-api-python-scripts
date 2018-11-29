@@ -35,13 +35,14 @@ startTime = time.time()
 baseURL = secrets.baseURL
 user = secrets.user
 password = secrets.password
+repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
 headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 print 'authenticated'
 
-endpoint = '/repositories/3/digital_objects?all_ids=true'
+endpoint = '/repositories/'+repository+'/digital_objects?all_ids=true'
 
 ids = requests.get(baseURL + endpoint, headers=headers).json()
 print len(ids)
@@ -51,7 +52,7 @@ f.writerow(['endpoint']+['doPost'])
 
 for id in ids:
     print id
-    endpoint = '/repositories/3/digital_objects/'+str(id)
+    endpoint = '/repositories/'+repository+'/digital_objects/'+str(id)
     output = requests.get(baseURL + endpoint, headers=headers).json()
     originalOutput = output
     originalIdValue = output['digital_object_id']
@@ -69,7 +70,7 @@ for id in ids:
     output['file_versions'] = file_versions
     if originalIdValue != editedIdValue or fileUriChange == True:
         output = json.dumps(output)
-        doPost = requests.post(baseURL + '/repositories/3/digital_objects/'+str(id), headers=headers, data=output).json()
+        doPost = requests.post(baseURL + '/repositories/'+repository+'/digital_objects/'+str(id), headers=headers, data=output).json()
         print doPost
         f.writerow([endpoint]+[doPost])
 

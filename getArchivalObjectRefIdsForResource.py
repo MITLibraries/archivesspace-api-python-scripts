@@ -28,6 +28,7 @@ def findKey(d, key):
 baseURL = secrets.baseURL
 user = secrets.user
 password = secrets.password
+repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
@@ -38,7 +39,7 @@ resourceID= raw_input('Enter resource ID: ')
 f=csv.writer(open('archivalObjectRefIdForResource.csv', 'wb'))
 f.writerow(['title']+['uri']+['ref_id']+['date'])
 
-endpoint = '/repositories/3/resources/'+resourceID+'/tree'
+endpoint = '/repositories/'+repository+'/resources/'+resourceID+'/tree'
 
 output = requests.get(baseURL + endpoint, headers=headers).json()
 archivalObjects = []

@@ -26,7 +26,7 @@ else:
     type = raw_input('Enter the type of links to create ("subject" or "agent"): ')
 
 def addUriLink (key, valueSource):
-    uri = '/repositories/3/resources/'+row['ResourceUri']
+    uri = '/repositories/'+repository+'/resources/'+row['ResourceUri']
     value = row[valueSource]
     print value
     asRecord = requests.get(baseURL+uri, headers=headers).json()
@@ -88,6 +88,7 @@ startTime = time.time()
 baseURL = secrets.baseURL
 user = secrets.user
 password = secrets.password
+repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
