@@ -7,6 +7,7 @@ All of these scripts require a secrets.py file in the same directory that must c
 	baseURL='[ArchivesSpace API URL]'
 	user='[user name]'
 	password='[password]'
+	repository='[repository]'
 
 This secrets.py file will be ignored according to the repository's .gitignore file so that ArchivesSpace login details will not be inadvertently exposed through GitHub.
 
@@ -39,7 +40,7 @@ Retrieves a count of archival objects associated with a particular resource. Upo
 Extracts all of the archival objects associated with a particular resource. Upon running the script, you will be prompted enter the resource ID (just the number, not the full URI).
 
 #### [getArchivalObjectRefIdsForResource.py](/getArchivalObjectRefIdsForResource.py)
-Extracts the title, URI, ref_id, and date expression for all archival objects associated with a particular resource. Upon running the script, you will be prompted enter the resource ID (just the number, not the full URI).
+Extracts the title, URI, ref_id, date expression, and level for all archival objects associated with a particular resource. Upon running the script, you will be prompted enter the resource ID (just the number, not the full URI).
 
 #### [getArrayPropertiesFromAgentsPeopleCSV.py](/getArrayPropertiesFromAgentsPeopleCSV.py)
 Retrieves specific properties, including proprerties that have arrays as values, from the JSON of ArchivesSpace agent_people records. In this example, the 'dates_of existence' property contains an array that must be iterated over. This requires a second level of iteration with 'for j in range (...)' on line 20, which is in addition to the iteration function 'for i in range (...)' on line 19, which was also found in the getPropertiesFromAgentsPeopleCSV.py script. As with the previous script, it also writes the properties' values into a CSV file which is specified in variable 'f' on line 17.
@@ -106,6 +107,9 @@ Prints the URIs to a CSV file of all resources in a repository without a bib num
 
 #### [searchForUnassociatedContainers.py](/searchForUnassociatedContainers.py)
 Prints the URIs to a CSV file of all top containers that are not associated with a resource or archival object.
+
+#### [transferAoDatesToDos.py](/transferAoDatesToDos.py)
+Transfers the date from an archival object to any attached digital objects.
 
 #### [unpublishArchivalObjectsByResource.py](/unpublishArchivalObjectsByResource.py)
 Unpublishes all archival objects associated with the specified resource. Upon running the script, you will be prompted enter the resource ID (just the number, not the full URI).
