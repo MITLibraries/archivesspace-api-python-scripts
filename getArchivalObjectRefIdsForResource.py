@@ -37,7 +37,7 @@ headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 resourceID= raw_input('Enter resource ID: ')
 
 f=csv.writer(open('archivalObjectRefIdForResource.csv', 'wb'))
-f.writerow(['title']+['uri']+['ref_id']+['date'])
+f.writerow(['title']+['uri']+['ref_id']+['dateExpression']+['dataBegin']+['level'])
 
 endpoint = '/repositories/'+repository+'/resources/'+resourceID+'/tree'
 
@@ -51,16 +51,21 @@ for value in findKey(output, 'record_uri'):
 print 'downloading aos'
 for archivalObject in archivalObjects:
     output = requests.get(baseURL + archivalObject, headers=headers).json()
-    print output
+    print json.dumps(output)
     title = output['title']
     uri = output['uri']
     ref_id = output['ref_id']
+    level = output['level']
     for date in output['dates']:
         try:
-            date = date['expression']
+            dateExpression = date['expression']
         except:
-            date = ''
-    f.writerow([title]+[uri]+[ref_id]+[date])
+            dateExpression = ''
+        try:
+            dateBegin = date['begin']
+        except:
+            dateBegin = ''
+    f.writerow([title]+[uri]+[ref_id]+[dateExpression]+[dateBegin]+[level])
 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
