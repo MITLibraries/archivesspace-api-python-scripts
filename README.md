@@ -78,7 +78,7 @@ Based on user input, replaces a string in the URLs in both the 'Identifier' and 
 #### [postContainersFromCSV.py](/postContainersFromCSV.py)
 Creates instances (consisting of top_containers) from a separate CSV file. The CSV file should have two columns, indicator and barcode. The directory where this file is stored must match the directory in the filePath variable. The script will prompt you first for the exact name of the CSV file, and then for the exact resource or accession to attach the containers to.
 
-#### [postContainersToRecords.py](/postContainersToRecords.py)
+#### [postContainerLinksToRecords.py](/postContainerLinksToRecords.py)
 Based on user input, posts containers to a specified record based on a specified CSV file.
 
 #### [postCorporateAgentsFromCSV.py](/postCorporateAgentsFromCSV.py)
