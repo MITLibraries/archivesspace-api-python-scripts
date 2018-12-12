@@ -116,3 +116,6 @@ Unpublishes all archival objects associated with the specified resource. Upon ru
 
 #### [updateResourceWithAgentOrSubjectLinks.py](/updateResourceWithAgentOrSubjectLinks.py)
 Based on user input, posts agent or subject links to resources based on a specified CSV file.
+
+#### [updateResourceWithCSV.py](/updateResourceWithCSV.py)
+Based on user input, updates first level (['title']) and second level (['user_defined']['real_1']) elements for resources based on a specified CSV file.
