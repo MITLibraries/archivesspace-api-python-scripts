@@ -81,6 +81,9 @@ Creates instances (consisting of top_containers) from a separate CSV file. The C
 #### [postContainerLinksToRecords.py](/postContainerLinksToRecords.py)
 Based on user input, posts containers to a specified record based on a specified CSV file.
 
+#### [postContainerLinksToRecordsFromCSV.py](/postContainerLinksToRecordsFromCSV.py)
+Based on user input, posts containers to a specified record based on a specified CSV file of top container and resource URIs.
+
 #### [postCorporateAgentsFromCSV.py](/postCorporateAgentsFromCSV.py)
 Based on user input, posts corporate agents based on a specified CSV file.
 
