@@ -7,20 +7,20 @@ import requests
 import secrets
 import csv
 
-secretsVersion = raw_input('To edit production server, enter the name of the secrets file: ')
+secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
-        print 'Editing Production'
+        print('Editing Production')
     except ImportError:
-        print 'Editing Development'
+        print('Editing Development')
 else:
-    print 'Editing Development'
+    print('Editing Development')
 
 filePath = '[Enter File Path]'
 
-targetFile = raw_input('Enter file name: ')
-targetRecord = raw_input('Enter record type and id (e.g. \'accessions/2049\'): ')
+targetFile = input('Enter file name: ')
+targetRecord = input('Enter record type and id (e.g. \'accessions/2049\'): ')
 
 baseURL = secrets.baseURL
 user = secrets.user
@@ -40,8 +40,8 @@ for row in csv:
     containerRecord['indicator'] = row['indicator']
     containerRecord = json.dumps(containerRecord)
     post = requests.post(baseURL + '/repositories/'+repository+'/top_containers', headers=headers, data=containerRecord).json()
-    print post
-    containerList.append(post['uri'].encode('utf-8'))
+    print(post)
+    containerList.append(post['uri'])
 
 asRecord = requests.get(baseURL+'/repositories/'+repository+'/'+targetRecord, headers=headers).json()
 instanceArray = asRecord['instances']
@@ -59,4 +59,4 @@ for i in range (0, len (containerList)):
 asRecord['instances'] = instanceArray
 asRecord = json.dumps(asRecord)
 post = requests.post(baseURL+'/repositories/'+repository+'/'+targetRecord, headers=headers, data=asRecord).json()
-print post
+print(post)

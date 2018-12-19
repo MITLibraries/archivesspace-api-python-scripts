@@ -4,15 +4,15 @@ import secrets
 import time
 import csv
 
-secretsVersion = raw_input('To edit production server, enter the name of the secrets file: ')
+secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
-        print 'Editing Production'
+        print('Editing Production')
     except ImportError:
-        print 'Editing Development'
+        print('Editing Development')
 else:
-    print 'Editing Development'
+    print('Editing Development')
 
 startTime = time.time()
 
@@ -30,8 +30,8 @@ endpoint = '/repositories/'+repository+'/resources?all_ids=true'
 ids = requests.get(baseURL + endpoint, headers=headers).json()
 
 records = []
-f=csv.writer(open('duplicateBeginEndDates.csv', 'wb'))
-f2=csv.writer(open('asDates.csv', 'wb'))
+f=csv.writer(open('duplicateBeginEndDates.csv', 'w'))
+f2=csv.writer(open('asDates.csv', 'w'))
 f.writerow(['uri']+['begin']+['end']+['expression']+['type'])
 f2.writerow(['uri']+['begin']+['end']+['expression']+['type'])
 counter = 0
@@ -40,7 +40,7 @@ for id in ids:
     output = requests.get(baseURL + endpoint, headers=headers).json()
     for date in output['dates']:
         counter = counter + 1
-        print counter
+        print(counter)
         try:
             begin = date['begin']
         except:
@@ -61,4 +61,4 @@ for id in ids:
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
-print 'Total script run time: ', '%d:%02d:%02d' % (h, m, s)
+print('Total script run time: ', '%d:%02d:%02d' % (h, m, s))

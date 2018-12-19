@@ -4,16 +4,16 @@ from bs4 import BeautifulSoup
 def extractValuesFromComponentLevel (componentLevel):
         level = componentLevel.name
         componentLevelLabel = componentLevel['level']
-        unittitle = componentLevel.find('did').find('unittitle').text.replace('\n','').encode('utf-8')
+        unittitle = componentLevel.find('did').find('unittitle').text.replace('\n','')
         controlAccess = []
         originationList = []
         try:
-            physdesc = componentLevel.find('did').find('physdesc').text.replace('\n','').encode('utf-8')
+            physdesc = componentLevel.find('did').find('physdesc').text.replace('\n','')
         except:
             physdesc = ''
         try:
             unitdate = componentLevel.find('did').find('unitdate')
-            dateExpression = unitdate.text.encode('utf-8').replace('\n','').replace('              ',' ').replace('            ',' ').encode('utf-8')
+            dateExpression = unitdate.text.replace('\n','').replace('              ',' ').replace('            ',' ')
             try:
                 dateType = unitdate['type']
             except:
@@ -34,18 +34,18 @@ def extractValuesFromComponentLevel (componentLevel):
             scopecontentElement = componentLevel.find('scopecontent').find_all('p')
             scopecontent = ''
             for paragraph in scopecontentElement:
-                paragraphText = paragraph.text.replace('\n','').replace('              ',' ').replace('            ',' ').encode('utf-8')
+                paragraphText = paragraph.text.replace('\n','').replace('              ',' ').replace('            ',' ')
                 scopecontent = scopecontent + paragraphText
         except:
             scopecontent = ''
         try:
             subjects = componentLevel.find('controlaccess').find_all()
             for subject in subjects:
-                controlAccess.append(subject.text.encode('utf-8'))
+                controlAccess.append(subject.text)
         except:
             subjects = ''
         try:
-            container1 = componentLevel.find('did').find_all('container')[0].text.encode('utf-8')
+            container1 = componentLevel.find('did').find_all('container')[0].text
         except:
             container1 = ''
         try:
@@ -57,7 +57,7 @@ def extractValuesFromComponentLevel (componentLevel):
         except:
             containerType1 = ''
         try:
-            container2 = componentLevel.find('did').find_all('container')[1].text.encode('utf-8')
+            container2 = componentLevel.find('did').find_all('container')[1].text
         except:
             container2 = ''
         try:
@@ -72,7 +72,7 @@ def extractValuesFromComponentLevel (componentLevel):
             originations = componentLevel.find('did').find_all('origination')
             for origination in originations:
                 if origination.find()['role'] == 'spn':
-                    originationList.append(origination.text.encode('utf-8'))
+                    originationList.append(origination.text)
         except:
             originationList = ''
         global sortOrder
@@ -83,16 +83,16 @@ filepath = ''
 fileName = 'Coll.004_20181012_144804_UTC__ead.xml'
 xml = open(filepath+fileName)
 
-f=csv.writer(open(filepath+'eadFields.csv', 'wb'))
+f=csv.writer(open(filepath+'eadFields.csv', 'w'))
 f.writerow(['sortOrder']+['hierarchy']+['level']+['containerType1']+['container1']+['containerType2']+['container2']+['unittitle']+['physdesc']+['dateexpression']+['datetype']+['begindate']+['enddate']+['scopecontent']+['controlAccess']+['origination']+['containerId1']+['containerId2'])
 upperComponentLevels = BeautifulSoup(xml, 'lxml').find('dsc').find_all('c01')
 sortOrder = 0
 for upperComponentLevel in upperComponentLevels:
     componentLevelLabel = upperComponentLevel['level']
-    unittitle = upperComponentLevel.find('did').find('unittitle').text.encode('utf-8').replace('\n','').replace('              ', ' ')
+    unittitle = upperComponentLevel.find('did').find('unittitle').text.replace('\n','').replace('              ', ' ')
     try:
         unitdate = upperComponentLevel.find('did').find('unitdate')
-        dateExpression = unitdate.text.encode('utf-8').replace('\n','').replace('              ',' ').replace('            ',' ').encode('utf-8')
+        dateExpression = unitdate.text.replace('\n','').replace('              ',' ').replace('            ',' ')
         try:
             dateType = unitdate['type']
         except:
@@ -113,7 +113,7 @@ for upperComponentLevel in upperComponentLevels:
         scopecontentElement = upperComponentLevel.find('scopecontent').find_all('p')
         scopecontent = ''
         for paragraph in scopecontentElement:
-            paragraphText = paragraph.text.replace('\\n','').replace('              ',' ').replace('            ',' ').encode('utf-8')
+            paragraphText = paragraph.text.replace('\\n','').replace('              ',' ').replace('            ',' ')
             scopecontent = scopecontent + paragraphText
     except:
         scopecontent = ''

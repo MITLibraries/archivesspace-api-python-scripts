@@ -12,7 +12,7 @@ def firstLevelUpdateFromCSV (key, valueSource):
         asRecord[key] = value
         asRecord = json.dumps(asRecord)
         post = requests.post(baseURL + uri, headers=headers, data=asRecord).json()
-        print post
+        print(post)
     else:
         pass
 
@@ -28,7 +28,7 @@ def secondLevelUpdateFromCSV (key, valueSource, firstLevel):
             asRecord[firstLevel][key] = value
         asRecord = json.dumps(asRecord)
         post = requests.post(baseURL + uri, headers=headers, data=asRecord).json()
-        print post
+        print(post)
     else:
         pass
 
@@ -42,7 +42,7 @@ auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json(
 session = auth["session"]
 headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 
-filename = raw_input('Enter filename (including \'.csv\'): ')
+filename = input('Enter filename (including \'.csv\'): ')
 filename = 'bibNumbers.csv'
 
 with open(filename) as csvfile:
@@ -53,4 +53,4 @@ with open(filename) as csvfile:
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
-print 'Total script run time: ', '%d:%02d:%02d' % (h, m, s)
+print('Total script run time: ', '%d:%02d:%02d' % (h, m, s))

@@ -4,15 +4,15 @@ import secrets
 import time
 import csv
 
-secretsVersion = raw_input('To edit production server, enter the name of the secrets file: ')
+secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
-        print 'Editing Production'
+        print('Editing Production')
     except ImportError:
-        print 'Editing Development'
+        print('Editing Development')
 else:
-    print 'Editing Development'
+    print('Editing Development')
 
 startTime = time.time()
 
@@ -34,9 +34,9 @@ auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json(
 session = auth["session"]
 headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 
-resourceID= raw_input('Enter resource ID: ')
+resourceID= input('Enter resource ID: ')
 
-f=csv.writer(open('archivalObjectRefIdForResource.csv', 'wb'))
+f=csv.writer(open('archivalObjectRefIdForResource.csv', 'w'))
 f.writerow(['title']+['uri']+['ref_id']+['dateExpression']+['dataBegin']+['level'])
 
 endpoint = '/repositories/'+repository+'/resources/'+resourceID+'/tree'
@@ -44,14 +44,14 @@ endpoint = '/repositories/'+repository+'/resources/'+resourceID+'/tree'
 output = requests.get(baseURL + endpoint, headers=headers).json()
 archivalObjects = []
 for value in findKey(output, 'record_uri'):
-    print value
+    print(value)
     if 'archival_objects' in value:
         archivalObjects.append(value)
 
-print 'downloading aos'
+print('downloading aos')
 for archivalObject in archivalObjects:
     output = requests.get(baseURL + archivalObject, headers=headers).json()
-    print json.dumps(output)
+    print(json.dumps(output))
     title = output['title']
     uri = output['uri']
     ref_id = output['ref_id']
@@ -70,4 +70,4 @@ for archivalObject in archivalObjects:
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
-print 'Total script run time: ', '%d:%02d:%02d' % (h, m, s)
+print('Total script run time: ', '%d:%02d:%02d' % (h, m, s))

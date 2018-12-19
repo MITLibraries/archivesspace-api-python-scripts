@@ -4,15 +4,15 @@ import secrets
 import time
 import csv
 
-secretsVersion = raw_input('To edit production server, enter the name of the secrets file: ')
+secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
-        print 'Editing Production'
+        print('Editing Production')
     except ImportError:
-        print 'Editing Development'
+        print('Editing Development')
 else:
-    print 'Editing Development'
+    print('Editing Development')
 
 startTime = time.time()
 
@@ -29,17 +29,17 @@ endpoint = '/repositories/'+repository+'/resources?all_ids=true'
 
 ids = requests.get(baseURL + endpoint, headers=headers).json()
 
-f=csv.writer(open('resourceProperties.csv', 'wb'))
+f=csv.writer(open('resourceProperties.csv', 'w'))
 f.writerow(['title']+['uri']+['bibnum']+['type']+['value'])
 
 total = len(ids)
 for id in ids:
-    print 'id', id, total, 'records remaining'
+    print('id', id, total, 'records remaining')
     total = total - 1
     endpoint = '/repositories/'+repository+'/resources/'+str(id)
     output = requests.get(baseURL + endpoint, headers=headers).json()
 
-    title = output['title'].encode('utf-8')
+    title = output['title']
     uri = output['uri']
     try:
         bibnum = output['user_defined']['real_1']
@@ -73,38 +73,38 @@ for id in ids:
         relatedmaterial = ''
         try:
             if note['type'] == 'abstract':
-                abstract = note['content'][0].encode('utf-8')
+                abstract = note['content'][0]
 
                 f.writerow([title]+[uri]+[bibnum]+['abstract']+[abstract])
             if note['type'] == 'scopecontent':
                 scopecontentSubnotes = note['subnotes']
                 for subnote in scopecontentSubnotes:
-                    scopecontent = scopecontent + subnote['content'].encode('utf-8') + ' '
+                    scopecontent = scopecontent + subnote['content'] + ' '
                 f.writerow([title]+[uri]+[bibnum]+['scopecontent']+[scopecontent])
             if note['type'] == 'acqinfo':
                 acqinfoSubnotes = note['subnotes']
                 for subnote in acqinfoSubnotes:
-                    acqinfo = acqinfo + subnote['content'].encode('utf-8') + ' '
+                    acqinfo = acqinfo + subnote['content'] + ' '
                 f.writerow([title]+[uri]+[bibnum]+['acqinfo']+[acqinfo])
             if note['type'] == 'custodhist':
                 custodhistSubnotes = note['subnotes']
                 for subnote in custodhistSubnotes:
-                    custodhist = custodhist + subnote['content'].encode('utf-8') + ' '
+                    custodhist = custodhist + subnote['content'] + ' '
                 f.writerow([title]+[uri]+[bibnum]+['custodhist']+[custodhist])
             if note['type'] == 'bioghist':
                 bioghistSubnotes = note['subnotes']
                 for subnote in bioghistSubnotes:
-                    bioghist = bioghist + subnote['content'].encode('utf-8') + ' '
+                    bioghist = bioghist + subnote['content'] + ' '
                 f.writerow([title]+[uri]+[bibnum]+['bioghist']+[bioghist])
             if note['type'] == 'accessrestrict':
                 accessrestrictSubnotes = note['subnotes']
                 for subnote in accessrestrictSubnotes:
-                    accessrestrict = accessrestrict + subnote['content'].encode('utf-8') + ' '
+                    accessrestrict = accessrestrict + subnote['content'] + ' '
                 f.writerow([title]+[uri]+[bibnum]+['accessrestrict']+[accessrestrict])
             if note['type'] == 'relatedmaterial':
                 relatedmaterialSubnotes = note['subnotes']
                 for subnote in relatedmaterialSubnotes:
-                    relatedmaterial = relatedmaterial + subnote['content'].encode('utf-8') + ' '
+                    relatedmaterial = relatedmaterial + subnote['content'] + ' '
                 f.writerow([title]+[uri]+[bibnum]+['relatedmaterial']+[relatedmaterial])
         except:
             f.writerow([title]+[uri]+[bibnum]+['']+[custodhist])
@@ -112,4 +112,4 @@ for id in ids:
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
-print 'Total script run time: ', '%d:%02d:%02d' % (h, m, s)
+print('Total script run time: ', '%d:%02d:%02d' % (h, m, s))

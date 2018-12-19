@@ -4,15 +4,15 @@ import secrets
 import time
 import csv
 
-secretsVersion = raw_input('To edit production server, enter the name of the secrets file: ')
+secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
-        print 'Editing Production'
+        print('Editing Production')
     except ImportError:
-        print 'Editing Development'
+        print('Editing Development')
 else:
-    print 'Editing Development'
+    print('Editing Development')
 
 startTime = time.time()
 
@@ -30,11 +30,11 @@ endpoint = '/search?page=1&page_size=2000&type[]=top_container&filter_term[]={"e
 results = requests.get(baseURL + endpoint, headers=headers).json()
 results = results['results']
 
-f=csv.writer(open('unassociatedTopContainer.csv', 'wb'))
+f=csv.writer(open('unassociatedTopContainer.csv', 'w'))
 f.writerow(['uri'])
 
 for result in results:
     uri = result['uri']
     f.writerow([uri])
 
-print len(results)
+print(len(results))

@@ -4,15 +4,15 @@ import secrets
 import time
 import csv
 
-secretsVersion = raw_input('To edit production server, enter the name of the secrets file: ')
+secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
-        print 'Editing Production'
+        print('Editing Production')
     except ImportError:
-        print 'Editing Development'
+        print('Editing Development')
 else:
-    print 'Editing Development'
+    print('Editing Development')
 
 startTime = time.time()
 
@@ -29,19 +29,19 @@ endpoint = '/repositories/'+repository+'/resources?all_ids=true'
 
 ids = requests.get(baseURL + endpoint, headers=headers).json()
 
-f=csv.writer(open('resourcesWithNoBibs.csv', 'wb'))
+f=csv.writer(open('resourcesWithNoBibs.csv', 'w'))
 f.writerow(['uri'])
 
 for id in ids:
-    print id
+    print(id)
     uri = '/repositories/'+repository+'/resources/'+str(id)
     record = requests.get(baseURL + uri, headers=headers).json()
     try:
-        print record['user_defined']['real_1']
+        print(record['user_defined']['real_1'])
     except:
         f.writerow([uri])
 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
-print 'Total script run time: ', '%d:%02d:%02d' % (h, m, s)
+print('Total script run time: ', '%d:%02d:%02d' % (h, m, s))
