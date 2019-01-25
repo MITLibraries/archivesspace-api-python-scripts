@@ -57,3 +57,6 @@ local/*
 *.xml
 *.xslx
 *.txt
+*.sql
+Pipfile
+Pipfile.lock

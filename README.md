@@ -99,6 +99,9 @@ Overwrites existing ArchivesSpace records based the 'uri' and can be used with a
 #### [postPeopleAgentsFromCSV.py](/postPeopleAgentsFromCSV.py)
 Based on user input, posts people agents based on a specified CSV file.
 
+#### [postRightsStatementsToRecords.py](/postRightsStatementsToRecords.py)
+Posts rights statements to records based on various rights scenarios.
+
 #### [postSubjectsFromCSV.py](/postSubjectsFromCSV.py)
 Based on user input, posts subjects based on a specified CSV file.
 
