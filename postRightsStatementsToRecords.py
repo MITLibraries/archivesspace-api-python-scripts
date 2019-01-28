@@ -6,6 +6,7 @@ import csv
 import argparse
 from datetime import datetime
 
+#functions
 def createRightsStatement (rightsProfile):
     rightsProfile = eval(rightsProfile)
     rights_statements = []
