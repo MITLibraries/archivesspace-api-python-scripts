@@ -37,6 +37,7 @@ def createRightsStatement (rightsProfile):
     rights_statements.append(rights_statement)
     updatedAsRecord['rights_statements'] = rights_statements
 
+#selects prod or dev server by selecting appropriate secrets.py file
 secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
     try:
@@ -47,6 +48,7 @@ if secretsVersion != '':
 else:
     print('Editing Development')
 
+#command line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--file', help='the CSV file of record URIs and corresponding rights profiles. optional - if not provided, the script will ask for input')
 
@@ -57,6 +59,7 @@ if args.file:
 else:
     file = input('Enter the CSV file of records URIs and corresponding rights profiles')
 
+#run time start, load secrets.py variables, and authenticate
 startTime = time.time()
 
 baseURL = secrets.baseURL
@@ -68,9 +71,11 @@ auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json(
 session = auth["session"]
 headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 
+#rights profile
 noCR = {'status':'public_domain', 'title':'No Copyright - United States', 'location':'http://rightsstatements.org/page/NoC-US/1.0/', 'content':['No known copyright restrictions.']}
 ARR = {'status':'copyrighted', 'content':['All rights reserved.']}
 
+#script content
 csvfile = csv.DictReader(open(file))
 
 for row in csvfile:
@@ -85,6 +90,7 @@ for row in csvfile:
     post = requests.post(baseURL+resourceUri, headers=headers, data=updatedAsRecord).json()
     print(post)
 
+#print script run time
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
