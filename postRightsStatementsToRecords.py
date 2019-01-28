@@ -6,20 +6,21 @@ import csv
 import argparse
 from datetime import datetime
 
-def createRightsStatement (rightsScenario):
+def createRightsStatement (rightsProfile):
+    rightsProfile = eval(rightsProfile)
     rights_statements = []
     rights_statement = {}
     rights_statement['rights_type'] = 'copyright'
-    rights_statement['status'] = rightsScenario['status']
+    rights_statement['status'] = rightsProfile['status']
     rights_statement['start_date'] = date
     rights_statement['jurisdiction'] = 'US'
     rights_statement['publish'] = True
     rights_statement['jsonmodel_type'] = 'rights_statement'
-    if rightsScenario.get('title') != None:
+    if rightsProfile.get('title') != None:
         external_documents = []
         external_document = {}
-        external_document['title'] = rightsScenario['title']
-        external_document['location'] = rightsScenario['location']
+        external_document['title'] = rightsProfile['title']
+        external_document['location'] = rightsProfile['location']
         external_document['identifier_type'] = 'uri'
         external_document['publish'] = True
         external_document['jsonmodel_type'] = 'rights_statement_external_document'
@@ -28,7 +29,7 @@ def createRightsStatement (rightsScenario):
     notes = []
     note = {}
     note['type'] = 'additional_information'
-    note['content'] = rightsScenario['content']
+    note['content'] = rightsProfile['content']
     note['publish'] = True
     note['jsonmodel_type'] = 'note_rights_statement'
     notes.append(note)
@@ -46,6 +47,16 @@ if secretsVersion != '':
 else:
     print('Editing Development')
 
+parser = argparse.ArgumentParser()
+parser.add_argument('-f', '--file', help='the CSV file of record URIs and corresponding rights profiles. optional - if not provided, the script will ask for input')
+
+args = parser.parse_args()
+
+if args.file:
+    file = args.file
+else:
+    file = input('Enter the CSV file of records URIs and corresponding rights profiles')
+
 startTime = time.time()
 
 baseURL = secrets.baseURL
@@ -60,13 +71,16 @@ headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 noCR = {'status':'public_domain', 'title':'No Copyright - United States', 'location':'http://rightsstatements.org/page/NoC-US/1.0/', 'content':['No known copyright restrictions.']}
 ARR = {'status':'copyrighted', 'content':['All rights reserved.']}
 
-resourceUris = ['']
+csvfile = csv.DictReader(open(file))
 
-for resourceUri in resourceUris:
+for row in csvfile:
+    resourceUri = row['recordUri']
+    rightsProfile = row['rightsProfile']
     asRecord = requests.get(baseURL+resourceUri, headers=headers).json()
     updatedAsRecord = asRecord
     date = datetime.today().strftime('%Y-%m-%d')
-    createRightsStatement(noCR)
+    print(rightsProfile)
+    createRightsStatement(rightsProfile)
     updatedAsRecord = json.dumps(updatedAsRecord)
     post = requests.post(baseURL+resourceUri, headers=headers, data=updatedAsRecord).json()
     print(post)
