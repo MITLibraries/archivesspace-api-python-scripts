@@ -72,7 +72,7 @@ auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json(
 session = auth["session"]
 headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 
-#rights profile
+#rights profiles
 noCR = {'status':'public_domain', 'title':'No Copyright - United States', 'location':'http://rightsstatements.org/page/NoC-US/1.0/', 'content':['No known copyright restrictions.']}
 ARR = {'status':'copyrighted', 'content':['All rights reserved.']}
 
