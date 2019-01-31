@@ -37,7 +37,7 @@ password = secrets.password
 repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
-session = auth["session"]
+session = auth['session']
 headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 
 f=csv.writer(open('postNew'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'w'))

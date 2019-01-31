@@ -91,7 +91,7 @@ password = secrets.password
 repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
-session = auth["session"]
+session = auth['session']
 headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 
 filename = input('Enter filename (including \'.csv\'): ')
