@@ -13,7 +13,8 @@ def createRightsStatement (rightsProfile):
     rights_statement = {}
     rights_statement['rights_type'] = 'copyright'
     rights_statement['status'] = rightsProfile['status']
-    rights_statement['start_date'] = date
+    rights_statement['start_date'] = startDate
+    rights_statement['determination_date'] = determinationDate
     rights_statement['jurisdiction'] = 'US'
     rights_statement['publish'] = True
     rights_statement['jsonmodel_type'] = 'rights_statement'
@@ -69,7 +70,7 @@ password = secrets.password
 repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
-session = auth["session"]
+session = auth['session']
 headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 
 #rights profiles
@@ -82,9 +83,10 @@ csvfile = csv.DictReader(open(file))
 for row in csvfile:
     resourceUri = row['recordUri']
     rightsProfile = row['rightsProfile']
+    startDate = row['startDate']
+    determinationDate = datetime.today().strftime('%Y-%m-%d')
     asRecord = requests.get(baseURL+resourceUri, headers=headers).json()
     updatedAsRecord = asRecord
-    date = datetime.today().strftime('%Y-%m-%d')
     print(rightsProfile)
     createRightsStatement(rightsProfile)
     updatedAsRecord = json.dumps(updatedAsRecord)
