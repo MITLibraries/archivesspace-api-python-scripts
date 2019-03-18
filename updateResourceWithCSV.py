@@ -1,36 +1,54 @@
 import json
 import requests
-import secrets
 import time
 import csv
 
-def firstLevelUpdateFromCSV (key, valueSource):
+
+def firstLevelUpdateFromCSV(key, valueSource):
+    """Update first level value from CSV."""
     uri = row['uri']
     value = row[valueSource]
     if value != '':
-        asRecord = requests.get(baseURL+uri, headers=headers).json()
+        asRecord = requests.get(baseURL + uri, headers=headers).json()
         asRecord[key] = value
         asRecord = json.dumps(asRecord)
-        post = requests.post(baseURL + uri, headers=headers, data=asRecord).json()
+        post = requests.post(baseURL + uri, headers=headers,
+                             data=asRecord).json()
         print(post)
     else:
         pass
 
-def secondLevelUpdateFromCSV (key, valueSource, firstLevel):
+
+def secondLevelUpdateFromCSV(key, valueSource, firstLevel):
+    """Update first level value from CSV."""
     uri = row['uri']
     value = row[valueSource]
     if value != '':
-        asRecord = requests.get(baseURL+uri, headers=headers).json()
+        asRecord = requests.get(baseURL + uri, headers=headers).json()
         try:
             asRecord[firstLevel][key] = value
-        except:
-            asRecord[firstLevel]= {}
+        except ValueError:
+            asRecord[firstLevel] = {}
             asRecord[firstLevel][key] = value
         asRecord = json.dumps(asRecord)
-        post = requests.post(baseURL + uri, headers=headers, data=asRecord).json()
+        post = requests.post(baseURL + uri, headers=headers,
+                             data=asRecord).json()
         print(post)
     else:
         pass
+
+
+secretsVersion = input('To edit production server, enter the name of the \
+secrets file: ')
+if secretsVersion != '':
+    try:
+        secrets = __import__(secretsVersion)
+        print('Editing Production')
+    except ImportError:
+        secrets = __import__(secrets)
+        print('Editing Development')
+else:
+    print('Editing Development')
 
 startTime = time.time()
 
@@ -38,9 +56,11 @@ baseURL = secrets.baseURL
 user = secrets.user
 password = secrets.password
 
-auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
+auth = requests.post(baseURL + '/users/' + user + '/login?password='
+                     + password).json()
 session = auth['session']
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session,
+           'Content_Type': 'application/json'}
 
 filename = input('Enter filename (including \'.csv\'): ')
 filename = 'bibNumbers.csv'

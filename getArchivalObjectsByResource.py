@@ -1,21 +1,24 @@
 import json
 import requests
-import secrets
 import time
 
-secretsVersion = input('To edit production server, enter the name of the secrets file: ')
+secretsVersion = input('To edit production server, enter the name of the \
+secrets file: ')
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
         print('Editing Production')
     except ImportError:
+        secrets = __import__(secrets)
         print('Editing Development')
 else:
     print('Editing Development')
 
 startTime = time.time()
 
+
 def findKey(d, key):
+    """Find all instances of key."""
     if key in d:
         yield d[key]
     for k in d:
@@ -24,18 +27,21 @@ def findKey(d, key):
                 for j in findKey(i, key):
                     yield j
 
+
 baseURL = secrets.baseURL
 user = secrets.user
 password = secrets.password
 repository = secrets.repository
 
-resourceID= input('Enter resource ID: ')
+resourceID = input('Enter resource ID: ')
 
-auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
+auth = requests.post(baseURL + '/users/' + user + '/login?password='
+                     + password).json()
 session = auth['session']
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session,
+           'Content_Type': 'application/json'}
 
-endpoint = '/repositories/'+repository+'/resources/'+resourceID+'/tree'
+endpoint = '/repositories/' + repository + '/resources/' + resourceID + '/tree'
 
 output = requests.get(baseURL + endpoint, headers=headers).json()
 archivalObjects = []
@@ -51,7 +57,7 @@ for archivalObject in archivalObjects:
     records.append(output)
 
 print('creating file')
-f=open('archivalObjects.json', 'w')
+f = open('archivalObjects.json', 'w')
 json.dump(records, f)
 f.close()
 print('file done')
