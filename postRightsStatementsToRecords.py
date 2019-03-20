@@ -121,7 +121,7 @@ LBCECR = {'status': 'public_domain', 'title':
           'No Copyright - Contractual Restrictions',
           'location': 'http://rightsstatements.org/page/NoC-CR/1.0/'}
 CR3ARR = {'status': 'copyrighted', 'content': ['All rights reserved.']}
-CR3UCR = {'status': 'copyrighted', 'title':
+CR3UCR = {'status': 'unknown', 'title':
           'In Copyright - Rights-Holder(s) Unlocatable Or Unidentifiable',
           'location': 'http://rightsstatements.org/vocab/InC-RUU/1.0/'}
 NKCR = {'status': 'unknown', 'title': 'No Known Copyright',
