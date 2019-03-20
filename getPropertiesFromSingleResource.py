@@ -1,18 +1,19 @@
 import json
 import requests
-import secrets
 import time
 import csv
 
-secretsVersion = raw_input('To edit production server, enter the name of the secrets file: ')
+secretsVersion = input('To edit production server, enter the name of the \
+secrets file: ')
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
-        print 'Editing Production'
+        print('Editing Production')
     except ImportError:
-        print 'Editing Development'
+        secrets = __import__(secrets)
+        print('Editing Development')
 else:
-    print 'Editing Development'
+    print('Editing Development')
 
 startTime = time.time()
 
@@ -21,23 +22,25 @@ user = secrets.user
 password = secrets.password
 repository = secrets.repository
 
-auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
-session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+auth = requests.post(baseURL + '/users/' + user + '/login?password='
+                     + password).json()
+session = auth['session']
+headers = {'X-ArchivesSpace-Session': session,
+           'Content_Type': 'application/json'}
 
-f=csv.writer(open('resourceProperties.csv', 'wb'))
-f.writerow(['title']+['uri']+['bibnum']+['type']+['value'])
+f = csv.writer(open('resourceProperties.csv', 'w'))
+f.writerow(['title'] + ['uri'] + ['bibnum'] + ['type'] + ['value'])
 
 
-endpoint = raw_input('Enter resource ID: ')
+endpoint = input('Enter resource ID: ')
 output = requests.get(baseURL + endpoint, headers=headers).json()
-print json.dumps(output)
+print(json.dumps(output))
 
-title = output['title'].encode('utf-8')
+title = output['title']
 uri = output['uri']
 try:
     bibnum = output['user_defined']['real_1']
-except:
+except ValueError:
     bibnum = ''
 try:
     agents = output['linked_agents']
@@ -45,17 +48,18 @@ try:
         agentUri = agent['ref']
         agentOutput = requests.get(baseURL + agentUri, headers=headers).json()
         agentName = agentOutput['title']
-        f.writerow([title]+[uri]+[bibnum]+['name']+[agentName])
-except:
+        f.writerow([title] + [uri] + [bibnum] + ['name'] + [agentName])
+except ValueError:
     pass
 try:
     subjects = output['subjects']
     for subject in subjects:
         subjectUri = subject['ref']
-        subjectOutput = requests.get(baseURL + subjectUri, headers=headers).json()
+        subjectOutput = requests.get(baseURL + subjectUri,
+                                     headers=headers).json()
         subjectName = subjectOutput['title']
-        f.writerow([title]+[uri]+[bibnum]+['subject']+[subjectName])
-except:
+        f.writerow([title] + [uri] + [bibnum] + ['subject'] + [subjectName])
+except ValueError:
     pass
 for note in output['notes']:
     abstract = ''
@@ -65,24 +69,25 @@ for note in output['notes']:
     if note['type'] == 'abstract':
         abstract = note['content'][0]
 
-        f.writerow([title]+[uri]+[bibnum]+['abstract']+[abstract])
+        f.writerow([title] + [uri] + [bibnum] + ['abstract'] + [abstract])
     if note['type'] == 'scopecontent':
         scopecontentSubnotes = note['subnotes']
         for subnote in scopecontentSubnotes:
             scopecontent = scopecontent + subnote['content'] + ' '
-        f.writerow([title]+[uri]+[bibnum]+['scopecontent']+[scopecontent])
+        f.writerow([title] + [uri] + [bibnum] + ['scopecontent']
+                   + [scopecontent])
     if note['type'] == 'acqinfo':
         acqinfoSubnotes = note['subnotes']
         for subnote in acqinfoSubnotes:
             acqinfo = acqinfo + subnote['content'] + ' '
-        f.writerow([title]+[uri]+[bibnum]+['acqinfo']+[acqinfo])
+        f.writerow([title] + [uri] + [bibnum] + ['acqinfo'] + [acqinfo])
     if note['type'] == 'custodhist':
         custodhistSubnotes = note['subnotes']
         for subnote in custodhistSubnotes:
             custodhist = custodhist + subnote['content'] + ' '
-        f.writerow([title]+[uri]+[bibnum]+['custodhist']+[custodhist])
+        f.writerow([title] + [uri] + [bibnum] + ['custodhist'] + [custodhist])
 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
-print 'Total script run time: ', '%d:%02d:%02d' % (h, m, s)
+print('Total script run time: ', '%d:%02d:%02d' % (h, m, s))

@@ -2,17 +2,18 @@ import json
 import requests
 import time
 import csv
-import secrets
 
-secretsVersion = raw_input('To edit production server, enter the name of the secrets file: ')
+secretsVersion = input('To edit production server, enter the name of the \
+secrets file: ')
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
-        print 'Editing Production'
+        print('Editing Production')
     except ImportError:
-        print 'Editing Development'
+        secrets = __import__(secrets)
+        print('Editing Development')
 else:
-    print 'Editing Development'
+    print('Editing Development')
 
 startTime = time.time()
 
@@ -21,14 +22,16 @@ user = secrets.user
 password = secrets.password
 repository = secrets.repository
 
-targetFile = raw_input('Enter file name: ')
+targetFile = input('Enter file name: ')
 
-auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
+auth = requests.post(baseURL + '/users/' + user + '/login?password='
+                     + password).json()
 session = auth['session']
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session,
+           'Content_Type': 'application/json'}
 
-f=csv.writer(open('postNewSubjects.csv', 'wb'))
-f.writerow(['sortName']+['uri'])
+f = csv.writer(open('postNewSubjects.csv', 'w'))
+f.writerow(['sortName'] + ['uri'])
 
 csvfile = csv.DictReader(open(targetFile))
 
@@ -48,13 +51,14 @@ for row in csvfile:
     subjectRecord['vocabulary'] = '/vocabularies/1'
     subjectRecord['authority_id'] = row['uri']
     subjectRecord = json.dumps(subjectRecord)
-    print subjectRecord
-    post = requests.post(baseURL + '/subjects', headers=headers, data=subjectRecord).json()
-    print json.dumps(post)
+    print(subjectRecord)
+    post = requests.post(baseURL + '/subjects', headers=headers,
+                         data=subjectRecord).json()
+    print(json.dumps(post))
     uri = post['uri']
-    f.writerow([row['label']]+[uri])
+    f.writerow([row['label']] + [uri])
 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
-print 'Total script run time: ', '%d:%02d:%02d' % (h, m, s)
+print('Total script run time: ', '%d:%02d:%02d' % (h, m, s))

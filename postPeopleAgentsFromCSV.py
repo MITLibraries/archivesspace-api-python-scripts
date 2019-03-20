@@ -2,18 +2,19 @@ import json
 import requests
 import time
 import csv
-import secrets
 from datetime import datetime
 
-secretsVersion = raw_input('To edit production server, enter the name of the secrets file: ')
+secretsVersion = input('To edit production server, enter the name of the \
+secrets file: ')
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
-        print 'Editing Production'
+        print('Editing Production')
     except ImportError:
-        print 'Editing Development'
+        secrets = __import__(secrets)
+        print('Editing Development')
 else:
-    print 'Editing Development'
+    print('Editing Development')
 
 startTime = time.time()
 
@@ -22,14 +23,17 @@ user = secrets.user
 password = secrets.password
 repository = secrets.repository
 
-targetFile = raw_input('Enter file name: ')
+targetFile = input('Enter file name: ')
 
-auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
+auth = requests.post(baseURL + '/users/' + user + '/login?password='
+                     + password).json()
 session = auth['session']
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session,
+           'Content_Type': 'application/json'}
 
-f=csv.writer(open('postNewPersonalAgents'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'wb'))
-f.writerow(['sortName']+['uri'])
+date = datetime.now().strftime('%Y-%m-%d %H.%M.%S')
+f = csv.writer(open('postNewPersonalAgents' + date + '.csv', 'w'))
+f.writerow(['sortName'] + ['uri'])
 
 csvfile = csv.DictReader(open(targetFile))
 
@@ -45,31 +49,31 @@ for row in csvfile:
     try:
         name['authority_id'] = row['authorityID']
         name['source'] = 'viaf'
-    except:
+    except ValueError:
         pass
     try:
         name['rest_of_name'] = row['restOfName']
-    except:
+    except ValueError:
         name['name_order'] = 'direct'
     try:
         name['fuller_form'] = row['fullerForm']
-    except:
+    except ValueError:
         pass
     try:
         name['title'] = row['title']
-    except:
+    except ValueError:
         pass
     try:
         name['prefix'] = row['prefix']
-    except:
+    except ValueError:
         pass
     try:
         name['suffix'] = row['suffix']
-    except:
+    except ValueError:
         pass
     try:
         name['dates'] = row['date']
-    except:
+    except ValueError:
         pass
     names.append(name)
 
@@ -93,18 +97,19 @@ for row in csvfile:
             date['date_type'] = 'single'
         dates.append(date)
         agentRecord['dates_of_existence'] = dates
-        print dates
+        print(dates)
     agentRecord['names'] = names
     agentRecord['publish'] = True
     agentRecord['jsonmodel_type'] = 'agent_person'
     agentRecord = json.dumps(agentRecord)
-    print agentRecord
-    post = requests.post(baseURL + '/agents/people', headers=headers, data=agentRecord).json()
-    print json.dumps(post)
+    print(agentRecord)
+    post = requests.post(baseURL + '/agents/people', headers=headers,
+                         data=agentRecord).json()
+    print(json.dumps(post))
     uri = post['uri']
-    f.writerow([row['sortName']]+[uri])
+    f.writerow([row['sortName']] + [uri])
 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
-print 'Total script run time: ', '%d:%02d:%02d' % (h, m, s)
+print('Total script run time: ', '%d:%02d:%02d' % (h, m, s))
