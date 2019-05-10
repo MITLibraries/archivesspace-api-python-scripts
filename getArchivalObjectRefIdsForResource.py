@@ -4,7 +4,7 @@ import secrets
 import time
 import csv
 
-secretsVersion = raw_input('To edit production server, enter the name of the secrets file: ')
+secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
@@ -34,14 +34,15 @@ auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json(
 session = auth["session"]
 headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 
-resourceID= raw_input('Enter resource ID: ')
+resourceID= input('Enter resource ID: ')
 
-f=csv.writer(open('archivalObjectRefIdForResource.csv', 'wb'))
+f=csv.writer(open('archivalObjectRefIdForResource.csv', 'w'))
 f.writerow(['title']+['uri']+['ref_id']+['dateExpression']+['dataBegin']+['level'])
 
 endpoint = '/repositories/'+repository+'/resources/'+resourceID+'/tree'
 
 output = requests.get(baseURL + endpoint, headers=headers).json()
+print output
 archivalObjects = []
 for value in findKey(output, 'record_uri'):
     print value
@@ -51,7 +52,7 @@ for value in findKey(output, 'record_uri'):
 print 'downloading aos'
 for archivalObject in archivalObjects:
     output = requests.get(baseURL + archivalObject, headers=headers).json()
-    print json.dumps(output)
+    #print json.dumps(output)
     title = output['title']
     uri = output['uri']
     ref_id = output['ref_id']

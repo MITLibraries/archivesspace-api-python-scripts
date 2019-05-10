@@ -83,7 +83,7 @@ filepath = ''
 fileName = 'Coll.004_20181012_144804_UTC__ead.xml'
 xml = open(filepath+fileName)
 
-f=csv.writer(open(filepath+'eadFields.csv', 'wb'))
+f=csv.writer(open(filepath+'eadFields.csv', 'w'))
 f.writerow(['sortOrder']+['hierarchy']+['level']+['containerType1']+['container1']+['containerType2']+['container2']+['unittitle']+['physdesc']+['dateexpression']+['datetype']+['begindate']+['enddate']+['scopecontent']+['controlAccess']+['origination']+['containerId1']+['containerId2'])
 upperComponentLevels = BeautifulSoup(xml, 'lxml').find('dsc').find_all('c01')
 sortOrder = 0

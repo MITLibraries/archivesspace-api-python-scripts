@@ -3,17 +3,17 @@ import requests
 import secrets
 import csv
 
-secretsVersion = raw_input('To edit production server, enter the name of the secrets file: ')
+secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
-        print 'Editing Production'
+        print('Editing Production')
     except ImportError:
-        print 'Editing Development'
+        print('Editing Development')
 else:
-    print 'Editing Development'
+    print('Editing Development')
 
-targetFile = raw_input('Enter file name: ')
+targetFile = input('Enter file name: ')
 
 baseURL = secrets.baseURL
 user = secrets.user
@@ -26,13 +26,13 @@ headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 
 csvfile = csv.DictReader(open(targetFile))
 
-f=csv.writer(open('containerLinksPostedFromCSV.csv', 'wb'))
+f=csv.writer(open('containerLinksPostedFromCSV.csv', 'w'))
 f.writerow(['topContainer']+['resource']+['post'])
 
 for row in csvfile:
     uri = row['uri']
     resourceUri = row['resourceuri']
-    print baseURL+resourceUri
+    print(baseURL+resourceUri)
     asRecord = requests.get(baseURL+resourceUri, headers=headers).json()
     instanceArray = asRecord['instances']
     top_container = {}
@@ -46,5 +46,5 @@ for row in csvfile:
     asRecord['instances'] = instanceArray
     asRecord = json.dumps(asRecord)
     post = requests.post(baseURL+resourceUri, headers=headers, data=asRecord).json()
-    print post
+    print(post)
     f.writerow([uri]+[resourceUri]+[post])

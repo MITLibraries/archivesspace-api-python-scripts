@@ -4,15 +4,15 @@ import secrets
 import csv
 import time
 
-secretsVersion = raw_input('To edit production server, enter the name of the secrets file: ')
+secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
-        print 'Editing Production'
+        print('Editing Production')
     except ImportError:
-        print 'Editing Development'
+        print('Editing Development')
 else:
-    print 'Editing Development'
+    print('Editing Development')
 
 startTime = time.time()
 
@@ -24,7 +24,7 @@ repository = secrets.repository
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
 headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
-print 'authenticated'
+print('authenticated')
 
 endpoint = '/agents/people?all_ids=true'
 
@@ -36,7 +36,7 @@ for id in ids:
     output = requests.get(baseURL + endpoint, headers=headers).json()
     records.append(output)
 
-f=csv.writer(open('asArrayResults.csv', 'wb'))
+f=csv.writer(open('asArrayResults.csv', 'w'))
 f.writerow(['uri']+['begin']+['end']+['expression'])
 for i in range (0, len (records)):
 	for j in range (0, len (records[i]['dates_of_existence'])):
@@ -49,4 +49,4 @@ for i in range (0, len (records)):
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
-print 'Total script run time: ', '%d:%02d:%02d' % (h, m, s)
+print('Total script run time: ', '%d:%02d:%02d' % (h, m, s))

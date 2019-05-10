@@ -4,15 +4,15 @@ import secrets
 import time
 import csv
 
-secretsVersion = raw_input('To edit production server, enter the name of the secrets file: ')
+secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
-        print 'Editing Production'
+        print('Editing Production')
     except ImportError:
-        print 'Editing Development'
+        print('Editing Development')
 else:
-    print 'Editing Development'
+    print('Editing Development')
 
 startTime = time.time()
 
@@ -29,10 +29,10 @@ endpoint = '/repositories/'+repository+'/resources?all_ids=true'
 
 ids = requests.get(baseURL + endpoint, headers=headers).json()
 
-f=csv.writer(open('topContainerCountByResourceNoAOs.csv', 'wb'))
+f=csv.writer(open('topContainerCountByResourceNoAOs.csv', 'w'))
 f.writerow(['title']+['uri']+['id_0']+['id_1']+['id_2']+['id_3']+['topContainerCount'])
 
-f2=csv.writer(open('topContainersLinksNoAOs.csv', 'wb'))
+f2=csv.writer(open('topContainersLinksNoAOs.csv', 'w'))
 f2.writerow(['resourceUri']+['topContainerUri'])
 
 uniqueTopContainers = []
@@ -41,7 +41,7 @@ for id in ids:
     endpoint = '/repositories/'+repository+'/resources/'+str(id)
     output = requests.get(baseURL + endpoint, headers=headers).json()
     topContainersByResource = []
-    title = output['title'].encode('utf-8')
+    title = output['title']
     uri = output['uri']
     id0 = output['id_0']
     try:
@@ -63,7 +63,7 @@ for id in ids:
                 topContainer = instance['sub_container']['top_container']['ref']
                 topContainersByResource.append(topContainer)
             except:
-                print id, 'No top containers'
+                print(id, 'No top containers')
     except:
         pass
     for topContainer in topContainersByResource:
@@ -74,12 +74,12 @@ for id in ids:
             uniqueTopContainers.append(topContainer)
     topContainerCountByResource = len(topContainersByResource)
     f.writerow([title]+[uri]+[id0]+[id1]+[id2]+[id3]+[topContainerCountByResource])
-    print id, len(uniqueTopContainers)
+    print(id, len(uniqueTopContainers))
 
 for topContainerLink in topContainerLinks:
     f2.writerow([topContainerLink[:topContainerLink.index('|')]]+[topContainerLink[topContainerLink.index('|')+1:]])
 
-f3=csv.writer(open('uniqueTopContainersNoAOs.csv', 'wb'))
+f3=csv.writer(open('uniqueTopContainersNoAOs.csv', 'w'))
 f3.writerow(['topContainer'])
 for topContainer in uniqueTopContainers:
     search = requests.get(baseURL+topContainer, headers=headers).json()
@@ -97,4 +97,4 @@ for topContainer in uniqueTopContainers:
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
-print 'Total script run time: ', '%d:%02d:%02d' % (h, m, s)
+print('Total script run time: ', '%d:%02d:%02d' % (h, m, s))

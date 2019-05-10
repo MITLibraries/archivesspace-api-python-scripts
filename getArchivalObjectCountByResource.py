@@ -4,15 +4,15 @@ import secrets
 import time
 import csv
 
-secretsVersion = raw_input('To edit production server, enter the name of the secrets file: ')
+secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
-        print 'Editing Production'
+        print('Editing Production')
     except ImportError:
-        print 'Editing Development'
+        print('Editing Development')
 else:
-    print 'Editing Development'
+    print('Editing Development')
 
 startTime = time.time()
 
@@ -37,17 +37,17 @@ headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 endpoint = '/repositories/'+repository+'/resources?all_ids=true'
 
 ids = requests.get(baseURL + endpoint, headers=headers).json()
-print len(ids)
+print(len(ids))
 
-f=csv.writer(open('archivalObjectCountByResource.csv', 'wb'))
+f=csv.writer(open('archivalObjectCountByResource.csv', 'w'))
 f.writerow(['title']+['bib']+['uri']+['id_0']+['id_1']+['id_2']+['id_3']+['aoCount'])
 
 records = []
 for id in ids:
-    print id
+    print(id)
     endpoint = '/repositories/'+repository+'/resources/'+str(id)
     output = requests.get(baseURL + endpoint, headers=headers).json()
-    title = output['title'].encode('utf-8')
+    title = output['title']
     uri = output['uri']
     id0 = output['id_0']
     try:
@@ -72,7 +72,7 @@ for id in ids:
     output2 = requests.get(baseURL + treeEndpoint, headers=headers).json()
     archivalObjects = []
     for value in findKey(output2, 'record_uri'):
-        print value
+        print(value)
         if 'archival_objects' in value:
             archivalObjects.append(value)
     aoCount = len(archivalObjects)
@@ -81,4 +81,4 @@ for id in ids:
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
-print 'Total script run time: ', '%d:%02d:%02d' % (h, m, s)
+print('Total script run time: ', '%d:%02d:%02d' % (h, m, s))

@@ -30,8 +30,8 @@ endpoint = '/repositories/'+repository+'/resources?all_ids=true'
 ids = requests.get(baseURL + endpoint, headers=headers).json()
 
 records = []
-f=csv.writer(open('duplicateBeginEndDates.csv', 'wb'))
-f2=csv.writer(open('asDates.csv', 'wb'))
+f=csv.writer(open('duplicateBeginEndDates.csv', 'w'))
+f2=csv.writer(open('asDates.csv', 'w'))
 f.writerow(['uri']+['begin']+['end']+['expression']+['type'])
 f2.writerow(['uri']+['begin']+['end']+['expression']+['type'])
 counter = 0

@@ -4,15 +4,15 @@ import secrets
 import time
 import csv
 
-secretsVersion = raw_input('To edit production server, enter the name of the secrets file: ')
+secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
-        print 'Editing Production'
+        print('Editing Production')
     except ImportError:
-        print 'Editing Development'
+        print('Editing Development')
 else:
-    print 'Editing Development'
+    print('Editing Development')
 
 startTime = time.time()
 
@@ -25,15 +25,15 @@ auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json(
 session = auth["session"]
 headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 
-f=csv.writer(open('resourceProperties.csv', 'wb'))
+f=csv.writer(open('resourceProperties.csv', 'w'))
 f.writerow(['title']+['uri']+['bibnum']+['type']+['value'])
 
 
-endpoint = raw_input('Enter resource ID: ')
+endpoint = input('Enter resource ID: ')
 output = requests.get(baseURL + endpoint, headers=headers).json()
-print json.dumps(output)
+print(json.dumps(output))
 
-title = output['title'].encode('utf-8')
+title = output['title']
 uri = output['uri']
 try:
     bibnum = output['user_defined']['real_1']
@@ -85,4 +85,4 @@ for note in output['notes']:
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
-print 'Total script run time: ', '%d:%02d:%02d' % (h, m, s)
+print('Total script run time: ', '%d:%02d:%02d' % (h, m, s))
