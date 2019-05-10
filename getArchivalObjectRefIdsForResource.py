@@ -8,11 +8,11 @@ secretsVersion = input('To edit production server, enter the name of the secrets
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
-        print 'Editing Production'
+        print('Editing Production')
     except ImportError:
-        print 'Editing Development'
+        print('Editing Development')
 else:
-    print 'Editing Development'
+    print('Editing Development')
 
 startTime = time.time()
 
@@ -42,17 +42,17 @@ f.writerow(['title']+['uri']+['ref_id']+['dateExpression']+['dataBegin']+['level
 endpoint = '/repositories/'+repository+'/resources/'+resourceID+'/tree'
 
 output = requests.get(baseURL + endpoint, headers=headers).json()
-print output
+print(output)
 archivalObjects = []
 for value in findKey(output, 'record_uri'):
-    print value
+    print(value)
     if 'archival_objects' in value:
         archivalObjects.append(value)
 
-print 'downloading aos'
+print('downloading aos')
 for archivalObject in archivalObjects:
     output = requests.get(baseURL + archivalObject, headers=headers).json()
-    #print json.dumps(output)
+    #print(json.dumps(output))
     title = output['title']
     uri = output['uri']
     ref_id = output['ref_id']
@@ -71,4 +71,4 @@ for archivalObject in archivalObjects:
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
-print 'Total script run time: ', '%d:%02d:%02d' % (h, m, s)
+print('Total script run time: ', '%d:%02d:%02d' % (h, m, s))
