@@ -11,7 +11,7 @@ if secretsVersion != '':
         secrets = __import__(secretsVersion)
         print('Editing Production')
     except ImportError:
-        secrets = __import__(secrets)
+        secrets = __import__('secrets')
         print('Editing Development')
 else:
     print('Editing Development')

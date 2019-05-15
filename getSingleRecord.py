@@ -9,9 +9,10 @@ if secretsVersion != '':
         secrets = __import__(secretsVersion)
         print('Editing Production')
     except ImportError:
-        secrets = __import__(secrets)
+        secrets = __import__('secrets')
         print('Editing Development')
 else:
+    secrets = __import__('secrets')
     print('Editing Development')
 
 parser = argparse.ArgumentParser()
@@ -23,7 +24,7 @@ args = parser.parse_args()
 if args.uri:
     uri = args.uri
 else:
-    uri = input('Enter handle (\'/repositories/3/resources/564\'): ')
+    uri = input('Enter handle (\'/repositories/2/resources/564\'): ')
 
 baseURL = secrets.baseURL
 user = secrets.user
@@ -36,7 +37,6 @@ session = auth['session']
 headers = {'X-ArchivesSpace-Session': session,
            'Content_Type': 'application/json'}
 
-print(baseURL + uri)
 output = requests.get(baseURL + uri, headers=headers).json()
 uri = uri.replace('/repositories/' + repository + '/', '').replace('/', '-')
 f = open(uri + '.json', 'w')
