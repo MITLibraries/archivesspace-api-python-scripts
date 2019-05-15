@@ -6,13 +6,6 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-requests = "*"
-fuzzywuzzy = "*"
-pillow = "*"
-bs4 = "*"
-tesserocr = "*"
-pytesseract = "*"
-flake8 = "*"
 
 [requires]
 python_version = "3.7"
