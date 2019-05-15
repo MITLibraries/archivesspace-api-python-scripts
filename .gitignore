@@ -58,5 +58,3 @@ local/*
 *.xslx
 *.txt
 *.sql
-Pipfile
-Pipfile.lock
