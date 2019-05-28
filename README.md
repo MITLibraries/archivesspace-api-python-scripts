@@ -75,8 +75,29 @@ Retrieves a count of top containers directly associated (not through an archival
 #### [getTopContainers.py](/getTopContainers.py)
 Retrieves all of the top containers from a particular repository into a JSON file.
 
-#### [getUrisAndIds.py](getUrisAndIds.py)
+#### [getUrisAndIds.py](/getUrisAndIds.py)
 For the specified record type, retrieves URI and the 'id_0,' 'id_1,' 'id_2,' 'id_3,' and a concatenated version of all the 'id' fields.
+
+### [getURIsFromKeywordSearch.py](/getURIsFromKeywordSearch.py)
+
+You can choose one or more types of records (accession, resource, subject, agent, location, or archival_object) to search in ArchiveSpace by a certain keyword. This will return a CSV with the URIs of records with that keyword.
+
+### [getUserDefinedFieldsFromResources.py](/getUserDefinedFieldsFromResources.py)
+
+This script searches the following user-defined fields in all resources and accessions for any values.
+
+1)accessionAcknowledged
+2)selector
+3)assignedTo
+4)appraisalLegacy
+5)custodialHistory
+6)electronicRecordLog
+7)relatedMaterialsNote
+8)archiveItSeeds
+9)appraisal
+10)accessionStatus
+
+For records with values in any of its user-defined fields, its title, uri, and all user-defined fields will be recorded in a CSV called UserDefinedFieldsFromResources.csv.
 
 #### [modifyDigitalObjectUrls.py](/modifyDigitalObjectUrls.py)
 Based on user input, replaces a string in the URLs in both the 'Identifier' and 'File URI' fields for digital objects across the repository.
@@ -122,6 +143,10 @@ Transfers the date from an archival object to any attached digital objects.
 
 #### [unpublishArchivalObjectsByResource.py](/unpublishArchivalObjectsByResource.py)
 Unpublishes all archival objects associated with the specified resource. Upon running the script, you will be prompted enter the resource ID (just the number, not the full URI).
+
+### [updateKeywordInRecords.py](/updateKeywordInRecords.py)
+This script searches the URIs selected by getURIsFromKeywordSearch.py and finds the relevant properties in that record with the keyword and replaces them. It most likely will NOT find the keyword in all records generated  by getURIsFromKeywordSearch.py, as this script will get a record if one of its related records has the keyword, rather than that record containing the keyword itself.
+
 
 #### [updateResourceWithAgentOrSubjectLinks.py](/updateResourceWithAgentOrSubjectLinks.py)
 Based on user input, posts agent or subject links to resources based on a specified CSV file.
