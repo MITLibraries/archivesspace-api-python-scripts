@@ -60,6 +60,7 @@ while results != []:
             output = requests.get(baseURL + aoUri, headers=headers)
             output = output.json()
             updatedAO = output
+            if updatedAO['publish'] is not True:
                 updatedAO['publish'] = True
                 updatedAO = json.dumps(updatedAO)
                 aoPost = requests.post(baseURL + aoUri,
