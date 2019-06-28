@@ -6,6 +6,8 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
+lxml = "*"
+sickle = "*"
 
 [requires]
 python_version = "3.7"

@@ -46,6 +46,7 @@ Network Trash Folder
 Temporary Items
 .apdisk
 secrets.py
+secretsDev.py
 secretsProd.py
 *.pyc
 data/*
