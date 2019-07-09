@@ -41,59 +41,59 @@ def asmain(ctx, secfile):
 @click.option('-t', '--rectype',
               prompt='Enter the record type',
               help='The record type to retrieve', default='')
-@click.option('-c', '--command',
-              prompt='Enter the command to run as the records are retrieved',
-              help='The command to run once the records are retrieved',
+@click.option('-o', '--output',
+              prompt='Enter the output to run as the records are retrieved',
+              help='The output to run once the records are retrieved',
               default='')
 @click.pass_context
-def getallrecords(ctx, repoid, rectype, command):
+def getallrecords(ctx, repoid, rectype, output):
     """Retrieve records of a specified type."""
     agents = ['corporate_entities', 'families', 'people', 'software']
     nonrepo = ['locations', 'subjects']
     nologs = ctx.obj['nologs']
+    client = ctx.obj['client']
+    ctx.obj['repoid'] = repoid
     if rectype in agents:
         endpt = 'agents/' + rectype
     elif rectype in nonrepo:
         endpt = rectype
     else:
         endpt = 'repositories/' + str(repoid) + '/' + rectype
-    allendpt = endpt + '?all_ids=true'
-    client = ctx.obj['client']
-    ids = client.get(allendpt).json()
     ctx.obj['endpt'] = endpt
-    ctx.obj['repoid'] = repoid
-    if command not in nologs:
-        filename = rectype + '-' + command
-        ctx.invoke(createcsv, filename=filename, command=command)
-    command = eval(command)
-    ctx.invoke(iterateids, ids=ids, command=command)
+    allendpt = endpt + '?all_ids=true'
+    ids = client.get(allendpt).json()
+    if output not in nologs:
+        filename = rectype + '-' + output
+        ctx.invoke(createcsv, filename=filename, output=output)
+    ctx.invoke(iterateids, ids=ids, output=output)
     ctx.invoke(elapsedtime)
 
 
 @asmain.command()
 @click.option('-u', '--uri',
               help='The record uri to retrieve', default='')
-@click.option('-c', '--command',
-              prompt='Enter the command to run once the record is retrieved: ',
-              help='The command to run once the record is retrieved',
+@click.option('-o', '--output',
+              prompt='Enter the output to run once the record is retrieved: ',
+              help='The output to run once the record is retrieved',
               default='')
 @click.pass_context
-def getrecord(ctx, uri, command):
+def getrecord(ctx, uri, output):
     """Retrieve an individual record."""
     client = ctx.obj['client']
     record = client.get(uri).json()
     ctx.obj['record'] = record
-    ctx.invoke(command, uri=uri)
+    output = eval(output)
+    ctx.invoke(output, uri=uri)
 
 
 # component commands
 @asmain.command()
 @click.pass_context
-def createcsv(ctx, filename, command):
+def createcsv(ctx, filename, output):
     """Create CSV file of retrived data."""
     date = datetime.datetime.now().strftime('%Y-%m-%d %H.%M.%S')
     f = csv.writer(open(filename + date + '.csv', 'w'))
-    header = ctx.obj['headerdict'][command]
+    header = ctx.obj['headerdict'][output]
     f.writerow(header)
     ctx.obj['f'] = f
 
@@ -109,14 +109,14 @@ def elapsedtime(ctx):
 
 @asmain.command()
 @click.pass_context
-def iterateids(ctx, ids, command):
+def iterateids(ctx, ids, output):
     """Iterate through a list of AS ids and retrieves each record."""
     endpt = ctx.obj['endpt']
     with click.progressbar(ids) as bar:
         for id in bar:
             uri = endpt + '/' + str(id)
             ctx.obj['uri'] = uri
-            ctx.invoke(getrecord, uri=uri, command=command)
+            ctx.invoke(getrecord, uri=uri, output=output)
 
 
 # output commands
@@ -146,10 +146,8 @@ def extractid(ctx, uri):
 def downloadjson(ctx, uri):
     """Download a JSON file."""
     record = ctx.obj['record']
-    repoid = ctx.obj['repoid']
-    uri = uri.replace('/repositories/' + str(repoid) + '/', '')
-    uri = uri.replace('/', '-')
-    f = open(uri + '.json', 'w')
+    filename = uri[1:len(uri)].replace('/', '-')
+    f = open(filename + '.json', 'w')
     json.dump(record, f)
     f.close()
 
