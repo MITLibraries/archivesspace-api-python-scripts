@@ -29,6 +29,7 @@ def asmain(ctx, secfile):
     client.authorize()
     ctx.obj = dict()
     ctx.obj['starttime'] = starttime
+    ctx.obj['nologs'] = nologs
     ctx.obj['client'] = client
     ctx.obj['headerdict'] = headerdict
 
