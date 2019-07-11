@@ -50,13 +50,13 @@ def createRightsStatement(rightsProfile):
     updatedAsRecord['rights_statements'] = rights_statements
 
 
-def findKey(d, key):
-    """Find all instances of key."""
-    if key in d:
-        yield d[key]
-    for k in d:
-        if isinstance(d[k], list) and k == 'children':
-            for i in d[k]:
+def findKey(nestDict, key):
+    """Find all instances of a key in a nested dictionary."""
+    if key in nestDict:
+        yield nestDict[key]
+    for k in nestDict:
+        if isinstance(nestDict[k], list) and k == 'children':
+            for i in nestDict[k]:
                 for j in findKey(i, key):
                     yield j
 
