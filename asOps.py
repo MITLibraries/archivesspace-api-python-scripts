@@ -6,6 +6,7 @@ import datetime
 import time
 import json
 
+
 # main
 @click.group()
 @click.option('-s', '--secfile',
@@ -32,6 +33,7 @@ def asmain(ctx, secfile):
     ctx.obj['nologs'] = nologs
     ctx.obj['client'] = client
     ctx.obj['headerdict'] = headerdict
+
 
 # operation commands
 @asmain.command()
