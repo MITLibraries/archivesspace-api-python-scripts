@@ -54,11 +54,10 @@ def findKey(nestDict, key):
     """Find all instances of a key in a nested dictionary."""
     if key in nestDict:
         yield nestDict[key]
-    for k in nestDict:
-        if isinstance(nestDict[k], list) and k == 'children':
-            for i in nestDict[k]:
-                for j in findKey(i, key):
-                    yield j
+    children = nestDict.get("children")
+    if isinstance(children, list):
+        for child in children:
+            yield from findKey(child, key)
 
 
 # rights profiles
