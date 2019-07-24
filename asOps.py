@@ -3,9 +3,11 @@ import importlib
 import json
 
 # generic attributes used across several classes
-genattrlist = ['uri', 'title', 'level', 'publish', 'id_0', 'id_1', 'id_2',
-               'id_3', 'dates', 'extents', 'instances', 'notes', 'subjects',
-               'linked_agents']
+genattrlist = ['uri', 'title', 'jsonmodel_type', 'level', 'publish', 'id_0',
+               'id_1', 'id_2', 'id_3', 'dates', 'extents', 'instances',
+               'notes', 'subjects', 'linked_agents']
+classDict = {'resource': 'Resource', 'accession': 'Accession',
+             'archival_object': 'ArchivalObject'}
 
 
 class Resource:
@@ -52,9 +54,12 @@ def createclient(secfile):
 def getrecord(uri, client, output):
     """Retrieve an individual record."""
     record = client.get(uri).json()
-    r = Resource(record)
+    recType = record['jsonmodel_type']
+    classType = eval(classDict[recType])
+    recObj = classType(record)
+    print(recObj.jsonmodel_type)
     output = eval(output)
-    output(r)
+    output(recObj)
 
 
 # component functions
@@ -67,12 +72,12 @@ def constructor(self, record, keyList):
 
 
 # output functions
-def downloadjson(r):
+def downloadjson(recObj):
     """Download a JSON file."""
-    uri = r.uri
+    uri = recObj.uri
     filename = uri[1:len(uri)].replace('/', '-')
     f = open(filename + '.json', 'w')
-    json.dump(r.json, f)
+    json.dump(recObj.json, f)
     f.close()
 
 
