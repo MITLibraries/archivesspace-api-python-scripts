@@ -57,7 +57,6 @@ def getrecord(uri, client, output):
     recType = record['jsonmodel_type']
     classType = eval(classDict[recType])
     recObj = classType(record)
-    print(recObj.jsonmodel_type)
     output = eval(output)
     output(recObj)
 
