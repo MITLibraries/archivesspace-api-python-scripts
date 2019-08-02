@@ -63,7 +63,7 @@ def extractValuesFromcmpntLvl(cmpntLvl):
         containerId1 = ''
     try:
         containerType1 = cmpntLvl.find('did')
-        containerType1 = containerType1.find_all('container')[0]['type']
+        containerType1 = containerType1.find_all('container')[0]['label']
     except:
         containerType1 = ''
     try:
@@ -78,7 +78,7 @@ def extractValuesFromcmpntLvl(cmpntLvl):
         containerId2 = ''
     try:
         containerType2 = cmpntLvl.find('did')
-        containerType2 = containerType2.find_all('container')[1]['type']
+        containerType2 = containerType2.find_all('container')[1]['label']
     except:
         containerType2 = ''
     try:
@@ -99,7 +99,7 @@ def extractValuesFromcmpntLvl(cmpntLvl):
 
 
 filepath = ''
-fileName = 'MS.0236_20190528_183302_UTC__ead.xml'
+fileName = 'MS.0500_20190802_142211_UTC__ead.xml'
 xml = open(filepath + fileName)
 
 f = csv.writer(open(filepath + 'eadFields.csv', 'w'))
@@ -114,6 +114,11 @@ for uppercmpntLvl in uppercmpntLvls:
     cmpntLvlLabel = uppercmpntLvl['level']
     unittitle = uppercmpntLvl.find('did').find('unittitle')
     unittitle = unittitle.text.replace('\n', '')
+    try:
+        physdesc = uppercmpntLvl.find('did').find('physdesc').text
+        physdesc = physdesc.replace('\n', '')
+    except:
+        physdesc = ''
     try:
         unitdate = uppercmpntLvl.find('did').find('unitdate')
         dateExpression = unitdate.text.replace('\n', '')
@@ -144,7 +149,7 @@ for uppercmpntLvl in uppercmpntLvls:
         scopecontent = ''
     sortOrder += 1
     f.writerow([sortOrder] + ['c01'] + [cmpntLvlLabel] + [''] + ['']
-               + [''] + [''] + [unittitle] + [''] + [dateExpression]
+               + [''] + [''] + [unittitle] + [physdesc] + [dateExpression]
                + [dateType] + [beginDate] + [endDate] + [scopecontent] + ['']
                + [''] + [''] + [''])
 
