@@ -17,8 +17,8 @@ class Client:
             secrets = __import__('secrets')
         print('Editing ' + secfile + ' ' + secrets.baseURL)
         authClient = ASnakeClient(baseurl=secrets.baseURL,
-                            username=secrets.user,
-                            password=secrets.password)
+                                  username=secrets.user,
+                                  password=secrets.password)
         authClient.authorize()
         setattr(Client, 'authClient', authClient)
 
