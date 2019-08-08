@@ -6,7 +6,7 @@ import attr
 
 @attr.s
 class Client:
-    authClient = attr.ib
+    authclient = attr.ib
 
     def createclient(secfile):
         """Select secrets.py file for the appropriate instance."""
@@ -16,15 +16,15 @@ class Client:
         else:
             secrets = __import__('secrets')
         print('Editing ' + secfile + ' ' + secrets.baseURL)
-        authClient = ASnakeClient(baseurl=secrets.baseURL,
+        authclient = ASnakeClient(baseurl=secrets.baseURL,
                                   username=secrets.user,
                                   password=secrets.password)
-        authClient.authorize()
-        setattr(Client, 'authClient', authClient)
+        authclient.authorize()
+        setattr(Client, 'authclient', authclient)
 
     def getrecord(uri, output):
         """Retrieve an individual record."""
-        record = Client.authClient.get(uri).json()
+        record = Client.authclient.get(uri).json()
         print(uri)
         recType = record['jsonmodel_type']
 
@@ -129,8 +129,6 @@ def asmain():
     Client.getrecord('/repositories/2/accessions/16', 'downloadjson')
     Client.getrecord('/repositories/2/archival_objects/275186', 'downloadjson')
     Client.getrecord('/repositories/2/archival_objects/297132', 'downloadjson')
-    #Client.getallrecord('software', Client.authClient,
-    #                 'downloadjson')
 
 
 if __name__ == '__main__':
