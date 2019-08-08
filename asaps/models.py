@@ -6,7 +6,7 @@ import attr
 
 @attr.s
 class Client:
-    auth = attr.ib
+    authClient = attr.ib
 
     def createclient(secfile):
         """Select secrets.py file for the appropriate instance."""
@@ -16,15 +16,14 @@ class Client:
         else:
             secrets = __import__('secrets')
         print('Editing ' + secfile + ' ' + secrets.baseURL)
-        auth = ASnakeClient(baseurl=secrets.baseURL,
                             username=secrets.user,
                             password=secrets.password)
-        auth.authorize()
-        setattr(Client, 'auth', auth)
+        authClient.authorize()
+        setattr(Client, 'authClient', authClient)
 
-    def getrecord(uri, client, output):
+    def getrecord(uri, output):
         """Retrieve an individual record."""
-        record = client.get(uri).json()
+        record = Client.authClient.get(uri).json()
         print(uri)
         recType = record['jsonmodel_type']
 
@@ -125,14 +124,12 @@ def downloadjson(recObj):
 def asmain():
     """Create client and run functions."""
     Client.createclient('secretsDev')
-    Client.getrecord('/repositories/2/resources/562', Client.auth,
-                     'downloadjson')
-    Client.getrecord('/repositories/2/accessions/16', Client.auth,
-                     'downloadjson')
-    Client.getrecord('/repositories/2/archival_objects/275186', Client.auth,
-                     'downloadjson')
-    Client.getrecord('/repositories/2/archival_objects/297132', Client.auth,
-                     'downloadjson')
+    Client.getrecord('/repositories/2/resources/562', 'downloadjson')
+    Client.getrecord('/repositories/2/accessions/16', 'downloadjson')
+    Client.getrecord('/repositories/2/archival_objects/275186', 'downloadjson')
+    Client.getrecord('/repositories/2/archival_objects/297132', 'downloadjson')
+    #Client.getallrecord('software', Client.authClient,
+    #                 'downloadjson')
 
 
 if __name__ == '__main__':
