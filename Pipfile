@@ -8,6 +8,9 @@ verify_ssl = true
 [packages]
 lxml = "*"
 sickle = "*"
+archivessnake = "*"
+click = "*"
+pytest = "*"
 
 [requires]
 python_version = "3.7"
