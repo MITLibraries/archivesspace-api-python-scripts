@@ -1,29 +1,30 @@
-import asOps
+from asaps.models import Client
 
 
 def test_createclient():
     """Test createclient function."""
-    secfilelist = ['secretsProd', '', 'secrets', '#$%#%##@']
+    secfilelist = ['secretsProd', 'secretsDev']
     for secfile in secfilelist:
-        client = asOps.createclient(secfile)
-        assert client.get('repositories').status_code == 200
-    return client
+        print(secfile)
+        Client.createclient(secfile)
+        assert Client.authclient.get('repositories').status_code == 200
 
 
-# in progress
 def test_getrecord():
     """Test getrecord function."""
     pass
-    # asOpsRev.getrecord()
-
-
-def test_constructor():
-    """Test constructor function."""
-    pass
-    # asOpsRev.constructor()
 
 
 def test_downloadjson():
     """Test downloadjson function."""
     pass
-    # asOpsRev.downloadjson()
+
+
+def test_basepop():
+    """Test basepop function."""
+    pass
+
+
+def test_classpop():
+    """Test classpop function."""
+    pass

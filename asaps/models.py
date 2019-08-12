@@ -22,7 +22,7 @@ class Client:
         authclient.authorize()
         setattr(Client, 'authclient', authclient)
 
-    def getrecord(uri, output):
+    def getrecord(uri):
         """Retrieve an individual record."""
         record = Client.authclient.get(uri).json()
         print(uri)
@@ -38,13 +38,7 @@ class Client:
         else:
             print('Invalid record type')  # likely better ways of handling this
             exit()
-
-        # output
-        if output == 'downloadjson':
-            downloadjson(recObj)
-        else:
-            print('Invalid output type')  # likely better ways of handling this
-            exit()
+        return recObj
 
 
 @attr.s
@@ -64,6 +58,9 @@ class BaseRecord:
     notes = attr.ib
     subjects = attr.ib
     linked_agents = attr.ib
+    label = attr.ib
+    content = attr.ib
+    objtype = attr.ib
     jsonstring = attr.ib
 
     def basepop(record):
@@ -125,10 +122,8 @@ def downloadjson(recObj):
 def asmain():
     """Create client and run functions."""
     Client.createclient('secretsDev')
-    Client.getrecord('/repositories/2/resources/562', 'downloadjson')
-    Client.getrecord('/repositories/2/accessions/16', 'downloadjson')
-    Client.getrecord('/repositories/2/archival_objects/275186', 'downloadjson')
-    Client.getrecord('/repositories/2/archival_objects/297132', 'downloadjson')
+    recObj = Client.getrecord('/repositories/2/resources/562')
+    downloadjson(recObj)
 
 
 if __name__ == '__main__':
