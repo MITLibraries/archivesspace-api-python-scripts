@@ -66,13 +66,15 @@ class BaseRecord:
     def basepop(record):
         """Populate class instance with base data from the record."""
         for key in record:
-            try:
-                getattr(BaseRecord, key)
-                setattr(BaseRecord, key, record[key])
-            except AttributeError:
-                pass
-            except KeyError:
-                pass
+            if key == 'type':
+                setattr(BaseRecord, 'objtype', record[key])
+            else:
+                try:
+                    setattr(BaseRecord, key, record[key])
+                except AttributeError:
+                    pass
+                except KeyError:
+                    pass
         BaseRecord.jsonstring = record
 
     def classpop(record, objclass):
