@@ -4,7 +4,6 @@ import json
 import attr
 
 
-@attr.s
 class Client:
     authclient = attr.ib
 
@@ -91,6 +90,7 @@ class BaseRecord:
 
 @attr.s
 class Resource (BaseRecord):
+class Resource(BaseRecord):
     related_accessions = attr.ib
     tree = attr.ib
     keylist = ['related_accessions', 'tree']
@@ -98,6 +98,7 @@ class Resource (BaseRecord):
 
 @attr.s
 class Accession (BaseRecord):
+class Accession(BaseRecord):
     related_accessions = attr.ib
     related_resources = attr.ib
     keylist = ['related_accessions', 'related_resources']
@@ -105,6 +106,7 @@ class Accession (BaseRecord):
 
 @attr.s
 class ArchivalObject (BaseRecord):
+class ArchivalObject(BaseRecord):
     ref_id = attr.ib
     parent = attr.ib
     resource = attr.ib
