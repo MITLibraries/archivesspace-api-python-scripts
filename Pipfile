@@ -4,15 +4,13 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+pytest = "*"
 
 [packages]
 lxml = "*"
 sickle = "*"
 archivessnake = "*"
 click = "*"
-
-[dev-packages]
-pytest = "*"
 
 [requires]
 python_version = "3.7"
