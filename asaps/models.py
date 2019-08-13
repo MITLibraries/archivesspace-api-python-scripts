@@ -142,9 +142,8 @@ def downloadjson(recObj):
 
 def asmain():
     """Create client and run functions."""
-    Client.createclient('secretsDev')
-    recObj = Client.getrecord('/repositories/2/resources/562')
-    downloadjson(recObj)
+    client = Client('secretsDev')
+    recObj = client.getrecord('/repositories/2/resources/562')
 
 
 if __name__ == '__main__':
