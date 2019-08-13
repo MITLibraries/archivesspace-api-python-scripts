@@ -41,25 +41,6 @@ class Client:
 
 @attr.s
 class BaseRecord:
-    uri = attr.ib
-    title = attr.ib
-    jsonmodel_type = attr.ib
-    level = attr.ib
-    publish = attr.ib
-    id_0 = attr.ib
-    id_1 = attr.ib
-    id_2 = attr.ib
-    id_3 = attr.ib
-    dates = attr.ib
-    extents = attr.ib
-    instances = attr.ib
-    notes = attr.ib
-    subjects = attr.ib
-    linked_agents = attr.ib
-    label = attr.ib
-    content = attr.ib
-    objtype = attr.ib
-    jsonstring = attr.ib
     uri = attr.ib()
     title = attr.ib()
     jsonmodel_type = attr.ib()
