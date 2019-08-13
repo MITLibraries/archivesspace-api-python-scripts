@@ -2,7 +2,9 @@ from asnake.client import ASnakeClient
 import importlib
 import json
 import attr
+import operator
 
+f = operator.attrgetter('name')
 
 class Client:
 
@@ -28,7 +30,11 @@ class Client:
 
         # record type
         if recType == 'resource':
-            recObj = Resource.classpop(record, Resource)
+            fields = [f(field) for field in attr.fields(Resource)]
+            kwargs = {k: v for k, v in record.items() if k in fields}
+            kwargs['jsonstr'] = record
+            kwargs['updjsonstr'] = record
+            rec = Resource(**kwargs)
         elif recType == 'accession':
             recObj = Accession.classpop(record, Accession)
         elif recType == 'archival_object':
@@ -36,7 +42,7 @@ class Client:
         else:
             print('Invalid record type')  # likely better ways of handling this
             exit()
-        return recObj
+        return rec
 
 
 @attr.s
@@ -62,45 +68,17 @@ class BaseRecord:
     jsonstr = attr.ib()
     updjsonstr = attr.ib()
 
-    def basepop(record):
-        """Populate class instance with base data from the record."""
-        for key in record:
-            if key == 'type':
-                setattr(BaseRecord, 'objtype', record[key])
-            else:
-                try:
-                    setattr(BaseRecord, key, record[key])
-                except AttributeError:
-                    pass
-                except KeyError:
-                    pass
-        BaseRecord.jsonstr = record
-        BaseRecord.updjsonstr = record
-
-    def classpop(record, objclass):
-        """Populate class instance with class specific data from the record."""
-        BaseRecord.basepop(record)
-        for key in objclass.keylist:
-            try:
-                record[key]
-                setattr(objclass, key, record[key])
-            except KeyError:
-                pass
-        return objclass
-
 
 @attr.s
 class Resource(BaseRecord):
     related_accessions = attr.ib()
     tree = attr.ib()
-    keylist = ['related_accessions', 'tree']
 
 
 @attr.s
 class Accession(BaseRecord):
     related_accessions = attr.ib()
     related_resources = attr.ib()
-    keylist = ['related_accessions', 'related_resources']
 
 
 @attr.s
@@ -108,23 +86,22 @@ class ArchivalObject(BaseRecord):
     ref_id = attr.ib()
     parent = attr.ib()
     resource = attr.ib()
-    keylist = ['ref_id', 'parent', 'resource']
 
 
 # output functions
-def downloadjson(recObj):
+def downloadjson(rec):
     """Download a JSON file."""
-    uri = recObj.uri
+    uri = rec.uri
     filename = uri[1:len(uri)].replace('/', '-')
     f = open(filename + '.json', 'w')
-    json.dump(recObj.jsonstring, f)
+    json.dump(rec.jsonstr, f)
     f.close()
 
 
 def asmain():
     """Create client and run functions."""
     client = Client('secretsDev')
-    recObj = client.getrecord('/repositories/2/resources/562')
+    rec = client.getrecord('/repositories/2/resources/562')
 
 
 if __name__ == '__main__':
