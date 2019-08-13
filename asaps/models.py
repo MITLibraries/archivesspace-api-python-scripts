@@ -2,19 +2,22 @@ from asnake.client import ASnakeClient
 import importlib
 import json
 import attr
+from functools import partial
 import operator
 
 f = operator.attrgetter('name')
+Field = partial(attr.ib, default=None)
 
 class Client:
 
     def __init__(self, secfile):
         """Select secrets.py file for the appropriate instance."""
         secfileExists = importlib.util.find_spec(secfile)
+        print(secfileExists)
         if secfileExists is not None:
             secrets = __import__(secfile)
         else:
-            secrets = __import__('secrets')
+            secrets = __import__('secretsDocker')
         print('Editing ' + secfile + ' ' + secrets.baseURL)
         authclient = ASnakeClient(baseurl=secrets.baseURL,
                                   username=secrets.user,
@@ -36,9 +39,17 @@ class Client:
             kwargs['updjsonstr'] = record
             rec = Resource(**kwargs)
         elif recType == 'accession':
-            recObj = Accession.classpop(record, Accession)
+            fields = [f(field) for field in attr.fields(Accession)]
+            kwargs = {k: v for k, v in record.items() if k in fields}
+            kwargs['jsonstr'] = record
+            kwargs['updjsonstr'] = record
+            rec = Resource(**kwargs)
         elif recType == 'archival_object':
-            recObj = ArchivalObject.classpop(record, ArchivalObject)
+            fields = [f(field) for field in attr.fields(ArchivalObject)]
+            kwargs = {k: v for k, v in record.items() if k in fields}
+            kwargs['jsonstr'] = record
+            kwargs['updjsonstr'] = record
+            rec = Resource(**kwargs)
         else:
             print('Invalid record type')  # likely better ways of handling this
             exit()
@@ -47,45 +58,45 @@ class Client:
 
 @attr.s
 class BaseRecord:
-    uri = attr.ib()
-    title = attr.ib()
-    jsonmodel_type = attr.ib()
-    level = attr.ib()
-    publish = attr.ib()
-    id_0 = attr.ib()
-    id_1 = attr.ib()
-    id_2 = attr.ib()
-    id_3 = attr.ib()
-    dates = attr.ib()
-    extents = attr.ib()
-    instances = attr.ib()
-    notes = attr.ib()
-    subjects = attr.ib()
-    linked_agents = attr.ib()
-    label = attr.ib()
-    content = attr.ib()
-    objtype = attr.ib()
-    jsonstr = attr.ib()
-    updjsonstr = attr.ib()
+    uri = Field()
+    title = Field()
+    jsonmodel_type = Field()
+    level = Field()
+    publish = Field()
+    id_0 = Field()
+    id_1 = Field()
+    id_2 = Field()
+    id_3 = Field()
+    dates = Field()
+    extents = Field()
+    instances = Field()
+    notes = Field()
+    subjects = Field()
+    linked_agents = Field()
+    label = Field()
+    content = Field()
+    objtype = Field()
+    jsonstr = Field()
+    updjsonstr = Field()
 
 
 @attr.s
 class Resource(BaseRecord):
-    related_accessions = attr.ib()
-    tree = attr.ib()
+    related_accessions = Field()
+    tree = Field()
 
 
 @attr.s
 class Accession(BaseRecord):
-    related_accessions = attr.ib()
-    related_resources = attr.ib()
+    related_accessions = Field()
+    related_resources = Field()
 
 
 @attr.s
 class ArchivalObject(BaseRecord):
-    ref_id = attr.ib()
-    parent = attr.ib()
-    resource = attr.ib()
+    ref_id = Field()
+    parent = Field()
+    resource = Field()
 
 
 # output functions
@@ -100,7 +111,7 @@ def downloadjson(rec):
 
 def asmain():
     """Create client and run functions."""
-    client = Client('secretsDev')
+    client = Client('secretsDocker')
     rec = client.getrecord('/repositories/2/resources/562')
 
 
