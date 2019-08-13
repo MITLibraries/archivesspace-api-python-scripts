@@ -5,9 +5,8 @@ import attr
 
 
 class Client:
-    authclient = attr.ib
 
-    def createclient(secfile):
+    def __init__(self, secfile):
         """Select secrets.py file for the appropriate instance."""
         secfileExists = importlib.util.find_spec(secfile)
         if secfileExists is not None:
@@ -19,11 +18,11 @@ class Client:
                                   username=secrets.user,
                                   password=secrets.password)
         authclient.authorize()
-        setattr(Client, 'authclient', authclient)
+        self.authclient = authclient
 
-    def getrecord(uri):
+    def getrecord(self, uri):
         """Retrieve an individual record."""
-        record = Client.authclient.get(uri).json()
+        record = self.authclient.get(uri).json()
         print(uri)
         recType = record['jsonmodel_type']
 
@@ -61,6 +60,26 @@ class BaseRecord:
     content = attr.ib
     objtype = attr.ib
     jsonstring = attr.ib
+    uri = attr.ib()
+    title = attr.ib()
+    jsonmodel_type = attr.ib()
+    level = attr.ib()
+    publish = attr.ib()
+    id_0 = attr.ib()
+    id_1 = attr.ib()
+    id_2 = attr.ib()
+    id_3 = attr.ib()
+    dates = attr.ib()
+    extents = attr.ib()
+    instances = attr.ib()
+    notes = attr.ib()
+    subjects = attr.ib()
+    linked_agents = attr.ib()
+    label = attr.ib()
+    content = attr.ib()
+    objtype = attr.ib()
+    jsonstr = attr.ib()
+    updjsonstr = attr.ib()
 
     def basepop(record):
         """Populate class instance with base data from the record."""
@@ -74,7 +93,8 @@ class BaseRecord:
                     pass
                 except KeyError:
                     pass
-        BaseRecord.jsonstring = record
+        BaseRecord.jsonstr = record
+        BaseRecord.updjsonstr = record
 
     def classpop(record, objclass):
         """Populate class instance with class specific data from the record."""
@@ -89,27 +109,24 @@ class BaseRecord:
 
 
 @attr.s
-class Resource (BaseRecord):
 class Resource(BaseRecord):
-    related_accessions = attr.ib
-    tree = attr.ib
+    related_accessions = attr.ib()
+    tree = attr.ib()
     keylist = ['related_accessions', 'tree']
 
 
 @attr.s
-class Accession (BaseRecord):
 class Accession(BaseRecord):
-    related_accessions = attr.ib
-    related_resources = attr.ib
+    related_accessions = attr.ib()
+    related_resources = attr.ib()
     keylist = ['related_accessions', 'related_resources']
 
 
 @attr.s
-class ArchivalObject (BaseRecord):
 class ArchivalObject(BaseRecord):
-    ref_id = attr.ib
-    parent = attr.ib
-    resource = attr.ib
+    ref_id = attr.ib()
+    parent = attr.ib()
+    resource = attr.ib()
     keylist = ['ref_id', 'parent', 'resource']
 
 
