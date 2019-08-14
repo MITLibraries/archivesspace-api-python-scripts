@@ -42,13 +42,13 @@ class Client:
             kwargs = {k: v for k, v in record.items() if k in fields}
             kwargs['jsonstr'] = record
             kwargs['updjsonstr'] = record
-            rec = Resource(**kwargs)
+            rec = Accession(**kwargs)
         elif recType == 'archival_object':
             fields = [op(field) for field in attr.fields(ArchivalObject)]
             kwargs = {k: v for k, v in record.items() if k in fields}
             kwargs['jsonstr'] = record
             kwargs['updjsonstr'] = record
-            rec = Resource(**kwargs)
+            rec = ArchivalObject(**kwargs)
         else:
             print('Invalid record type')
             exit()
