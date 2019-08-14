@@ -4,16 +4,17 @@ import json
 import attr
 from functools import partial
 import operator
+import csv
+import datetime
 
-f = operator.attrgetter('name')
+op = operator.attrgetter('name')
 Field = partial(attr.ib, default=None)
 
-class Client:
 
+class Client:
     def __init__(self, secfile):
         """Select secrets.py file for the appropriate instance."""
         secfileExists = importlib.util.find_spec(secfile)
-        print(secfileExists)
         if secfileExists is not None:
             secrets = __import__(secfile)
         else:
@@ -30,28 +31,26 @@ class Client:
         record = self.authclient.get(uri).json()
         print(uri)
         recType = record['jsonmodel_type']
-
-        # record type
         if recType == 'resource':
-            fields = [f(field) for field in attr.fields(Resource)]
+            fields = [op(field) for field in attr.fields(Resource)]
             kwargs = {k: v for k, v in record.items() if k in fields}
             kwargs['jsonstr'] = record
             kwargs['updjsonstr'] = record
             rec = Resource(**kwargs)
         elif recType == 'accession':
-            fields = [f(field) for field in attr.fields(Accession)]
+            fields = [op(field) for field in attr.fields(Accession)]
             kwargs = {k: v for k, v in record.items() if k in fields}
             kwargs['jsonstr'] = record
             kwargs['updjsonstr'] = record
             rec = Resource(**kwargs)
         elif recType == 'archival_object':
-            fields = [f(field) for field in attr.fields(ArchivalObject)]
+            fields = [op(field) for field in attr.fields(ArchivalObject)]
             kwargs = {k: v for k, v in record.items() if k in fields}
             kwargs['jsonstr'] = record
             kwargs['updjsonstr'] = record
             rec = Resource(**kwargs)
         else:
-            print('Invalid record type')  # likely better ways of handling this
+            print('Invalid record type')
             exit()
         return rec
 
@@ -109,8 +108,21 @@ def downloadjson(rec):
     f.close()
 
 
+def createcsv(csvdata, filename):
+    """Create CSV file from list of dicts.
+
+    Example: {'uri': rec.uri,
+    'oldvalue': oldsub, 'newvalue': newvalue}.
+    """
+    date = datetime.datetime.now().strftime('%Y-%m-%d %H.%M.%S')
+    header = list(csvdata[0].keys())
+    f = csv.DictWriter(open(filename + date + '.csv', 'w'), fieldnames=header)
+    f.writeheader()
+    for csvrow in csvdata:
+        f.writerow(csvrow)
 def asmain():
     """Create client and run functions."""
+    csvdata = []
     client = Client('secretsDocker')
     rec = client.getrecord('/repositories/2/resources/562')
 
