@@ -146,7 +146,10 @@ def createcsv(csvdata, filename):
 
 
 def filternotetype(client, csvdata, rec, notetype, operation, old='', new=''):
-    """Filter notes by type for exporting or editing."""
+    """Filter notes by type for exporting or editing.
+
+    Triggers post of updated record if changes are made.
+    """
     update = False
     for note in rec.updjsonstr['notes']:
         if 'type' in note:
@@ -164,7 +167,7 @@ def filternotetype(client, csvdata, rec, notetype, operation, old='', new=''):
                   subnote['content']}
         client.postrecord(rec, csvrow, csvdata)
     else:
-        print('Record unchanged - not updated')
+        print('Record not posted - ' + notetype + ' was not changed')
 
 
 def asmain():
