@@ -54,6 +54,29 @@ class Client:
             exit()
         return rec
 
+    def stringsearch(self, string, repoid, rectype):
+        """Search for a string across a particular record type."""
+        endpoint = ('repositories/' + str(repoid) + '/search?q="'
+                    + string + '"&page_size=100&type[]=' + rectype)
+        results = self.authclient.get_paged(endpoint)
+        uris = []
+        for result in results:
+            uri = result['uri']
+            uris.append(uri)
+        print(len(uris))
+        return uris
+
+    def postrecord(self, rec, csvrow, csvdata):
+        """Update ArchivesSpace record with POST of JSON data."""
+        payload = rec.updjsonstr
+        payload = json.dumps(payload)
+        post = self.authclient.post(rec.uri, data=payload)
+        print(post.status_code)
+        post = post.json()
+        csvrow['post'] = post
+        csvdata.append(csvrow)
+        print(csvrow)
+
 
 @attr.s
 class BaseRecord:
