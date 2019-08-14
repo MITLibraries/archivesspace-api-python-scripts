@@ -191,8 +191,8 @@ def asmain():
         uris = client.stringsearch(old, '2', rectype)
         remaining = len(uris)
         for uri in uris:
+            remaining -= 1
             if uri not in skippeduris:
-                remaining -= 1
                 print(remaining)
                 rec = client.getrecord(uri)
                 filternotetype(client, csvdata, rec, 'accessrestrict',
