@@ -172,9 +172,34 @@ def filternotetype(client, csvdata, rec, notetype, operation, old='', new=''):
 
 def asmain():
     """Create client and run functions."""
-    csvdata = []
     client = Client('secretsDocker')
-    rec = client.getrecord('/repositories/2/resources/562')
+    corrdict = {'Institute Archives': 'Distinctive Collections'}
+    csvdata = []
+    skippeduris = ['/repositories/2/resources/424',
+                   '/repositories/2/resources/1233',
+                   '/repositories/2/resources/377',
+                   '/repositories/2/resources/356',
+                   '/repositories/2/resources/228',
+                   '/repositories/2/resources/658',
+                   '/repositories/2/resources/635',
+                   '/repositories/2/resources/704',
+                   '/repositories/2/resources/202',
+                   '/repositories/2/resources/586'
+                   ]
+    rectype = 'resource'
+    for old, new in corrdict.items():
+        uris = client.stringsearch(old, '2', rectype)
+        remaining = len(uris)
+        for uri in uris:
+            if uri not in skippeduris:
+                remaining -= 1
+                print(remaining)
+                rec = client.getrecord(uri)
+                filternotetype(client, csvdata, rec, 'accessrestrict',
+                               'replacestr', old, new)
+                filternotetype(client, csvdata, rec, 'prefercite',
+                               'replacestr', old, new)
+    createcsv(csvdata, 'replacestr')
 
 
 if __name__ == '__main__':
