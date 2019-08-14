@@ -143,6 +143,30 @@ def createcsv(csvdata, filename):
     f.writeheader()
     for csvrow in csvdata:
         f.writerow(csvrow)
+
+
+def filternotetype(client, csvdata, rec, notetype, operation, old='', new=''):
+    """Filter notes by type for exporting or editing."""
+    update = False
+    for note in rec.updjsonstr['notes']:
+        if 'type' in note:
+            if note['type'] == notetype:
+                if 'subnotes' in note:
+                    for subnote in note['subnotes']:
+                        if operation == 'replacestr':
+                            oldsub = subnote['content']
+                            updsub = subnote['content']
+                            subnote['content'] = updsub.replace(old, new)
+                            if oldsub != subnote['content']:
+                                update = True
+    if update is True:
+        csvrow = {'uri': rec.uri, 'oldvalue': oldsub, 'newvalue':
+                  subnote['content']}
+        client.postrecord(rec, csvrow, csvdata)
+    else:
+        print('Record unchanged - not updated')
+
+
 def asmain():
     """Create client and run functions."""
     csvdata = []
