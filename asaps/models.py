@@ -6,6 +6,7 @@ from functools import partial
 import operator
 import csv
 import datetime
+import copy
 
 op = operator.attrgetter('name')
 Field = partial(attr.ib, default=None)
@@ -26,29 +27,17 @@ class Client:
         authclient.authorize()
         self.authclient = authclient
 
-    def getrecord(self, uri):
+    def getrec(self, uri):
         """Retrieve an individual record."""
-        record = self.authclient.get(uri).json()
+        rec = self.authclient.get(uri).json()
         print(uri)
-        recType = record['jsonmodel_type']
+        recType = rec['jsonmodel_type']
         if recType == 'resource':
-            fields = [op(field) for field in attr.fields(Resource)]
-            kwargs = {k: v for k, v in record.items() if k in fields}
-            kwargs['jsonstr'] = record
-            kwargs['updjsonstr'] = record
-            rec = Resource(**kwargs)
+            rec = self.popinst(Resource, rec)
         elif recType == 'accession':
-            fields = [op(field) for field in attr.fields(Accession)]
-            kwargs = {k: v for k, v in record.items() if k in fields}
-            kwargs['jsonstr'] = record
-            kwargs['updjsonstr'] = record
-            rec = Accession(**kwargs)
+            rec = self.popinst(Accession, rec)
         elif recType == 'archival_object':
-            fields = [op(field) for field in attr.fields(ArchivalObject)]
-            kwargs = {k: v for k, v in record.items() if k in fields}
-            kwargs['jsonstr'] = record
-            kwargs['updjsonstr'] = record
-            rec = ArchivalObject(**kwargs)
+            rec = self.popinst(ArchivalObject, rec)
         else:
             print('Invalid record type')
             exit()
@@ -66,7 +55,7 @@ class Client:
         print(len(uris))
         return uris
 
-    def postrecord(self, rec, csvrow, csvdata):
+    def postrec(self, rec, csvrow, csvdata):
         """Update ArchivesSpace record with POST of JSON data."""
         payload = rec.updjsonstr
         payload = json.dumps(payload)
@@ -76,6 +65,16 @@ class Client:
         csvrow['post'] = post
         csvdata.append(csvrow)
         print(csvrow)
+
+    def popinst(self, classtype, rec):
+        """Populate class instance with data from record."""
+        fields = [op(field) for field in attr.fields(classtype)]
+        kwargs = {k: v for k, v in rec.items() if k in fields}
+        kwargs['jsonstr'] = rec
+        updrec = copy.copy(rec)
+        kwargs['updjsonstr'] = updrec
+        rec = classtype(**kwargs)
+        return rec
 
 
 @attr.s
@@ -165,9 +164,9 @@ def filternotetype(client, csvdata, rec, notetype, operation, old='', new=''):
     if update is True:
         csvrow = {'uri': rec.uri, 'oldvalue': oldsub, 'newvalue':
                   subnote['content']}
-        client.postrecord(rec, csvrow, csvdata)
+        client.postrec(rec, csvrow, csvdata)
     else:
-        print('Record not posted - ' + notetype + ' was not changed')
+        print('Record not posted - ' + rec.uri + ' was not changed')
 
 
 def asmain():
