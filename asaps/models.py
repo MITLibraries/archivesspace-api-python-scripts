@@ -71,7 +71,7 @@ class Client:
         fields = [op(field) for field in attr.fields(classtype)]
         kwargs = {k: v for k, v in rec.items() if k in fields}
         kwargs['jsonstr'] = rec
-        updrec = copy.copy(rec)
+        updrec = copy.deepcopy(rec)
         kwargs['updjsonstr'] = updrec
         rec = classtype(**kwargs)
         return rec
@@ -149,19 +149,20 @@ def filternotetype(client, csvdata, rec, notetype, operation, old='', new=''):
 
     Triggers post of updated record if changes are made.
     """
-    update = False
     for note in rec.updjsonstr['notes']:
-        if 'type' in note:
+        try:
             if note['type'] == notetype:
-                if 'subnotes' in note:
-                    for subnote in note['subnotes']:
-                        if operation == 'replacestr':
-                            oldsub = subnote['content']
-                            updsub = subnote['content']
-                            subnote['content'] = updsub.replace(old, new)
-                            if oldsub != subnote['content']:
-                                update = True
-    if update is True:
+                for subnote in note['subnotes']:
+                    if operation == 'replacestr':
+                        oldsub = subnote['content']
+                        updsub = subnote['content']
+                        # separate func
+                        subnote['content'] = updsub.replace(old, new)
+        except KeyError:
+            pass
+
+# separate this
+    if rec.updjsonstr != rec.jsonstr:
         csvrow = {'uri': rec.uri, 'oldvalue': oldsub, 'newvalue':
                   subnote['content']}
         client.postrec(rec, csvrow, csvdata)
