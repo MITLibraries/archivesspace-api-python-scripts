@@ -99,6 +99,8 @@ class BaseRecord:
     objtype = Field()
     jsonstr = Field()
     updjsonstr = Field()
+    oldval = Field()
+    newval = Field()
 
 
 @attr.s
@@ -144,7 +146,8 @@ def createcsv(csvdata, filename):
         f.writerow(csvrow)
 
 
-def filternotetype(client, csvdata, rec, notetype, operation, old='', new=''):
+def filternotetype(client, csvdata, rec, notetype, operation, oldstr='',
+                   newstr=''):
     """Filter notes by type for exporting or editing.
 
     Triggers post of updated record if changes are made.
@@ -154,17 +157,28 @@ def filternotetype(client, csvdata, rec, notetype, operation, old='', new=''):
             if note['type'] == notetype:
                 for subnote in note['subnotes']:
                     if operation == 'replacestr':
-                        oldsub = subnote['content']
-                        updsub = subnote['content']
-                        # separate func
-                        subnote['content'] = updsub.replace(old, new)
+                        fieldval = subnote['content']
+                        newval = replacestr(rec, fieldval, oldstr, newstr)
+                        subnote['content'] = newval
         except KeyError:
             pass
+    return rec
 
-# separate this
+
+def replacestr(rec, fieldval, oldstr, newstr):
+    """Replace string in field."""
+    oldval = fieldval
+    rec.oldval = oldval
+    newval = oldval.replace(oldstr, newstr)
+    rec.newval = newval
+    return newval
+
+
+def updaterec(client, csvdata, rec):
+    """Verify record has changed, prepare CSV data, and trigger POST."""
     if rec.updjsonstr != rec.jsonstr:
-        csvrow = {'uri': rec.uri, 'oldvalue': oldsub, 'newvalue':
-                  subnote['content']}
+        csvrow = {'uri': rec.uri, 'oldvalue': rec.oldval, 'newvalue':
+                  rec.newval}
         client.postrec(rec, csvrow, csvdata)
     else:
         print('Record not posted - ' + rec.uri + ' was not changed')
@@ -187,19 +201,28 @@ def asmain():
                    '/repositories/2/resources/586'
                    ]
     rectype = 'resource'
+    # rectype = 'archival_object'
+    notetypes = ['accessrestrict', 'prefercite']
     for old, new in corrdict.items():
         uris = client.stringsearch(old, '2', rectype)
         remaining = len(uris)
+        print(remaining)
         for uri in uris:
             remaining -= 1
             if uri not in skippeduris:
-                print(remaining)
-                rec = client.getrecord(uri)
-                filternotetype(client, csvdata, rec, 'accessrestrict',
-                               'replacestr', old, new)
-                filternotetype(client, csvdata, rec, 'prefercite',
-                               'replacestr', old, new)
-    createcsv(csvdata, 'replacestr')
+                for notetype in notetypes:
+                    print(old, rectype, notetype, remaining)
+                    rec = client.getrec(uri)
+                    rec = filternotetype(client, csvdata, rec, notetype,
+                                         'replacestr', old, new)
+                    updaterec(client, csvdata, rec)
+            else:
+                print(uri, ' skipped')
+        if len(csvdata) != 0:
+            createcsv(csvdata, 'replacestr')
+    label = 'Elapsed time'
+    td = datetime.timedelta(seconds=time.time() - startTime)
+    print(label + ': {}'.format(td))
 
 
 if __name__ == '__main__':
