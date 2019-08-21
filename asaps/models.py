@@ -184,22 +184,55 @@ def updaterec(client, csvdata, rec):
         print('Record not posted - ' + rec.uri + ' was not changed')
 
 
+def findKey(nestDict, key):
+    """Find all instances of a key in a nested dictionary."""
+    if key in nestDict:
+        yield nestDict[key]
+    children = nestDict.get("children")
+    if isinstance(children, list):
+        for child in children:
+            yield from findKey(child, key)
+
+
+def getaosforresource(client, uri, aolist):
+    """"""
+    output = client.authclient.get(uri + '/tree').json()
+    for aoUri in findKey(output, 'record_uri'):
+        if 'archival_objects' in aoUri:
+            aolist.append(aoUri)
+
+
 def asmain():
     """Create client and run functions."""
     client = Client('secretsDocker')
-    corrdict = {'Institute Archives': 'Distinctive Collections'}
+
+    erroruris = ['/repositories/2/resources/424',
+                 '/repositories/2/resources/1233',
+                 '/repositories/2/resources/377',
+                 '/repositories/2/resources/356',
+                 '/repositories/2/resources/228',
+                 '/repositories/2/resources/658',
+                 '/repositories/2/resources/635',
+                 '/repositories/2/resources/704',
+                 '/repositories/2/resources/202',
+                 '/repositories/2/resources/586']
+
+    skippedresources = ['/repositories/2/resources/535',
+                        '/repositories/2/resources/41',
+                        '/repositories/2/resources/111',
+                        '/repositories/2/resources/367',
+                        '/repositories/2/resources/231',
+                        '/repositories/2/resources/561',
+                        '/repositories/2/resources/563',
+                        '/repositories/2/resources/103']
+    skippedaos = []
+    print('building skipped uris list')
+    for uri in skippedresources:
+        getaosforresource(client, uri, skippedaos)
+    skippeduris = erroruris + skippedresources + skippedaos
+    print(len(skippeduris))
+    print('skipped uris list built')
     csvdata = []
-    skippeduris = ['/repositories/2/resources/424',
-                   '/repositories/2/resources/1233',
-                   '/repositories/2/resources/377',
-                   '/repositories/2/resources/356',
-                   '/repositories/2/resources/228',
-                   '/repositories/2/resources/658',
-                   '/repositories/2/resources/635',
-                   '/repositories/2/resources/704',
-                   '/repositories/2/resources/202',
-                   '/repositories/2/resources/586'
-                   ]
     rectype = 'resource'
     # rectype = 'archival_object'
     notetypes = ['accessrestrict', 'prefercite']
@@ -220,6 +253,8 @@ def asmain():
                 print(uri, ' skipped')
         if len(csvdata) != 0:
             createcsv(csvdata, 'replacestr')
+        else:
+            print('No files updated')
     label = 'Elapsed time'
     td = datetime.timedelta(seconds=time.time() - startTime)
     print(label + ': {}'.format(td))
