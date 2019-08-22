@@ -55,7 +55,7 @@ class Client:
         print(len(uris))
         return uris
 
-    def post_record(self, rec, csv_row, csv_data):
+    def post_record(self, rec_obj, csv_row, csv_data):
         """Update ArchivesSpace record with POST of JSON data."""
         payload = rec_obj.updated_json_string
         payload = json.dumps(payload)
