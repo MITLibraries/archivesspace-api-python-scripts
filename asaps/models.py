@@ -27,23 +27,22 @@ class Client:
         authclient.authorize()
         self.authclient = authclient
 
-    def getrec(self, uri):
+    def get_record(self, uri):
         """Retrieve an individual record."""
-        rec = self.authclient.get(uri).json()
+        record = self.authclient.get(uri).json()
         print(uri)
-        recType = rec['jsonmodel_type']
+        recType = record['jsonmodel_type']
         if recType == 'resource':
-            rec = self.popinst(Resource, rec)
+            rec = self.pop_inst(Resource, record)
         elif recType == 'accession':
-            rec = self.popinst(Accession, rec)
+            rec = self.pop_inst(Accession, record)
         elif recType == 'archival_object':
-            rec = self.popinst(ArchivalObject, rec)
+            rec = self.pop_inst(ArchivalObject, record)
         else:
-            print('Invalid record type')
-            exit()
+            raise Exception("Invalid record type")
         return rec
 
-    def stringsearch(self, string, repoid, rectype):
+    def string_search(self, string, repoid, rectype):
         """Search for a string across a particular record type."""
         endpoint = ('repositories/' + str(repoid) + '/search?q="'
                     + string + '"&page_size=100&type[]=' + rectype)
@@ -55,7 +54,7 @@ class Client:
         print(len(uris))
         return uris
 
-    def postrec(self, rec, csvrow, csvdata):
+    def post_record(self, rec, csvrow, csvdata):
         """Update ArchivesSpace record with POST of JSON data."""
         payload = rec.updjsonstr
         payload = json.dumps(payload)
@@ -66,7 +65,7 @@ class Client:
         csvdata.append(csvrow)
         print(csvrow)
 
-    def popinst(self, classtype, rec):
+    def pop_inst(self, classtype, rec):
         """Populate class instance with data from record."""
         fields = [op(field) for field in attr.fields(classtype)]
         kwargs = {k: v for k, v in rec.items() if k in fields}
@@ -123,7 +122,7 @@ class ArchivalObject(BaseRecord):
 
 
 # output functions
-def downloadjson(rec):
+def download_json(rec):
     """Download a JSON file."""
     uri = rec.uri
     filename = uri[1:len(uri)].replace('/', '-')
@@ -174,30 +173,30 @@ def replacestr(rec, fieldval, oldstr, newstr):
     return newval
 
 
-def updaterec(client, csvdata, rec):
+def update_record(client, csvdata, rec):
     """Verify record has changed, prepare CSV data, and trigger POST."""
     if rec.updjsonstr != rec.jsonstr:
         csvrow = {'uri': rec.uri, 'oldvalue': rec.oldval, 'newvalue':
                   rec.newval}
-        client.postrec(rec, csvrow, csvdata)
+        client.post_record(rec, csvrow, csvdata)
     else:
         print('Record not posted - ' + rec.uri + ' was not changed')
 
 
-def findKey(nestDict, key):
+def find_key(nestDict, key):
     """Find all instances of a key in a nested dictionary."""
     if key in nestDict:
         yield nestDict[key]
     children = nestDict.get("children")
     if isinstance(children, list):
         for child in children:
-            yield from findKey(child, key)
+            yield from find_key(child, key)
 
 
-def getaosforresource(client, uri, aolist):
-    """"""
+def get_aos_for_resource(client, uri, aolist):
+    """Get archival objects associated with a resource."""
     output = client.authclient.get(uri + '/tree').json()
-    for aoUri in findKey(output, 'record_uri'):
+    for aoUri in find_key(output, 'record_uri'):
         if 'archival_objects' in aoUri:
             aolist.append(aoUri)
 
@@ -228,16 +227,15 @@ def asmain():
     skippedaos = []
     print('building skipped uris list')
     for uri in skippedresources:
-        getaosforresource(client, uri, skippedaos)
+        get_aos_for_resource(client, uri, skippedaos)
     skippeduris = erroruris + skippedresources + skippedaos
-    print(len(skippeduris))
     print('skipped uris list built')
     csvdata = []
     rectype = 'resource'
     # rectype = 'archival_object'
     notetypes = ['accessrestrict', 'prefercite']
     for old, new in corrdict.items():
-        uris = client.stringsearch(old, '2', rectype)
+        uris = client.string_search(old, '2', rectype)
         remaining = len(uris)
         print(remaining)
         for uri in uris:
@@ -245,10 +243,10 @@ def asmain():
             if uri not in skippeduris:
                 for notetype in notetypes:
                     print(old, rectype, notetype, remaining)
-                    rec = client.getrec(uri)
+                    rec = client.get_record(uri)
                     rec = filternotetype(client, csvdata, rec, notetype,
                                          'replacestr', old, new)
-                    updaterec(client, csvdata, rec)
+                    update_record(client, csvdata, rec)
             else:
                 print(uri, ' skipped')
         if len(csvdata) != 0:
