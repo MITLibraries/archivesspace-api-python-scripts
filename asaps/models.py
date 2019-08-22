@@ -33,19 +33,19 @@ class Client:
         print(uri)
         recType = record['jsonmodel_type']
         if recType == 'resource':
-            rec = self.pop_inst(Resource, record)
+            rec = self._pop_inst(Resource, record)
         elif recType == 'accession':
-            rec = self.pop_inst(Accession, record)
+            rec = self._pop_inst(Accession, record)
         elif recType == 'archival_object':
-            rec = self.pop_inst(ArchivalObject, record)
+            rec = self._pop_inst(ArchivalObject, record)
         else:
             raise Exception("Invalid record type")
         return rec
 
     def string_search(self, string, repoid, rectype):
         """Search for a string across a particular record type."""
-        endpoint = ('repositories/' + str(repoid) + '/search?q="'
-                    + string + '"&page_size=100&type[]=' + rectype)
+        endpoint = (f'repositories/{repoid}/search?q="{string}'
+                    f'"&page_size=100&type[]={rectype}')
         results = self.authclient.get_paged(endpoint)
         uris = []
         for result in results:
@@ -65,7 +65,7 @@ class Client:
         csvdata.append(csvrow)
         print(csvrow)
 
-    def pop_inst(self, classtype, rec):
+    def _pop_inst(self, classtype, rec):
         """Populate class instance with data from record."""
         fields = [op(field) for field in attr.fields(classtype)]
         kwargs = {k: v for k, v in rec.items() if k in fields}
