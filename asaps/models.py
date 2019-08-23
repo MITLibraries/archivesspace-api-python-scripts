@@ -219,14 +219,12 @@ def asmain():
     start_time = time.time()
     client = Client('secretsDocker')
 
-    # res: 1 min, none ao: 3 min, none
-    # corr_dict = {'IASC': 'DDC'}
-    # res: 51 min, 979 ao: 9 min, none
-    corr_dict = {'Institute Archives and Special Collections':
-                 'Department of Distinctive Collections'}
-    # res:  25 min, 193 ao: 192 min, 3
-    corr_dict = {'the Institute Archives': 'Distinctive Collections'}
-    # res:  14 min, none ao: 192 min, none
+    rec_type = 'resource'
+    # rec_type = 'archival_object'
+    corr_dict = {'IASC': 'DDC'}
+    # corr_dict = {'Institute Archives and Special Collections':
+    #              'Department of Distinctive Collections'}
+    # corr_dict = {'the Institute Archives': 'Distinctive Collections'}
     # corr_dict = {'Institute Archives': 'Distinctive Collections'}
 
     error_uris = ['/repositories/2/resources/424',
@@ -249,14 +247,10 @@ def asmain():
                          '/repositories/2/resources/563',
                          '/repositories/2/resources/103']
     skipped_aos = []
-    print('building skipped uris list')
     for uri in skipped_resources:
         get_aos_for_resource(client, uri, skipped_aos)
     skipped_uris = error_uris + skipped_resources + skipped_aos
-    print('skipped uris list built')
     csv_data = []
-    # rec_type = 'resource'
-    rec_type = 'archival_object'
     note_types = ['accessrestrict', 'prefercite']
     for old, new in corr_dict.items():
         uris = client.string_search(old, '2', rec_type)
@@ -272,7 +266,6 @@ def asmain():
                                                note_type, 'replace_str', old,
                                                new)
                     update_record(client, csv_data, rec_obj, False)
-                    print(len(csv_data))
             else:
                 print(uri, ' skipped')
         if len(csv_data) != 0:
