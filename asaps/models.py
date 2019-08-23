@@ -220,14 +220,14 @@ def asmain():
     client = Client('secretsDocker')
 
     # res: 1 min, none ao: 3 min, none
-    # corrdict = {'IASC': 'DDC'}
+    # corr_dict = {'IASC': 'DDC'}
     # res: 51 min, 979 ao: 9 min, none
     corr_dict = {'Institute Archives and Special Collections':
                  'Department of Distinctive Collections'}
     # res:  25 min, 193 ao: 192 min, 3
     corr_dict = {'the Institute Archives': 'Distinctive Collections'}
     # res:  14 min, none ao: 192 min, none
-    # corrdict = {'Institute Archives': 'Distinctive Collections'}
+    # corr_dict = {'Institute Archives': 'Distinctive Collections'}
 
     error_uris = ['/repositories/2/resources/424',
                   '/repositories/2/resources/1233',
