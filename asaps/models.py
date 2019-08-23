@@ -175,14 +175,17 @@ def replace_str(rec_obj, fieldval, old_string, new_string):
     return new_value
 
 
-def update_record(client, csv_data, rec_obj):
+def update_record(client, csv_data, rec_obj, log_only=True):
     """Verify record has changed, prepare CSV data, and trigger POST."""
     if rec_obj.updated_json_string != rec_obj.json_string:
         csv_row = {'uri': rec_obj.uri, 'old_value': rec_obj.old_value,
                    'new_value': rec_obj.new_value}
-        # csv_data.append(csv_row)
-        # print(csv_row)
-        client.post_record(rec_obj, csv_row, csv_data)
+        if log_only is True:
+            csv_data.append(csv_row)
+            print(csv_row)
+        else:
+            print('Posting ' + rec_obj.uri)
+            client.post_record(rec_obj, csv_row, csv_data)
     else:
         print('Record not posted - ' + rec_obj.uri + ' was not changed')
 
@@ -268,8 +271,7 @@ def asmain():
                     rec_obj = filter_note_type(client, csv_data, rec_obj,
                                                note_type, 'replace_str', old,
                                                new)
-                    update_record(client, csv_data, rec_obj)
-                    print(csv_data)
+                    update_record(client, csv_data, rec_obj, False)
                     print(len(csv_data))
             else:
                 print(uri, ' skipped')
