@@ -22,15 +22,16 @@ class Client:
         else:
             secrets = __import__('secretsDocker')
         print('Editing ' + secfile + ' ' + secrets.baseURL)
-        authclient = ASnakeClient(baseurl=secrets.baseURL,
-                                  username=secrets.user,
-                                  password=secrets.password)
-        authclient.authorize()
-        self.authclient = authclient
+        auth_client = ASnakeClient(baseurl=secrets.baseURL,
+                                   username=secrets.user,
+                                   password=secrets.password)
+        auth_client.authorize()
+        self.auth_client = auth_client
+        self.rec_type_dict = rec_type_dict
 
     def get_record(self, uri):
         """Retrieve an individual record."""
-        record = self.authclient.get(uri).json()
+        record = self.auth_client.get(uri).json()
         print(uri)
         rec_type = record['jsonmodel_type']
         if rec_type == 'resource':
@@ -47,7 +48,7 @@ class Client:
         """Search for a string across a particular record type."""
         endpoint = (f'repositories/{repo_id}/search?q="{string}'
                     f'"&page_size=100&type[]={rec_type}')
-        results = self.authclient.get_paged(endpoint)
+        results = self.auth_client.get_paged(endpoint)
         uris = []
         for result in results:
             uri = result['uri']
@@ -59,7 +60,7 @@ class Client:
         """Update ArchivesSpace record with POST of JSON data."""
         payload = rec_obj.updated_json_string
         payload = json.dumps(payload)
-        post = self.authclient.post(rec_obj.uri, data=payload)
+        post = self.auth_client.post(rec_obj.uri, data=payload)
         print(post.status_code)
         post = post.json()
         csv_row['post'] = post
@@ -202,7 +203,7 @@ def find_key(nest_dict, key):
 
 def get_aos_for_resource(client, uri, aolist):
     """Get archival objects associated with a resource."""
-    output = client.authclient.get(uri + '/tree').json()
+    output = client.auth_client.get(uri + '/tree').json()
     for ao_uri in find_key(output, 'record_uri'):
         if 'archival_objects' in ao_uri:
             aolist.append(ao_uri)
