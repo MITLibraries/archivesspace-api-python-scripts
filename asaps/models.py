@@ -14,24 +14,13 @@ Field = partial(attr.ib, default=None)
 
 
 class Client:
-    def __init__(self, secfile):
-        """Select secrets.py file for the appropriate instance."""
-        secfile_exists = importlib.util.find_spec(secfile)
-        if secfile_exists is not None:
-            secrets = __import__(secfile)
-        else:
-            secrets = __import__('secretsDocker')
-        print('Editing ' + secfile + ' ' + secrets.baseURL)
-        auth_client = ASnakeClient(baseurl=secrets.baseURL,
-                                   username=secrets.user,
-                                   password=secrets.password)
-        auth_client.authorize()
-        self.auth_client = auth_client
-        self.rec_type_dict = rec_type_dict
+    def __init__(self, client):
+        """Create instance and import client as attribute."""
+        self.client = client
 
     def get_record(self, uri):
         """Retrieve an individual record."""
-        record = self.auth_client.get(uri).json()
+        record = self.client.get(uri).json()
         print(uri)
         rec_type = record['jsonmodel_type']
         if rec_type == 'resource':
@@ -44,11 +33,11 @@ class Client:
             raise Exception("Invalid record type")
         return rec_obj
 
-    def string_search(self, string, repo_id, rec_type):
+    def search(self, string, repo_id, rec_type):
         """Search for a string across a particular record type."""
         endpoint = (f'repositories/{repo_id}/search?q="{string}'
                     f'"&page_size=100&type[]={rec_type}')
-        results = self.auth_client.get_paged(endpoint)
+        results = self.client.get_paged(endpoint)
         uris = []
         for result in results:
             uri = result['uri']
@@ -60,7 +49,7 @@ class Client:
         """Update ArchivesSpace record with POST of JSON data."""
         payload = rec_obj.updated_json_string
         payload = json.dumps(payload)
-        post = self.auth_client.post(rec_obj.uri, data=payload)
+        post = self.client.post(rec_obj.uri, data=payload)
         print(post.status_code)
         post = post.json()
         csv_row['post'] = post
@@ -203,7 +192,7 @@ def find_key(nest_dict, key):
 
 def get_aos_for_resource(client, uri, aolist):
     """Get archival objects associated with a resource."""
-    output = client.auth_client.get(uri + '/tree').json()
+    output = client.client.get(uri + '/tree').json()
     for ao_uri in find_key(output, 'record_uri'):
         if 'archival_objects' in ao_uri:
             aolist.append(ao_uri)
@@ -254,7 +243,7 @@ def asmain():
     csv_data = []
     note_types = ['accessrestrict', 'prefercite']
     for old, new in corr_dict.items():
-        uris = client.string_search(old, '2', rec_type)
+        uris = client.search(old, '2', rec_type)
         remaining = len(uris)
         print(remaining)
         for uri in uris:
