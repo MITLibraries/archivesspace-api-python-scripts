@@ -6,8 +6,8 @@ def test_createclient():
     secfilelist = ['secretsProd', 'secretsDev']
     for secfile in secfilelist:
         print(secfile)
-        Client.createclient(secfile)
-        assert Client.authclient.get('repositories').status_code == 200
+        client = Client(secfile)
+        assert client.auth_client.get('repositories').status_code == 200
 
 
 def test_getrecord():
