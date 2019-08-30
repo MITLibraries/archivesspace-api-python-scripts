@@ -11,7 +11,6 @@ from asnake.client import ASnakeClient
               hide_input=True,
               help='The password for authentication.')
 def main(url, username, password):
-    print(url, username, password)
     client = ASnakeClient(baseurl=url, username=username,
                           password=password)
     # for client verification, will remove later

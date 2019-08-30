@@ -6,6 +6,7 @@ verify_ssl = true
 [dev-packages]
 pytest = "*"
 flake8 = "*"
+requests-mock = "*"
 
 [packages]
 lxml = "*"
