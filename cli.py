@@ -14,7 +14,8 @@ def main(url, username, password):
     client = ASnakeClient(baseurl=url, username=username,
                           password=password)
     # for client verification, will remove later
-    record = client.get('/repositories/2/resources/423').json()
+    as_ops = models.AsOperations(client)
+    record = as_ops.get_record('/repositories/2/resources/423')
     print(record)
 
 
