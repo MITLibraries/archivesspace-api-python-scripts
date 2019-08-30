@@ -13,7 +13,7 @@ op = operator.attrgetter('name')
 Field = partial(attr.ib, default=None)
 
 
-class Client:
+class AsOperations:
     def __init__(self, client):
         """Create instance and import client as attribute."""
         self.client = client
@@ -207,7 +207,7 @@ def elapsed_time(start_time, label):
 def asmain():
     """Create client and run functions."""
     start_time = time.time()
-    client = Client('secretsDocker')
+    client = AsOperations('secretsDocker')
 
     rec_type = 'resource'
     # rec_type = 'archival_object'
