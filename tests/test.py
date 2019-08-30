@@ -1,30 +1,15 @@
-from asaps.models import Client
+import requests_mock
 
 
-def test_createclient():
-    """Test createclient function."""
-    secfilelist = ['secretsProd', 'secretsDev']
-    for secfile in secfilelist:
-        print(secfile)
-        client = Client(secfile)
-        assert client.auth_client.get('repositories').status_code == 200
+def test_get_record(self):
+    """Test get_record function."""
+    with requests_mock.Mocker() as m:
+        m.get('/repositories/2/resources/423', text='Passed')
+        uri = '/repositories/2/resources/423'
+        response = self.client.auth_client.get(uri).text
+        assert response == 'Passed'
 
 
-def test_getrecord():
-    """Test getrecord function."""
-    pass
-
-
-def test_downloadjson():
-    """Test downloadjson function."""
-    pass
-
-
-def test_basepop():
-    """Test basepop function."""
-    pass
-
-
-def test_classpop():
-    """Test classpop function."""
+def test_download_json(self):
+    """Test download_json function."""
     pass
