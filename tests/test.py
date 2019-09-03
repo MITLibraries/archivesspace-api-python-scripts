@@ -1,15 +1,16 @@
 import requests_mock
 
 
-def test_get_record(self):
+# how call client for test
+def test_get_record(client):
     """Test get_record function."""
     with requests_mock.Mocker() as m:
         m.get('/repositories/2/resources/423', text='Passed')
         uri = '/repositories/2/resources/423'
-        response = self.client.auth_client.get(uri).text
+        response = client.auth_client.get(uri).text
         assert response == 'Passed'
 
 
-def test_download_json(self):
+def test_download_json():
     """Test download_json function."""
     pass
