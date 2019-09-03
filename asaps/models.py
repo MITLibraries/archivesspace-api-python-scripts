@@ -1,5 +1,3 @@
-from asnake.client import ASnakeClient
-import importlib
 import json
 import attr
 from functools import partial
@@ -17,6 +15,8 @@ class AsOperations:
     def __init__(self, client):
         """Create instance and import client as attribute."""
         self.client = client
+        start_time = time.time()
+        self.start_time = start_time
 
     def get_record(self, uri):
         """Retrieve an individual record."""
@@ -202,68 +202,3 @@ def elapsed_time(start_time, label):
     """Calculate elapsed time."""
     td = datetime.timedelta(seconds=time.time() - start_time)
     print(label + ': {}'.format(td))
-
-
-def asmain():
-    """Create client and run functions."""
-    start_time = time.time()
-    client = AsOperations('secretsDocker')
-
-    rec_type = 'resource'
-    # rec_type = 'archival_object'
-    corr_dict = {'IASC': 'DDC'}
-    # corr_dict = {'Institute Archives and Special Collections':
-    #              'Department of Distinctive Collections'}
-    # corr_dict = {'the Institute Archives': 'Distinctive Collections'}
-    # corr_dict = {'Institute Archives': 'Distinctive Collections'}
-
-    error_uris = ['/repositories/2/resources/424',
-                  '/repositories/2/resources/1233',
-                  '/repositories/2/resources/377',
-                  '/repositories/2/resources/356',
-                  '/repositories/2/resources/228',
-                  '/repositories/2/resources/658',
-                  '/repositories/2/resources/635',
-                  '/repositories/2/resources/704',
-                  '/repositories/2/resources/202',
-                  '/repositories/2/resources/586']
-
-    skipped_resources = ['/repositories/2/resources/535',
-                         '/repositories/2/resources/41',
-                         '/repositories/2/resources/111',
-                         '/repositories/2/resources/367',
-                         '/repositories/2/resources/231',
-                         '/repositories/2/resources/561',
-                         '/repositories/2/resources/563',
-                         '/repositories/2/resources/103']
-    skipped_aos = []
-    for uri in skipped_resources:
-        get_aos_for_resource(client, uri, skipped_aos)
-    skipped_uris = error_uris + skipped_resources + skipped_aos
-    csv_data = []
-    note_types = ['accessrestrict', 'prefercite']
-    for old, new in corr_dict.items():
-        uris = client.search(old, '2', rec_type)
-        remaining = len(uris)
-        print(remaining)
-        for uri in uris:
-            remaining -= 1
-            if uri not in skipped_uris:
-                for note_type in note_types:
-                    print(old, rec_type, note_type, remaining)
-                    rec_obj = client.get_record(uri)
-                    rec_obj = filter_note_type(client, csv_data, rec_obj,
-                                               note_type, 'replace_str', old,
-                                               new)
-                    update_record(client, csv_data, rec_obj, False)
-            else:
-                print(uri, ' skipped')
-        if len(csv_data) != 0:
-            createcsv(csv_data, 'replace_str')
-        else:
-            print('No files updated')
-    elapsed_time(start_time, 'Elapsed time')
-
-
-if __name__ == '__main__':
-    asmain()
