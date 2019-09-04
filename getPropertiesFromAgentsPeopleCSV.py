@@ -23,7 +23,7 @@ repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 print('authenticated')
 
 endpoint = '/agents/people?all_ids=true'
@@ -36,13 +36,13 @@ for id in ids:
     output = requests.get(baseURL + endpoint, headers=headers).json()
     records.append(output)
 
-f=csv.writer(open('asResults.csv', 'w'))
+f = csv.writer(open('asResults.csv', 'w'))
 f.writerow(['uri']+['sort_name']+['authority_id'])
-for i in range (0, len (records)):
-	uri = records[i]['uri']
-	sort_name = records[i]['names'][0]['sort_name']
-	authority_id = records[i]['names'][0].get('authority_id', '')
-	f.writerow([uri]+[sort_name]+[authority_id])
+for i in range(0, len(records)):
+    uri = records[i]['uri']
+    sort_name = records[i]['names'][0]['sort_name']
+    authority_id = records[i]['names'][0].get('authority_id', '')
+    f.writerow([uri]+[sort_name]+[authority_id])
 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)

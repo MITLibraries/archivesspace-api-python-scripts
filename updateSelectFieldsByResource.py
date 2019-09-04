@@ -34,14 +34,14 @@ repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 
 
-f=csv.writer(open('selectFieldsUpdate'+'Post'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'w'))
+f = csv.writer(open('selectFieldsUpdate'+'Post'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'w'))
 f.writerow(['title']+['uri']+['finding_aid_title']+['ead_id']+['ead_url'])
 
 
-with open(filename, encoding = 'utf-8') as changesFile:
+with open(filename, encoding='utf-8') as changesFile:
     elements = csv.DictReader(changesFile)
     for element in elements:
         endpoint = element['uri'].strip()

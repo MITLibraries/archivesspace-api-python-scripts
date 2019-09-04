@@ -29,7 +29,7 @@ repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 
 csv = csv.DictReader(open(filePath+targetFile))
 
@@ -46,7 +46,7 @@ for row in csv:
 asRecord = requests.get(baseURL+'/repositories/'+repository+'/'+targetRecord, headers=headers).json()
 instanceArray = asRecord['instances']
 
-for i in range (0, len (containerList)):
+for i in range(0, len(containerList)):
     top_container = {}
     top_container['ref'] = containerList[i]
     sub_container = {}

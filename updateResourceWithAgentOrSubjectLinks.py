@@ -25,7 +25,8 @@ if args.type:
 else:
     type = input('Enter the type of links to create ("subject" or "agent"): ')
 
-def addUriLink (key, valueSource):
+
+def addUriLink(key, valueSource):
     uri = '/repositories/'+repository+'/resources/'+row['ResourceUri']
     value = row[valueSource]
     print(value)
@@ -63,7 +64,7 @@ def addUriLink (key, valueSource):
         elif row['tag'].startswith('6'):
             agent['role'] = 'subject'
         else:
-            'print(error')
+            print('error')
             f.writerow([uri]+['tag error']+[])
         if agent not in agents:
             agents.append(agent)
@@ -80,8 +81,9 @@ def addUriLink (key, valueSource):
             print(agent)
             f.writerow([uri]+['no update']+[])
     else:
-        'print(error')
+        print('error')
         f.writerow([uri]+['error']+[])
+
 
 startTime = time.time()
 
@@ -92,11 +94,11 @@ repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 
 filename = input('Enter filename (including \'.csv\'): ')
 
-f=csv.writer(open(filename+'Post'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'w')
+f = csv.writer(open(filename+'Post'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'w')
 f.writerow(['uri']+['links']+['post'])
 
 with open(filename) as csvfile:

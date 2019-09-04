@@ -4,7 +4,7 @@ import csv
 import argparse
 import re
 
-#converts CSV made from getArchivalObjectRefIdsForResource.py to ISO dates
+# converts CSV made from getArchivalObjectRefIdsForResource.py to ISO dates
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--file', help='collectionHandle of the collection to retreive. optional - if not provided, the script will ask for input')
@@ -15,7 +15,7 @@ if args.file:
 else:
     filename = input('Enter filename (including \'.csv\'): ')
 
-f=csv.writer(open('metadataWithDates.csv', 'w'))
+f = csv.writer(open('metadataWithDates.csv', 'w'))
 f.writerow(['title']+['uri']+['ref_id']+['date']+['dataBegin']+['level'])
 
 with open(filename) as itemMetadataFile:
@@ -25,7 +25,7 @@ with open(filename) as itemMetadataFile:
         uri = row['uri']
         ref_id = row['ref_id']
         dataBegin = row['dataBegin']
-        level= row['level']
+        level = row['level']
         date = row['dateExpression'].strip()
         match = re.search(r'\-', date)
         if match:

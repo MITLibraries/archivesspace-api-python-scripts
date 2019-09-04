@@ -39,7 +39,7 @@ repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 print('authenticated')
 
 endpoint = '/repositories/'+repository+'/digital_objects?all_ids=true'
@@ -47,7 +47,7 @@ endpoint = '/repositories/'+repository+'/digital_objects?all_ids=true'
 ids = requests.get(baseURL + endpoint, headers=headers).json()
 print(len(ids))
 
-f=csv.writer(open('doUrlEdits'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'w'))
+f = csv.writer(open('doUrlEdits'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'w'))
 f.writerow(['endpoint']+['doPost'])
 
 for id in ids:

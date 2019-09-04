@@ -23,9 +23,9 @@ repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 
-f=csv.writer(open('resourceProperties.csv', 'w'))
+f = csv.writer(open('resourceProperties.csv', 'w'))
 f.writerow(['title']+['uri']+['bibnum']+['type']+['value'])
 
 

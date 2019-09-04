@@ -22,7 +22,7 @@ repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 print('authenticated')
 
 endpoint = '/repositories/'+repository+'/top_containers?all_ids=true'
@@ -37,7 +37,7 @@ for id in ids:
     output = requests.get(baseURL + endpoint, headers=headers).json()
     records.append(output)
 
-f=open('topContainers.json', 'w')
+f = open('topContainers.json', 'w')
 json.dump(records, f)
 f.close()
 

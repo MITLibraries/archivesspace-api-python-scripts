@@ -51,15 +51,15 @@ repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 
 
-endpoint = '/repositories/3/search?q='+keyword+types'&page_size=2000&page=1'
+endpoint = '/repositories/3/search?q='+keyword+types+'&page_size=2000&page=1'
 
 results = requests.get(baseURL + endpoint, headers=headers).json()
 results = results['results']
 
-f=csv.writer(open(keyword+'Search.csv', 'w'))
+f = csv.writer(open(keyword+'Search.csv', 'w'))
 f.writerow(['uri'])
 
 for result in results:

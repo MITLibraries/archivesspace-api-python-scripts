@@ -23,7 +23,7 @@ repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 print('authenticated')
 
 endpoint = '/repositories/'+repository+'/archival_objects?all_ids=true'
@@ -31,7 +31,7 @@ endpoint = '/repositories/'+repository+'/archival_objects?all_ids=true'
 ids = requests.get(baseURL + endpoint, headers=headers).json()
 print(len(ids))
 
-f=csv.writer(open('archivalObjectTitles.csv', 'w'))
+f = csv.writer(open('archivalObjectTitles.csv', 'w'))
 f.writerow(['title']+['uri'])
 
 for id in ids:

@@ -20,7 +20,7 @@ repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 
 recordType = input('Enter record type, either \'resources\' or \'accessions\': ')
 
@@ -28,7 +28,7 @@ endpoint = '/repositories/'+repository+'/'+recordType+'?all_ids=true'
 
 ids = requests.get(baseURL + endpoint, headers=headers).json()
 
-f=csv.writer(open(recordType+'UrisAndIds.csv', 'w'))
+f = csv.writer(open(recordType+'UrisAndIds.csv', 'w'))
 f.writerow(['ConCatID']+['id_0']+['id_1']+['id_2']+['id_3']+['id'])
 
 for id in ids:

@@ -4,8 +4,6 @@ import secrets
 import time
 import csv
 import argparse
-from datetime import datetime
-
 
 secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
@@ -21,7 +19,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--file', help='Enter the name of the file, including the .csv')
 parser.add_argument('-k', '--keyword', help='Keyword to retreive. optional - if not provided, the script will ask for input')
 parser.add_argument('-r', '--replacement', help='Replacement for original keyword. optional - if not provided, the script will ask for input')
-parser.add_argument('-m', '--make_changes', help= "Enter 'yes' if you want to change the records in ArchiveSpace. Else, the script will only produce a csv of expected changes.")
+parser.add_argument('-m', '--make_changes', help="Enter 'yes' if you want to change the records in ArchiveSpace. Else, the script will only produce a csv of expected changes.")
 args = parser.parse_args()
 
 if args.file:
@@ -51,15 +49,15 @@ repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 print('authenticated')
 
 keywordFile = keyword.capitalize()
 
-f=csv.writer(open('propertiesContaining'+keywordFile+'InRecordtesting.csv', 'w'))
+f = csv.writer(open('propertiesContaining'+keywordFile+'InRecordtesting.csv', 'w'))
 
 
-with open(filename, encoding = 'utf-8') as changesFile:
+with open(filename, encoding='utf-8') as changesFile:
     elements = csv.DictReader(changesFile)
     for element in elements:
         changes = 0
@@ -69,6 +67,7 @@ with open(filename, encoding = 'utf-8') as changesFile:
         output = requests.get(baseURL + endpoint, headers=headers).json()
         newoutput = output
         uri = output['uri']
+
         def replaceString(variable, json_key):
             global newoutput
             global changes
@@ -86,6 +85,7 @@ with open(filename, encoding = 'utf-8') as changesFile:
                     print('replaced '+variable_name+': '+new_variable)
             except:
                 pass
+
         def replaceString2(variable, json_key, json_key2):
             global newoutput
             global changes
@@ -103,6 +103,7 @@ with open(filename, encoding = 'utf-8') as changesFile:
                     print('replaced '+variable_name+': '+new_variable)
             except:
                 pass
+
         def replaceString3(variable, json_key, json_key2, integer):
             global newoutput
             global changes
@@ -120,6 +121,7 @@ with open(filename, encoding = 'utf-8') as changesFile:
                     print('replaced '+variable_name+': '+new_variable)
             except:
                 pass
+
         replaceString(variable='title', json_key='title')
         replaceString(variable='finding_aid_title', json_key='finding_aid_title')
         replaceString(variable='content_description', json_key='content_description')
@@ -132,10 +134,10 @@ with open(filename, encoding = 'utf-8') as changesFile:
         replaceString2(variable='custodialHistory', json_key='user_defined', json_key2='text_1')
         replaceString2(variable='electronicRecordLog', json_key='user_defined', json_key2='text_2')
         replaceString2(variable='relatedMaterialsNote', json_key='user_defined', json_key2='text_3')
-        replaceString2(variable='archiveItSeeds', json_key='user_defined',json_key2='text_4')
+        replaceString2(variable='archiveItSeeds', json_key='user_defined', json_key2='text_4')
         replaceString2(variable='appraisal', json_key='user_defined', json_key2='text_5')
         replaceString2(variable='accessionStatus', json_key='user_defined', json_key2='enum_1')
-        for x in range(0,4):
+        for x in range(0, 4):
             replaceString3(variable='dates_expression', json_key='dates', json_key2='expression', integer=x)
             replaceString3(variable='dates_begin', json_key='dates', json_key2='begin', integer=x)
             replaceString3(variable='dates_end', json_key='dates', json_key2='end', integer=x)
@@ -182,7 +184,7 @@ with open(filename, encoding = 'utf-8') as changesFile:
             else:
                 print('Found changes to replace {} with {} in record {}. Recording in CSV.'.format(keyword, replacement, uri))
         else:
-            print('Nothing to replace in record {}'.format(uri) )
+            print('Nothing to replace in record {}'.format(uri))
 
 
 elapsedTime = time.time() - startTime

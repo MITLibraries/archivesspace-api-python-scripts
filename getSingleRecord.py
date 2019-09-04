@@ -30,11 +30,11 @@ repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth['session']
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 
 print(baseURL+uri)
 output = requests.get(baseURL + uri, headers=headers).json()
-uri = uri.replace('/repositories/'+repository+'/','').replace('/','-')
-f=open(uri+'.json', 'w')
-results=(json.dump(output, f))
+uri = uri.replace('/repositories/'+repository+'/', '').replace('/', '-')
+f = open(uri+'.json', 'w')
+results = (json.dump(output, f))
 f.close()

@@ -23,13 +23,13 @@ repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 
 csv = csv.DictReader(open(targetFile))
 
 asRecord = requests.get(baseURL+'/repositories/'+repository+'/'+targetRecord, headers=headers).json()
 print(baseURL+'/repositories/'+repository+'/'+targetRecord)
-f=open(targetRecord+'asRecordBackup.json', 'w')
+f = open(targetRecord+'asRecordBackup.json', 'w')
 json.dump(asRecord, f)
 instanceArray = asRecord['instances']
 
@@ -45,7 +45,7 @@ for row in csv:
     instance['instance_type'] = 'mixed_materials'
     instanceArray.append(instance)
 asRecord['instances'] = instanceArray
-f2=open(targetRecord+'asRecordModified.json', 'w')
+f2 = open(targetRecord+'asRecordModified.json', 'w')
 json.dump(asRecord, f2)
 asRecord = json.dumps(asRecord)
 post = requests.post(baseURL+'/repositories/'+repository+'/'+targetRecord, headers=headers, data=asRecord).json()

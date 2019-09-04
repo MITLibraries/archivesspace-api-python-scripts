@@ -4,7 +4,8 @@ import secrets
 import time
 import csv
 
-def firstLevelUpdateFromCSV (key, valueSource):
+
+def firstLevelUpdateFromCSV(key, valueSource):
     uri = row['uri']
     value = row[valueSource]
     if value != '':
@@ -16,7 +17,8 @@ def firstLevelUpdateFromCSV (key, valueSource):
     else:
         pass
 
-def secondLevelUpdateFromCSV (key, valueSource, firstLevel):
+
+def secondLevelUpdateFromCSV(key, valueSource, firstLevel):
     uri = row['uri']
     value = row[valueSource]
     if value != '':
@@ -40,7 +42,7 @@ password = secrets.password
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 
 filename = input('Enter filename (including \'.csv\'): ')
 filename = 'bibNumbers.csv'

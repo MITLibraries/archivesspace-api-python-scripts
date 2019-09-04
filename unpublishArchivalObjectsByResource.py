@@ -17,6 +17,7 @@ else:
 
 startTime = time.time()
 
+
 def findKey(d, key):
     if key in d:
         yield d[key]
@@ -26,6 +27,7 @@ def findKey(d, key):
                 for j in findKey(i, key):
                     yield j
 
+
 baseURL = secrets.baseURL
 user = secrets.user
 password = secrets.password
@@ -33,7 +35,7 @@ repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 
 id = input('Enter resource ID: ')
 
@@ -46,7 +48,7 @@ for value in findKey(output, 'record_uri'):
         archivalObjects.append(value)
 print(archivalObjects)
 
-f=csv.writer(open('unpublishedAOs'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'w'))
+f = csv.writer(open('unpublishedAOs'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'w'))
 f.writerow(['uri']+['post'])
 
 for archivalObject in archivalObjects:

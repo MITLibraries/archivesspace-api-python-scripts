@@ -33,13 +33,13 @@ repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 
-f=csv.writer(open('postOverwrite'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'w'))
+f = csv.writer(open('postOverwrite'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'w'))
 f.writerow(['uri']+['post'])
 
 records = json.load(open(file))
-for i in range (0, len (records)):
+for i in range(0, len(records)):
     record = json.dumps(records[i])
     uri = records[i]['uri']
     post = requests.post(baseURL + uri, headers=headers, data=record).json()

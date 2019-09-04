@@ -22,11 +22,11 @@ repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 
 csvfile = csv.DictReader(open(targetFile))
 
-f=csv.writer(open('containerLinksPostedFromCSV.csv', 'w'))
+f = csv.writer(open('containerLinksPostedFromCSV.csv', 'w'))
 f.writerow(['topContainer']+['resource']+['post'])
 
 for row in csvfile:

@@ -23,7 +23,7 @@ repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 print('authenticated')
 
 endpoint = '/agents/people?all_ids=true'
@@ -36,15 +36,15 @@ for id in ids:
     output = requests.get(baseURL + endpoint, headers=headers).json()
     records.append(output)
 
-f=csv.writer(open('asArrayResults.csv', 'w'))
+f = csv.writer(open('asArrayResults.csv', 'w'))
 f.writerow(['uri']+['begin']+['end']+['expression'])
-for i in range (0, len (records)):
-	for j in range (0, len (records[i]['dates_of_existence'])):
-		uri = records[i]['uri']
-		beginDate = records[i]['dates_of_existence'][j].get('begin','none')
-		endDate = records[i]['dates_of_existence'][j].get('end','none')
-		expressionDate = records[i]['dates_of_existence'][j].get('expression','none')
-		f.writerow([uri]+[beginDate]+[endDate]+[expressionDate])
+for i in range(0, len(records)):
+    for j in range(0, len(records[i]['dates_of_existence'])):
+        uri = records[i]['uri']
+        beginDate = records[i]['dates_of_existence'][j].get('begin', 'none')
+        endDate = records[i]['dates_of_existence'][j].get('end', 'none')
+        expressionDate = records[i]['dates_of_existence'][j].get('expression', 'none')
+        f.writerow([uri]+[beginDate]+[endDate]+[expressionDate])
 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)

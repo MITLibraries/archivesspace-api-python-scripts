@@ -23,13 +23,13 @@ repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 
 endpoint = '/repositories/'+repository+'/resources?all_ids=true'
 
 ids = requests.get(baseURL + endpoint, headers=headers).json()
 
-f=csv.writer(open('resourcesWithBibs.csv', 'w'))
+f = csv.writer(open('resourcesWithBibs.csv', 'w'))
 f.writerow(['uri']+['bibnum'])
 
 for id in ids:

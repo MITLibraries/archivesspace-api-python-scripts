@@ -23,7 +23,7 @@ repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 print('authenticated')
 
 endpoint = '/repositories/'+repository+'/archival_objects?all_ids=true'
@@ -32,7 +32,7 @@ ids = requests.get(baseURL + endpoint, headers=headers).json()
 ids.reverse()
 print(len(ids))
 
-## Generates a text file of AOs with DOs. Takes 2+ hours to generate so this code block is separate so the main portion of the script can be run more quickly.
+# Generates a text file of AOs with DOs. Takes 2+ hours to generate so this code block is separate so the main portion of the script can be run more quickly.
 
 # f=csv.writer(open('archivalObjectsWithDigitalObjects.csv', 'w'))
 # f.writerow(['uri'])
@@ -57,7 +57,7 @@ print(len(ids))
 # f2=open('archivalObjectsWithDigitalObjectsList.txt', 'w')
 # f2.write(json.dumps(doAos))
 
-f=csv.writer(open('DigitalObjectsDatesEdited.csv', 'w'))
+f = csv.writer(open('DigitalObjectsDatesEdited.csv', 'w'))
 f.writerow(['doUri']+['oldBegin']+['oldEnd']+['oldExpression']+['oldLabel']+['aoUri']+['newBegin']+['newEnd']+['newExpression']+['newLabel']+['post'])
 
 doAos = json.load(open('archivalObjectsWithDigitalObjectsList.txt', 'w'))

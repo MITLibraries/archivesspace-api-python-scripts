@@ -23,16 +23,16 @@ repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 
 endpoint = '/repositories/'+repository+'/resources?all_ids=true'
 
 ids = requests.get(baseURL + endpoint, headers=headers).json()
 
-f=csv.writer(open('topContainerCountByResourceNoAOs.csv', 'w'))
+f = csv.writer(open('topContainerCountByResourceNoAOs.csv', 'w'))
 f.writerow(['title']+['uri']+['id_0']+['id_1']+['id_2']+['id_3']+['topContainerCount'])
 
-f2=csv.writer(open('topContainersLinksNoAOs.csv', 'w'))
+f2 = csv.writer(open('topContainersLinksNoAOs.csv', 'w'))
 f2.writerow(['resourceUri']+['topContainerUri'])
 
 uniqueTopContainers = []
@@ -47,7 +47,7 @@ for id in ids:
     try:
         id1 = output['id_1']
     except:
-        id1=''
+        id1 = ''
     try:
         id2 = output['id_2']
     except:
@@ -55,7 +55,7 @@ for id in ids:
     try:
         id3 = output['id_3']
     except:
-        id3=''
+        id3 = ''
     try:
         instances = output['instances']
         for instance in instances:
@@ -67,7 +67,7 @@ for id in ids:
     except:
         pass
     for topContainer in topContainersByResource:
-        topContainerLink = str(id) +'|'+topContainer
+        topContainerLink = str(id) + '|'+topContainer
         if topContainerLink not in topContainerLinks:
             topContainerLinks.append(topContainerLink)
         if topContainer not in uniqueTopContainers:
@@ -79,7 +79,7 @@ for id in ids:
 for topContainerLink in topContainerLinks:
     f2.writerow([topContainerLink[:topContainerLink.index('|')]]+[topContainerLink[topContainerLink.index('|')+1:]])
 
-f3=csv.writer(open('uniqueTopContainersNoAOs.csv', 'w'))
+f3 = csv.writer(open('uniqueTopContainersNoAOs.csv', 'w'))
 f3.writerow(['topContainer'])
 for topContainer in uniqueTopContainers:
     search = requests.get(baseURL+topContainer, headers=headers).json()

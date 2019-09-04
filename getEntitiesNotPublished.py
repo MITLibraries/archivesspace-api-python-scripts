@@ -21,7 +21,7 @@ print(baseURL + '/users/'+user)
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 print(auth)
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 print('authenticated')
 
 endpoint = '/agents/'+type_entity+'?all_ids=true'
@@ -29,7 +29,7 @@ print(endpoint)
 
 ids = requests.get(baseURL + endpoint, headers=headers).json()
 
-f=csv.writer(open('notPublished'+type_entity+'.csv', 'w'))
+f = csv.writer(open('notPublished'+type_entity+'.csv', 'w'))
 f.writerow(['uri']+['publish']+['name']+['date']+['rules']+['creator'])
 
 total = len(ids)

@@ -16,6 +16,7 @@ else:
 
 startTime = time.time()
 
+
 def findKey(d, key):
     if key in d:
         yield d[key]
@@ -25,6 +26,7 @@ def findKey(d, key):
                 for j in findKey(i, key):
                     yield j
 
+
 baseURL = secrets.baseURL
 user = secrets.user
 password = secrets.password
@@ -32,14 +34,14 @@ repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 
 endpoint = '/repositories/'+repository+'/resources?all_ids=true'
 
 ids = requests.get(baseURL + endpoint, headers=headers).json()
 print(len(ids))
 
-f=csv.writer(open('archivalObjectCountByResource.csv', 'w'))
+f = csv.writer(open('archivalObjectCountByResource.csv', 'w'))
 f.writerow(['title']+['bib']+['uri']+['id_0']+['id_1']+['id_2']+['id_3']+['aoCount'])
 
 records = []
@@ -57,7 +59,7 @@ for id in ids:
     try:
         id1 = output['id_1']
     except:
-        id1=''
+        id1 = ''
     try:
         id2 = output['id_2']
     except:
@@ -65,7 +67,7 @@ for id in ids:
     try:
         id3 = output['id_3']
     except:
-        id3=''
+        id3 = ''
 
     treeEndpoint = '/repositories/'+repository+'/resources/'+str(id)+'/tree'
 

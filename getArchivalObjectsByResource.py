@@ -15,6 +15,7 @@ else:
 
 startTime = time.time()
 
+
 def findKey(d, key):
     if key in d:
         yield d[key]
@@ -24,16 +25,17 @@ def findKey(d, key):
                 for j in findKey(i, key):
                     yield j
 
+
 baseURL = secrets.baseURL
 user = secrets.user
 password = secrets.password
 repository = secrets.repository
 
-resourceID= input('Enter resource ID: ')
+resourceID = input('Enter resource ID: ')
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 
 endpoint = '/repositories/'+repository+'/resources/'+resourceID+'/tree'
 

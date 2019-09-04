@@ -4,7 +4,7 @@ import secrets
 import time
 import csv
 
-secretsVersion = raw_input('To edit production server, enter the name of the secrets file: ')
+secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
@@ -23,7 +23,7 @@ repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 
 endpoint = '/repositories/'+repository+'/accessions?all_ids=true'
 
@@ -43,7 +43,7 @@ for id in ids:
         userDefined = ''
 udfs.sort()
 udfsHeader = ['title', 'uri'] + udfs
-f=csv.writer(open('accessionsUdfs.csv', 'w'))
+f = csv.writer(open('accessionsUdfs.csv', 'w'))
 f.writerow(udfsHeader)
 
 for id in ids:

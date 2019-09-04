@@ -23,20 +23,20 @@ repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 
 endpoint = '/repositories/'+repository+'/resources?all_ids=true'
 
 ids = requests.get(baseURL + endpoint, headers=headers).json()
 
-f=csv.writer(open('UserDefinedFieldsFromResources.csv', 'w'))
+f = csv.writer(open('UserDefinedFieldsFromResources.csv', 'w'))
 f.writerow(['title']+['uri']+['bibnum']+['accessionAcknowledged']+['selector']+['assignedTo']+['appraisalLegacy']+['custodialHistory']+['electronicRecordLog']+['relatedMaterialsNote']+['archiveItSeeds']+['appraisal']+['accessionStatus'])
 
 total_resources = len(ids)
 total_accessions = len(ids)
 for id in ids:
     print('id', id, total_resources, 'resource records remaining')
-    total_resources= total_resources - 1
+    total_resources = total_resources - 1
     endpoint = '/repositories/'+repository+'/resources/'+str(id)
     output = requests.get(baseURL + endpoint, headers=headers).json()
     title = output['title']

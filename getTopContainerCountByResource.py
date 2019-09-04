@@ -23,19 +23,19 @@ repository = secrets.repository
 
 auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
 session = auth["session"]
-headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
+headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 
 endpoint = '/repositories/'+repository+'/resources?all_ids=true'
 
 ids = requests.get(baseURL + endpoint, headers=headers).json()
 
-f=csv.writer(open('topContainerCountByResource.csv', 'w'))
+f = csv.writer(open('topContainerCountByResource.csv', 'w'))
 f.writerow(['title']+['bib']+['uri']+['id_0']+['id_1']+['id_2']+['id_3']+['topContainerCount'])
 
-f2=csv.writer(open('topContainersLinks.csv', 'w'))
+f2 = csv.writer(open('topContainersLinks.csv', 'w'))
 f2.writerow(['resourceUri']+['topContainerUri'])
 
-f3=csv.writer(open('uniqueTopContainers.csv', 'w'))
+f3 = csv.writer(open('uniqueTopContainers.csv', 'w'))
 f3.writerow(['topContainer']+['indicator']+['barcode'])
 
 
@@ -54,13 +54,13 @@ for id in ids:
     try:
         bib = output['user_defined']['real_1']
     except:
-        bib =''
+        bib = ''
     print(bib)
     id0 = output['id_0']
     try:
         id1 = output['id_1']
     except:
-        id1=''
+        id1 = ''
     try:
         id2 = output['id_2']
     except:
@@ -68,7 +68,7 @@ for id in ids:
     try:
         id3 = output['id_3']
     except:
-        id3= ''
+        id3 = ''
     page = 1
     resultsPage = ''
     results = []
