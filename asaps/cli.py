@@ -1,5 +1,5 @@
 import click
-from asaps import models
+import models
 from asnake.client import ASnakeClient
 
 
