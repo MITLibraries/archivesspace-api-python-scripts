@@ -22,6 +22,13 @@ def test_get_record(as_ops):
         assert response.json_string == json_object
 
 
+def test_record_is_modified():
+    record = models.Resource()
+    assert not record.modified
+    record.title = "I am different"
+    assert record.modified
+
+
 def test_search():
     """Test search method."""
     assert False

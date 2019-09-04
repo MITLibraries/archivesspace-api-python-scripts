@@ -1,3 +1,4 @@
+import hashlib
 import json
 import attr
 from functools import partial
@@ -90,6 +91,16 @@ class BaseRecord:
     old_value = Field()
     new_value = Field()
 
+    def __attrs_post_init__(self):
+        self.__update_hash__()
+
+    def __update_hash__(self):
+        self.__record_hash__ = hash_record(self)
+
+    @property
+    def modified(self):
+        return self.__record_hash__ != hash_record(self)
+
 
 @attr.s
 class Resource(BaseRecord):
@@ -108,6 +119,11 @@ class ArchivalObject(BaseRecord):
     ref_id = Field()
     parent = Field()
     resource = Field()
+
+
+def hash_record(record):
+    return hashlib.sha1(json.dumps(attr.asdict(record), ensure_ascii=False,
+                                   sort_keys=True).encode("utf-8")).digest()
 
 
 # output functions
