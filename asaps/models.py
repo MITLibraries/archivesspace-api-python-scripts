@@ -15,8 +15,6 @@ class AsOperations:
     def __init__(self, client):
         """Create instance and import client as attribute."""
         self.client = client
-        start_time = time.time()
-        self.start_time = start_time
 
     def get_record(self, uri):
         """Retrieve an individual record."""

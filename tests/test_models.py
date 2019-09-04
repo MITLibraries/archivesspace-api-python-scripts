@@ -6,7 +6,7 @@ import pytest
 
 @pytest.fixture
 def as_ops():
-    client = ASnakeClient(baseurl='https://example.com', username='test',
+    client = ASnakeClient(baseurl='mock://example.com', username='test',
                           password='test')
     as_ops = models.AsOperations(client)
     return as_ops
@@ -24,49 +24,49 @@ def test_get_record(as_ops):
 
 def test_search():
     """Test search method."""
-    pass
+    assert False
 
 
 def test_post_record():
     """Test post_record method."""
-    pass
+    assert False
 
 
 def test__pop_inst():
     """Test _pop_inst method."""
-    pass
+    assert False
 
 
 def test_download_json():
     """Test download_json function."""
-    pass
+    assert False
 
 
 def test_create_csv():
     """Test create_csv function."""
-    pass
+    assert False
 
 
 def test_filter_note_type():
     """Test filter_note_type function."""
-    pass
+    assert False
 
 
 def test_replace_str():
     """Test replace_str function."""
-    pass
+    assert False
 
 
 def test_update_record():
     """Test update_record function."""
-    pass
+    assert False
 
 
 def test_find_key():
     """Test find_key function."""
-    pass
+    assert False
 
 
 def test_get_aos_for_resource():
     """Test get_aos_for_resource function."""
-    pass
+    assert False
