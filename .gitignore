@@ -56,5 +56,6 @@ local/*
 *.xml
 *.xslx
 *.txt
+!requirements.txt
 *.sql
 .env
