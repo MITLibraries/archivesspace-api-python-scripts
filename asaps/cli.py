@@ -8,14 +8,19 @@ from asnake.client import ASnakeClient
 @click.option('-u', '--username', prompt='Enter username',
               help='The username for authentication.')
 @click.option('-p', '--password', prompt='Enter password',
-              hide_input=True,
+              hide_input=True, envvar='DOCKER_PASS',
               help='The password for authentication.')
 def main(url, username, password):
     client = ASnakeClient(baseurl=url, username=username,
                           password=password)
     as_ops = models.AsOperations(client)
-    record = as_ops.get_record('/repositories/2/resources/423')
-    print(record)
+    rec_obj = as_ops.get_record('/repositories/2/resources/423')
+    print(rec_obj)
+    # csv_data = []
+    # rec_obj = models.filter_note_type(client, csv_data, rec_obj,
+    #                                   'accessrestrict', 'replace_str', 'The',
+    #                                   'barg')
+    #results = as_ops.search('Chomsky', '2', 'resource')
 
 
 if __name__ == '__main__':

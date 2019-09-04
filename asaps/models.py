@@ -7,6 +7,7 @@ import csv
 import datetime
 import time
 import copy
+import hashlib
 
 op = operator.attrgetter('name')
 Field = partial(attr.ib, default=None)
@@ -20,7 +21,6 @@ class AsOperations:
     def get_record(self, uri):
         """Retrieve an individual record."""
         record = self.client.get(uri).json()
-        print(uri)
         rec_type = record['jsonmodel_type']
         if rec_type == 'resource':
             rec_obj = self._pop_inst(Resource, record)
@@ -46,7 +46,7 @@ class AsOperations:
 
     def post_record(self, rec_obj, csv_row, csv_data):
         """Update ArchivesSpace record with POST of JSON data."""
-        payload = rec_obj.updated_json_string
+        payload = rec_obj.json_string
         payload = json.dumps(payload)
         post = self.client.post(rec_obj.uri, data=payload)
         print(post.status_code)
@@ -54,14 +54,13 @@ class AsOperations:
         csv_row['post'] = post
         csv_data.append(csv_row)
         print(csv_row)
+        return csv_row
 
     def _pop_inst(self, class_type, rec_obj):
         """Populate class instance with data from record."""
         fields = [op(field) for field in attr.fields(class_type)]
         kwargs = {k: v for k, v in rec_obj.items() if k in fields}
         kwargs['json_string'] = rec_obj
-        upd_rec = copy.deepcopy(rec_obj)
-        kwargs['updated_json_string'] = upd_rec
         rec_obj = class_type(**kwargs)
         return rec_obj
 
@@ -87,7 +86,6 @@ class BaseRecord:
     content = Field()
     objtype = Field()
     json_string = Field()
-    updated_json_string = Field()
     old_value = Field()
     new_value = Field()
 
@@ -156,7 +154,7 @@ def filter_note_type(client, csv_data, rec_obj, note_type, operation,
 
     Triggers post of updated record if changes are made.
     """
-    for note in rec_obj.updated_json_string['notes']:
+    for note in rec_obj.json_string['notes']:
         try:
             if note['type'] == note_type:
                 for subnote in note['subnotes']:
@@ -164,7 +162,8 @@ def filter_note_type(client, csv_data, rec_obj, note_type, operation,
                         fieldval = subnote['content']
                         new_value = replace_str(rec_obj, fieldval, old_string,
                                                 new_string)
-                        subnote['content'] = new_value
+                        if subnote['content'] != new_value:
+                            subnote['content'] = new_value
         except KeyError:
             pass
     return rec_obj
@@ -173,15 +172,16 @@ def filter_note_type(client, csv_data, rec_obj, note_type, operation,
 def replace_str(rec_obj, fieldval, old_string, new_string):
     """Replace string in field."""
     old_value = fieldval
-    rec_obj.old_value = old_value
     new_value = old_value.replace(old_string, new_string)
-    rec_obj.new_value = new_value
+    if old_value != new_value:
+        rec_obj.old_value = old_value
+        rec_obj.new_value = new_value
     return new_value
 
 
 def update_record(client, csv_data, rec_obj, log_only=True):
     """Verify record has changed, prepare CSV data, and trigger POST."""
-    if rec_obj.updated_json_string != rec_obj.json_string:
+    if rec_obj.modified is True:
         csv_row = {'uri': rec_obj.uri, 'old_value': rec_obj.old_value,
                    'new_value': rec_obj.new_value}
         if log_only is True:
