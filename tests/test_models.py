@@ -22,51 +22,51 @@ def test_get_record(as_ops):
         assert response.json_string == json_object
 
 
-def test_search():
-    """Test search method."""
-    assert False
-
-
-def test_post_record():
-    """Test post_record method."""
-    assert False
-
-
-def test__pop_inst():
-    """Test _pop_inst method."""
-    assert False
-
-
-def test_download_json():
-    """Test download_json function."""
-    assert False
-
-
-def test_create_csv():
-    """Test create_csv function."""
-    assert False
-
-
-def test_filter_note_type():
-    """Test filter_note_type function."""
-    assert False
-
-
-def test_replace_str():
-    """Test replace_str function."""
-    assert False
-
-
-def test_update_record():
-    """Test update_record function."""
-    assert False
-
-
-def test_find_key():
-    """Test find_key function."""
-    assert False
-
-
-def test_get_aos_for_resource():
-    """Test get_aos_for_resource function."""
-    assert False
+# def test_search(as_ops):
+#     """Test search method."""
+#     assert False
+#
+#
+# def test_post_record(as_ops):
+#     """Test post_record method."""
+#     assert False
+#
+#
+# def test__pop_inst():
+#     """Test _pop_inst method."""
+#     assert False
+#
+#
+# def test_download_json():
+#     """Test download_json function."""
+#     assert False
+#
+#
+# def test_create_csv():
+#     """Test create_csv function."""
+#     assert False
+#
+#
+# def test_filter_note_type():
+#     """Test filter_note_type function."""
+#     assert False
+#
+#
+# def test_replace_str():
+#     """Test replace_str function."""
+#     assert False
+#
+#
+# def test_update_record():
+#     """Test update_record function."""
+#     assert False
+#
+#
+# def test_find_key():
+#     """Test find_key function."""
+#     assert False
+#
+#
+# def test_get_aos_for_resource():
+#     """Test get_aos_for_resource function."""
+#     assert False
