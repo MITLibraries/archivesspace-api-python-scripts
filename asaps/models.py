@@ -1,5 +1,3 @@
-from asnake.client import ASnakeClient
-import importlib
 import json
 import attr
 from functools import partial
@@ -13,24 +11,14 @@ op = operator.attrgetter('name')
 Field = partial(attr.ib, default=None)
 
 
-class Client:
-    def __init__(self, secfile):
-        """Select secrets.py file for the appropriate instance."""
-        secfile_exists = importlib.util.find_spec(secfile)
-        if secfile_exists is not None:
-            secrets = __import__(secfile)
-        else:
-            secrets = __import__('secretsDocker')
-        print('Editing ' + secfile + ' ' + secrets.baseURL)
-        authclient = ASnakeClient(baseurl=secrets.baseURL,
-                                  username=secrets.user,
-                                  password=secrets.password)
-        authclient.authorize()
-        self.authclient = authclient
+class AsOperations:
+    def __init__(self, client):
+        """Create instance and import client as attribute."""
+        self.client = client
 
     def get_record(self, uri):
         """Retrieve an individual record."""
-        record = self.authclient.get(uri).json()
+        record = self.client.get(uri).json()
         print(uri)
         rec_type = record['jsonmodel_type']
         if rec_type == 'resource':
@@ -43,11 +31,11 @@ class Client:
             raise Exception("Invalid record type")
         return rec_obj
 
-    def string_search(self, string, repo_id, rec_type):
+    def search(self, string, repo_id, rec_type):
         """Search for a string across a particular record type."""
         endpoint = (f'repositories/{repo_id}/search?q="{string}'
                     f'"&page_size=100&type[]={rec_type}')
-        results = self.authclient.get_paged(endpoint)
+        results = self.client.get_paged(endpoint)
         uris = []
         for result in results:
             uri = result['uri']
@@ -55,11 +43,11 @@ class Client:
         print(len(uris))
         return uris
 
-    def post_record(self, rec, csv_row, csv_data):
+    def post_record(self, rec_obj, csv_row, csv_data):
         """Update ArchivesSpace record with POST of JSON data."""
         payload = rec_obj.updated_json_string
         payload = json.dumps(payload)
-        post = self.authclient.post(rec_obj.uri, data=payload)
+        post = self.client.post(rec_obj.uri, data=payload)
         print(post.status_code)
         post = post.json()
         csv_row['post'] = post
@@ -175,14 +163,17 @@ def replace_str(rec_obj, fieldval, old_string, new_string):
     return new_value
 
 
-def update_record(client, csv_data, rec_obj):
+def update_record(client, csv_data, rec_obj, log_only=True):
     """Verify record has changed, prepare CSV data, and trigger POST."""
     if rec_obj.updated_json_string != rec_obj.json_string:
         csv_row = {'uri': rec_obj.uri, 'old_value': rec_obj.old_value,
                    'new_value': rec_obj.new_value}
-        # csv_data.append(csv_row)
-        # print(csv_row)
-        client.post_record(rec_obj, csv_row, csv_data)
+        if log_only is True:
+            csv_data.append(csv_row)
+            print(csv_row)
+        else:
+            print('Posting ' + rec_obj.uri)
+            client.post_record(rec_obj, csv_row, csv_data)
     else:
         print('Record not posted - ' + rec_obj.uri + ' was not changed')
 
@@ -199,7 +190,7 @@ def find_key(nest_dict, key):
 
 def get_aos_for_resource(client, uri, aolist):
     """Get archival objects associated with a resource."""
-    output = client.authclient.get(uri + '/tree').json()
+    output = client.client.get(uri + '/tree').json()
     for ao_uri in find_key(output, 'record_uri'):
         if 'archival_objects' in ao_uri:
             aolist.append(ao_uri)
@@ -209,76 +200,3 @@ def elapsed_time(start_time, label):
     """Calculate elapsed time."""
     td = datetime.timedelta(seconds=time.time() - start_time)
     print(label + ': {}'.format(td))
-
-
-def asmain():
-    """Create client and run functions."""
-    start_time = time.time()
-    client = Client('secretsDocker')
-
-    # res: 1 min, none ao: 3 min, none
-    # corrdict = {'IASC': 'DDC'}
-    # res: 51 min, 979 ao: 9 min, none
-    corr_dict = {'Institute Archives and Special Collections':
-                 'Department of Distinctive Collections'}
-    # res:  25 min, 193 ao: 192 min, 3
-    corr_dict = {'the Institute Archives': 'Distinctive Collections'}
-    # res:  14 min, none ao: 192 min, none
-    # corrdict = {'Institute Archives': 'Distinctive Collections'}
-
-    error_uris = ['/repositories/2/resources/424',
-                  '/repositories/2/resources/1233',
-                  '/repositories/2/resources/377',
-                  '/repositories/2/resources/356',
-                  '/repositories/2/resources/228',
-                  '/repositories/2/resources/658',
-                  '/repositories/2/resources/635',
-                  '/repositories/2/resources/704',
-                  '/repositories/2/resources/202',
-                  '/repositories/2/resources/586']
-
-    skipped_resources = ['/repositories/2/resources/535',
-                         '/repositories/2/resources/41',
-                         '/repositories/2/resources/111',
-                         '/repositories/2/resources/367',
-                         '/repositories/2/resources/231',
-                         '/repositories/2/resources/561',
-                         '/repositories/2/resources/563',
-                         '/repositories/2/resources/103']
-    skipped_aos = []
-    print('building skipped uris list')
-    for uri in skipped_resources:
-        get_aos_for_resource(client, uri, skipped_aos)
-    skipped_uris = error_uris + skipped_resources + skipped_aos
-    print('skipped uris list built')
-    csv_data = []
-    # rec_type = 'resource'
-    rec_type = 'archival_object'
-    note_types = ['accessrestrict', 'prefercite']
-    for old, new in corr_dict.items():
-        uris = client.string_search(old, '2', rec_type)
-        remaining = len(uris)
-        print(remaining)
-        for uri in uris:
-            remaining -= 1
-            if uri not in skipped_uris:
-                for note_type in note_types:
-                    print(old, rec_type, note_type, remaining)
-                    rec_obj = client.get_record(uri)
-                    rec_obj = filter_note_type(client, csv_data, rec_obj,
-                                               note_type, 'replace_str', old,
-                                               new)
-                    update_record(client, csv_data, rec_obj)
-                    print(csv_data)
-                    print(len(csv_data))
-            else:
-                print(uri, ' skipped')
-        if len(csv_data) != 0:
-            createcsv(csv_data, 'replace_str')
-        else:
-            print('No files updated')
-    elapsed_time(start_time, 'Elapsed time')
-
-
-if __name__ == '__main__':
-    asmain()

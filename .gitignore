@@ -57,3 +57,4 @@ local/*
 *.xslx
 *.txt
 *.sql
+.env
