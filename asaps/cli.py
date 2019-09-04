@@ -14,12 +14,8 @@ def main(url, username, password):
     client = ASnakeClient(baseurl=url, username=username,
                           password=password)
     as_ops = models.AsOperations(client)
-    # record = as_ops.get_record('/repositories/2/resources/423')
-    # print(record)
-    results = as_ops.search('Chomsky', '2', 'resource')
-    for result in results:
-        print(result)
-        # models.download_json(result)
+    record = as_ops.get_record('/repositories/2/resources/423')
+    print(record)
 
 
 if __name__ == '__main__':
