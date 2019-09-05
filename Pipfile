@@ -9,11 +9,9 @@ flake8 = "*"
 requests-mock = "*"
 
 [packages]
-lxml = "*"
-sickle = "*"
 archivessnake = "*"
 click = "*"
-requests-mock = "*"
+attrs = "*"
 
 [requires]
 python_version = "3.7"
