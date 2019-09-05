@@ -159,11 +159,10 @@ def filter_note_type(client, csv_data, rec_obj, note_type, operation,
             if note['type'] == note_type:
                 for subnote in note['subnotes']:
                     if operation == 'replace_str':
-                        fieldval = subnote['content']
-                        new_value = replace_str(rec_obj, fieldval, old_string,
-                                                new_string)
-                        if subnote['content'] != new_value:
-                            subnote['content'] = new_value
+                        subnote['content'] = replace_str(rec_obj,
+                                                         subnote['content'],
+                                                         old_string,
+                                                         new_string)
         except KeyError:
             pass
     return rec_obj
