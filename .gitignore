@@ -59,3 +59,4 @@ local/*
 !requirements.txt
 *.sql
 .env
+*.log
