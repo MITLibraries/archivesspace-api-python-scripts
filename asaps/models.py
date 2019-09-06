@@ -39,13 +39,7 @@ class AsOperations:
         """Search for a string across a particular record type."""
         endpoint = (f'repositories/{repo_id}/search?q="{string}'
                     f'"&page_size=100&type[]={rec_type}')
-        results = self.client.get_paged(endpoint)
-        uris = []
-        for result in results:
-            uri = result['uri']
-            uris.append(uri)
-        logger.info(f'{len(uris)} results')
-        return uris
+        return self.client.get_paged(endpoint)
 
     def post_record(self, rec_obj, csv_row, csv_data):
         """Update ArchivesSpace record with POST of JSON data."""
