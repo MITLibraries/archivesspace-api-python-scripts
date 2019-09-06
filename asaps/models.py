@@ -13,7 +13,7 @@ op = operator.attrgetter('name')
 Field = partial(attr.ib, default=None)
 
 logging.config.fileConfig(fname='logging.cfg', disable_existing_loggers=False)
-logger = logging.getLogger('asaps_logger')
+logger = logging.getLogger(__name__)
 
 
 class AsOperations:
