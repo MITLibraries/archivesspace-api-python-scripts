@@ -14,13 +14,17 @@ def main(url, username, password):
     client = ASnakeClient(baseurl=url, username=username,
                           password=password)
     as_ops = models.AsOperations(client)
-    rec_obj = as_ops.get_record('/repositories/2/resources/423')
-    print(rec_obj)
+
+    # # Sample code for testing
+    # rec_obj = as_ops.get_record('/repositories/2/resources/423')
+    # print(rec_obj)
     # csv_data = []
     # rec_obj = models.filter_note_type(client, csv_data, rec_obj,
     #                                   'accessrestrict', 'replace_str', 'The',
     #                                   'barg')
-    #results = as_ops.search('Chomsky', '2', 'resource')
+    results = as_ops.search('Chomsky', '2', 'resource')
+    for result in results:
+        print(result['uri'])
 
 
 if __name__ == '__main__':
