@@ -6,11 +6,14 @@ import operator
 import csv
 import datetime
 import time
-import copy
-import hashlib
+import logging
+import logging.config
 
 op = operator.attrgetter('name')
 Field = partial(attr.ib, default=None)
+
+logging.config.fileConfig(fname='logging.cfg', disable_existing_loggers=False)
+logger = logging.getLogger(__name__)
 
 
 class AsOperations:
@@ -41,7 +44,7 @@ class AsOperations:
         for result in results:
             uri = result['uri']
             uris.append(uri)
-        print(len(uris))
+        logger.info(f'{len(uris)} results')
         return uris
 
     def post_record(self, rec_obj, csv_row, csv_data):
@@ -49,11 +52,11 @@ class AsOperations:
         payload = rec_obj.json_string
         payload = json.dumps(payload)
         post = self.client.post(rec_obj.uri, data=payload)
-        print(post.status_code)
+        logger.info(post.status_code)
         post = post.json()
         csv_row['post'] = post
         csv_data.append(csv_row)
-        print(csv_row)
+        logger.info(csv_row)
         return csv_row
 
     def _pop_inst(self, class_type, rec_obj):
@@ -185,12 +188,12 @@ def update_record(client, csv_data, rec_obj, log_only=True):
                    'new_value': rec_obj.new_value}
         if log_only is True:
             csv_data.append(csv_row)
-            print(csv_row)
+            logger.info(csv_row)
         else:
-            print('Posting ' + rec_obj.uri)
+            logger.info(f'Posting {rec_obj.uri}')
             client.post_record(rec_obj, csv_row, csv_data)
     else:
-        print('Record not posted - ' + rec_obj.uri + ' was not changed')
+        logger.info(f'Record not posted - {rec_obj.uri} was not changed')
 
 
 def find_key(nest_dict, key):
@@ -214,4 +217,4 @@ def get_aos_for_resource(client, uri, aolist):
 def elapsed_time(start_time, label):
     """Calculate elapsed time."""
     td = datetime.timedelta(seconds=time.time() - start_time)
-    print(label + ': {}'.format(td))
+    logger.info(f'{label} : {td}')
