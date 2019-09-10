@@ -19,13 +19,13 @@ def test_get_record(as_ops):
         json_object = {'jsonmodel_type': 'resource'}
         m.get(uri, json=json_object)
         response = as_ops.get_record(uri)
-        assert response.json_string == json_object
+        assert response == json_object
 
 
 def test_record_is_modified():
-    record = models.Resource()
+    record = models.Record()
     assert not record.modified
-    record.title = "I am different"
+    record['title'] = "I am different"
     assert record.modified
 
 
