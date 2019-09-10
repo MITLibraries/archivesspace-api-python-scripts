@@ -16,17 +16,17 @@ def main(url, username, password):
     as_ops = models.AsOperations(client)
 
     # # Sample code for testing
-    # csv_data = []
+    csv_data = []
     rec_obj = as_ops.get_record('/repositories/2/resources/423')
-    models.download_json(rec_obj)
+    # models.download_json(rec_obj)
     # rec_obj = models.filter_note_type(client, csv_data, rec_obj,
     #                                   'accessrestrict', 'replace_str', 'The',
     #                                   'barg')
     # print(rec_obj['notes'])
-    # csv_row = {}
-    # response = as_ops.post_record(rec_obj, csv_row, csv_data)
-    # csv_row['response'] = response
-    # csv_data.append(csv_row)
+    csv_row = {}
+    response = as_ops.save_record(rec_obj)
+    csv_row['response'] = response
+    csv_data.append(csv_row)
     # results = as_ops.search('Chomsky', '2', 'resource')
     # for result in results:
     #     print(result['uri'])
