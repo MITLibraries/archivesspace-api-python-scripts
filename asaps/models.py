@@ -24,16 +24,7 @@ class AsOperations:
     def get_record(self, uri):
         """Retrieve an individual record."""
         record = self.client.get(uri).json()
-        rec_type = record['jsonmodel_type']
-        if rec_type == 'resource':
-            rec_obj = self._pop_inst(Resource, record)
-        elif rec_type == 'accession':
-            rec_obj = self._pop_inst(Accession, record)
-        elif rec_type == 'archival_object':
-            rec_obj = self._pop_inst(ArchivalObject, record)
-        else:
-            raise Exception("Invalid record type")
-        return rec_obj
+        return Record(record)
 
     def search(self, string, repo_id, rec_type):
         """Search for a string across a particular record type."""
@@ -62,62 +53,21 @@ class AsOperations:
         return rec_obj
 
 
-@attr.s
-class BaseRecord:
-    uri = Field()
-    title = Field()
-    jsonmodel_type = Field()
-    level = Field()
-    publish = Field()
-    id_0 = Field()
-    id_1 = Field()
-    id_2 = Field()
-    id_3 = Field()
-    dates = Field()
-    extents = Field()
-    instances = Field()
-    notes = Field()
-    subjects = Field()
-    linked_agents = Field()
-    label = Field()
-    content = Field()
-    objtype = Field()
-    json_string = Field()
-    old_value = Field()
-    new_value = Field()
+class Record(dict):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__update_hash()
 
-    def __attrs_post_init__(self):
-        self.__update_hash__()
-
-    def __update_hash__(self):
-        self.__record_hash__ = hash_record(self)
+    def __update_hash(self):
+        self.__record_hash = hash_record(self)
 
     @property
     def modified(self):
-        return self.__record_hash__ != hash_record(self)
-
-
-@attr.s
-class Resource(BaseRecord):
-    related_accessions = Field()
-    tree = Field()
-
-
-@attr.s
-class Accession(BaseRecord):
-    related_accessions = Field()
-    related_resources = Field()
-
-
-@attr.s
-class ArchivalObject(BaseRecord):
-    ref_id = Field()
-    parent = Field()
-    resource = Field()
+        return self.__record_hash != hash_record(self)
 
 
 def hash_record(record):
-    return hashlib.sha1(json.dumps(attr.asdict(record), ensure_ascii=False,
+    return hashlib.sha1(json.dumps(record, ensure_ascii=False,
                                    sort_keys=True).encode("utf-8")).digest()
 
 
