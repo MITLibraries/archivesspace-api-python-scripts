@@ -34,23 +34,14 @@ class AsOperations:
 
     def post_record(self, rec_obj, csv_row, csv_data):
         """Update ArchivesSpace record with POST of JSON data."""
-        payload = rec_obj.json_string
-        payload = json.dumps(payload)
-        post = self.client.post(rec_obj.uri, data=payload)
+        payload = json.dumps(rec_obj)
+        post = self.client.post(rec_obj['uri'], data=payload)
         logger.info(post.status_code)
         post = post.json()
         csv_row['post'] = post
         csv_data.append(csv_row)
         logger.info(csv_row)
         return csv_row
-
-    def _pop_inst(self, class_type, rec_obj):
-        """Populate class instance with data from record."""
-        fields = [op(field) for field in attr.fields(class_type)]
-        kwargs = {k: v for k, v in rec_obj.items() if k in fields}
-        kwargs['json_string'] = rec_obj
-        rec_obj = class_type(**kwargs)
-        return rec_obj
 
 
 class Record(dict):
@@ -74,10 +65,10 @@ def hash_record(record):
 # output functions
 def download_json(rec_obj):
     """Download a JSON file."""
-    uri = rec_obj.uri
+    uri = rec_obj['uri']
     file_name = uri[1:len(uri)].replace('/', '-')
     f = open(file_name + '.json', 'w')
-    json.dump(rec_obj.json_string, f)
+    json.dump(rec_obj, f)
     f.close()
 
 
@@ -101,7 +92,7 @@ def filter_note_type(client, csv_data, rec_obj, note_type, operation,
 
     Triggers post of updated record if changes are made.
     """
-    for note in rec_obj.json_string['notes']:
+    for note in rec_obj['notes']:
         try:
             if note['type'] == note_type:
                 for subnote in note['subnotes']:
@@ -119,25 +110,25 @@ def replace_str(rec_obj, fieldval, old_string, new_string):
     """Replace string in field."""
     old_value = fieldval
     new_value = old_value.replace(old_string, new_string)
-    if old_value != new_value:
-        rec_obj.old_value = old_value
-        rec_obj.new_value = new_value
+    # if old_value != new_value:
+    #     rec_obj.old_value = old_value
+    #     rec_obj.new_value = new_value
     return new_value
 
 
-def update_record(client, csv_data, rec_obj, log_only=True):
-    """Verify record has changed, prepare CSV data, and trigger POST."""
-    if rec_obj.modified is True:
-        csv_row = {'uri': rec_obj.uri, 'old_value': rec_obj.old_value,
-                   'new_value': rec_obj.new_value}
-        if log_only is True:
-            csv_data.append(csv_row)
-            logger.info(csv_row)
-        else:
-            logger.info(f'Posting {rec_obj.uri}')
-            client.post_record(rec_obj, csv_row, csv_data)
-    else:
-        logger.info(f'Record not posted - {rec_obj.uri} was not changed')
+# def update_record(client, csv_data, rec_obj, log_only=True):
+#     """Verify record has changed, prepare CSV data, and trigger POST."""
+#     if rec_obj.modified is True:
+#         csv_row = {'uri': rec_obj['uri'], 'old_value': rec_obj.old_value,
+#                    'new_value': rec_obj.new_value}
+#         if log_only is True:
+#             csv_data.append(csv_row)
+#             logger.info(csv_row)
+#         else:
+#             logger.info(f'Posting {rec_obj["uri"]}')
+#             client.post_record(rec_obj, csv_row, csv_data)
+#     else:
+#         logger.info(f'Record not posted - {rec_obj["uri"]} was not changed')
 
 
 def find_key(nest_dict, key):
