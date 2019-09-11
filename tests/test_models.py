@@ -2,6 +2,7 @@ import requests_mock
 from asaps import models
 from asnake.client import ASnakeClient
 import pytest
+import os
 
 
 @pytest.fixture
@@ -29,29 +30,49 @@ def test_record_is_modified():
     assert record.modified
 
 
-# def test_search(as_ops):
-#     """Test search method."""
-#     assert False
-#
-#
-# def test_post_record(as_ops):
-#     """Test post_record method."""
-#     assert False
-#
-#
-# def test__pop_inst():
-#     """Test _pop_inst method."""
-#     assert False
-#
-#
-# def test_download_json():
-#     """Test download_json function."""
-#     assert False
-#
-#
-# def test_create_csv():
-#     """Test create_csv function."""
-#     assert False
+def test_search(as_ops):
+    """Test search method."""
+    with requests_mock.Mocker() as m:
+        string = 'string'
+        repo_id = '2'
+        rec_type = 'resource'
+        json_object = [{'uri': '1234'}]
+        url = f'mock://example.com/repositories/2/search?q="{string}'
+        url += f'"&page_size=100&type[]={rec_type}'
+        m.get(url, json=json_object)
+        response = as_ops.search(string, repo_id, rec_type)
+        for result in response:
+            assert result == json_object[0]
+
+
+def test_save_record(as_ops):
+    """Test post_record method."""
+    with requests_mock.Mocker() as m:
+        rec_obj = models.Record()
+        uri = '/repositories/2/resources/423'
+        rec_obj['uri'] = uri
+        json_object = {'post': 'Success'}
+        m.post(uri, json=json_object)
+        response = as_ops.save_record(rec_obj)
+        assert response == json_object
+
+
+def test_download_json(as_ops):
+    """Test download_json function."""
+    rec_obj = models.Record()
+    rec_obj['uri'] = '/test/123'
+    path = models.download_json(rec_obj)
+    assert os.path.isfile(path)
+    os.remove(path)
+
+
+def test_create_csv(as_ops):
+    """Test create_csv function."""
+    csv_data = [{'test1': '1', 'test2': '2'}]
+    file_name = 'test'
+    full_file_name = models.create_csv(csv_data, file_name)
+    assert os.path.isfile(full_file_name)
+    os.remove(full_file_name)
 #
 #
 # def test_filter_note_type():

@@ -8,6 +8,7 @@ import datetime
 import time
 import logging
 import logging.config
+import os
 
 op = operator.attrgetter('name')
 Field = partial(attr.ib, default=None)
@@ -66,9 +67,10 @@ def download_json(rec_obj):
     f = open(file_name + '.json', 'w')
     json.dump(rec_obj, f)
     f.close()
+    return f.name
 
 
-def createcsv(csv_data, file_name):
+def create_csv(csv_data, file_name):
     """Create CSV file from list of dicts.
 
     Example: {'uri': rec_obj.uri,
@@ -76,10 +78,13 @@ def createcsv(csv_data, file_name):
     """
     date = datetime.datetime.now().strftime('%Y-%m-%d %H.%M.%S')
     header = list(csv_data[0].keys())
-    f = csv.DictWriter(open(file_name + date + '.csv', 'w'), fieldnames=header)
-    f.writeheader()
-    for csv_row in csv_data:
-        f.writerow(csv_row)
+    full_file_name = os.path.abspath(f'{file_name}{date}.csv')
+    with open(full_file_name, 'w') as fp:
+        f = csv.DictWriter(fp, fieldnames=header)
+        f.writeheader()
+        for csv_row in csv_data:
+            f.writerow(csv_row)
+    return full_file_name
 
 
 def filter_note_type(client, csv_data, rec_obj, note_type, operation,
