@@ -8,6 +8,7 @@ import datetime
 import time
 import logging
 import logging.config
+import os
 
 op = operator.attrgetter('name')
 Field = partial(attr.ib, default=None)
@@ -77,11 +78,12 @@ def create_csv(csv_data, file_name):
     """
     date = datetime.datetime.now().strftime('%Y-%m-%d %H.%M.%S')
     header = list(csv_data[0].keys())
-    full_file_name = file_name + date + '.csv'
-    f = csv.DictWriter(open(full_file_name, 'w'), fieldnames=header)
-    f.writeheader()
-    for csv_row in csv_data:
-        f.writerow(csv_row)
+    full_file_name = os.path.abspath(f'{file_name}{date}.csv')
+    with open(full_file_name, 'w') as fp:
+        f = csv.DictWriter(fp, fieldnames=header)
+        f.writeheader()
+        for csv_row in csv_data:
+            f.writerow(csv_row)
     return full_file_name
 
 

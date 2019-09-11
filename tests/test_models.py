@@ -71,10 +71,8 @@ def test_create_csv(as_ops):
     csv_data = [{'test1': '1', 'test2': '2'}]
     file_name = 'test'
     full_file_name = models.create_csv(csv_data, file_name)
-    cwd = os.getcwd()
-    path = os.path.join(cwd, full_file_name)
-    assert os.path.isfile(path)
-    os.remove(path)
+    assert os.path.isfile(full_file_name)
+    os.remove(full_file_name)
 #
 #
 # def test_filter_note_type():
