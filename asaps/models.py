@@ -34,8 +34,7 @@ class AsOperations:
 
     def save_record(self, rec_obj):
         """Update ArchivesSpace record with POST of JSON data."""
-        data = json.dumps(rec_obj)
-        response = self.client.post(rec_obj['uri'], data=data)
+        response = self.client.post(rec_obj['uri'], json=rec_obj)
         response.raise_for_status()
         logger.info(response.json())
         return response.json()
