@@ -32,16 +32,12 @@ class AsOperations:
                     f'"&page_size=100&type[]={rec_type}')
         return self.client.get_paged(endpoint)
 
-    def post_record(self, rec_obj, csv_row, csv_data):
+    def save_record(self, rec_obj):
         """Update ArchivesSpace record with POST of JSON data."""
-        payload = json.dumps(rec_obj)
-        post = self.client.post(rec_obj['uri'], data=payload)
-        logger.info(post.status_code)
-        post = post.json()
-        csv_row['post'] = post
-        csv_data.append(csv_row)
-        logger.info(csv_row)
-        return csv_row
+        response = self.client.post(rec_obj['uri'], json=rec_obj)
+        response.raise_for_status()
+        logger.info(response.json())
+        return response.json()
 
 
 class Record(dict):
