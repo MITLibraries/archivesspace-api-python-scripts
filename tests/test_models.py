@@ -1,8 +1,10 @@
-import requests_mock
-from asaps import models
+import os
+
 from asnake.client import ASnakeClient
 import pytest
-import os
+import requests_mock
+
+from asaps import models
 
 
 @pytest.fixture

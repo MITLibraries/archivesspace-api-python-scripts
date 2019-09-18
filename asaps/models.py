@@ -1,14 +1,16 @@
-import hashlib
-import json
-import attr
-from functools import partial
-import operator
 import csv
 import datetime
-import time
+from functools import partial
+import hashlib
+import json
 import logging
 import logging.config
+import operator
 import os
+import time
+
+import attr
+
 
 op = operator.attrgetter('name')
 Field = partial(attr.ib, default=None)
