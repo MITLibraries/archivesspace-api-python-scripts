@@ -1,6 +1,7 @@
-import click
-import models
 from asnake.client import ASnakeClient
+import click
+
+from asaps import models
 
 
 @click.command()
