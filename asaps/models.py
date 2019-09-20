@@ -42,12 +42,14 @@ class AsOperations:
         logger.info(response.json())
         return response.json()
 
-    def get_aos_for_resource(self, uri, aolist):
+    def get_aos_for_resource(self, uri):
         """Get archival objects associated with a resource."""
-        output = self.client.get(uri + '/tree').json()
+        aolist = []
+        output = self.client.get(f'{uri}/tree').json()
         for ao_uri in find_key(output, 'record_uri'):
             if 'archival_objects' in ao_uri:
                 aolist.append(ao_uri)
+        return aolist
 
 
 class Record(dict):
