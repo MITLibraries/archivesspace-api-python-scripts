@@ -59,6 +59,17 @@ def test_save_record(as_ops):
         assert response == json_object
 
 
+def test_get_aos_for_resource(as_ops):
+    """Test get_aos_for_resource function."""
+    with requests_mock.Mocker() as m:
+        resource = '/repositories/2/resources/423'
+        json_object = {'record_uri': '/archival_objects/1234', 'children':
+                       [{'record_uri': '/archival_objects/5678'}]}
+        m.get(f'{resource}/tree', json=json_object)
+        aolist = as_ops.get_aos_for_resource(resource)
+        assert '/archival_objects/5678' in aolist
+
+
 def test_download_json(as_ops):
     """Test download_json function."""
     rec_obj = models.Record()
@@ -80,23 +91,23 @@ def test_create_csv(as_ops):
 # def test_filter_note_type():
 #     """Test filter_note_type function."""
 #     assert False
-#
-#
-# def test_replace_str():
-#     """Test replace_str function."""
-#     assert False
-#
-#
-# def test_update_record():
-#     """Test update_record function."""
-#     assert False
-#
-#
-# def test_find_key():
-#     """Test find_key function."""
-#     assert False
-#
-#
-# def test_get_aos_for_resource():
-#     """Test get_aos_for_resource function."""
-#     assert False
+
+
+def test_replace_str():
+    """Test replace_str function."""
+    old_string = 'The'
+    new_string = 'A'
+    field_value = 'The cow jumped over the moon'
+    new_value = models.replace_str(field_value, old_string, new_string)
+    assert new_string in new_value
+
+
+def test_find_key():
+    """Test find_key function."""
+    nest_dict = {'children': [{'publish': True, 'children': [{'publish':
+                 True}]}]}
+    keys = models.find_key(nest_dict, 'children')
+    key_count = 0
+    for key in keys:
+        key_count += 1
+    assert key_count == 2

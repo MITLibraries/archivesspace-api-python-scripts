@@ -42,6 +42,15 @@ class AsOperations:
         logger.info(response.json())
         return response.json()
 
+    def get_aos_for_resource(self, uri):
+        """Get archival objects associated with a resource."""
+        aolist = []
+        output = self.client.get(f'{uri}/tree').json()
+        for ao_uri in find_key(output, 'record_uri'):
+            if 'archival_objects' in ao_uri:
+                aolist.append(ao_uri)
+        return aolist
+
 
 class Record(dict):
     def __init__(self, *args, **kwargs):
@@ -109,29 +118,14 @@ def filter_note_type(client, csv_data, rec_obj, note_type, operation,
     return rec_obj
 
 
-def replace_str(rec_obj, fieldval, old_string, new_string):
+def replace_str(field_value, old_string, new_string):
     """Replace string in field."""
-    old_value = fieldval
+    old_value = field_value
     new_value = old_value.replace(old_string, new_string)
     # if old_value != new_value:
     #     rec_obj.old_value = old_value
     #     rec_obj.new_value = new_value
     return new_value
-
-
-# def update_record(client, csv_data, rec_obj, log_only=True):
-#     """Verify record has changed, prepare CSV data, and trigger POST."""
-#     if rec_obj.modified is True:
-#         csv_row = {'uri': rec_obj['uri'], 'old_value': rec_obj.old_value,
-#                    'new_value': rec_obj.new_value}
-#         if log_only is True:
-#             csv_data.append(csv_row)
-#             logger.info(csv_row)
-#         else:
-#             logger.info(f'Posting {rec_obj["uri"]}')
-#             client.post_record(rec_obj, csv_row, csv_data)
-#     else:
-#         logger.info(f'Record not posted - {rec_obj["uri"]} was not changed')
 
 
 def find_key(nest_dict, key):
@@ -142,14 +136,6 @@ def find_key(nest_dict, key):
     if isinstance(children, list):
         for child in children:
             yield from find_key(child, key)
-
-
-def get_aos_for_resource(client, uri, aolist):
-    """Get archival objects associated with a resource."""
-    output = client.client.get(uri + '/tree').json()
-    for ao_uri in find_key(output, 'record_uri'):
-        if 'archival_objects' in ao_uri:
-            aolist.append(ao_uri)
 
 
 def elapsed_time(start_time, label):
