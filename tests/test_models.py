@@ -62,13 +62,11 @@ def test_save_record(as_ops):
 def test_get_aos_for_resource(as_ops):
     """Test get_aos_for_resource function."""
     with requests_mock.Mocker() as m:
-        aolist = ['/repositories/2/resources/423']
+        resource = '/repositories/2/resources/423'
         json_object = {'record_uri': '/archival_objects/1234', 'children':
                        [{'record_uri': '/archival_objects/5678'}]}
-        m.get(f'{aolist[0]}/tree', json=json_object)
-        response = as_ops.get_aos_for_resource(aolist[0], aolist)
-        print(response)
-        print(aolist)
+        m.get(f'{resource}/tree', json=json_object)
+        aolist = as_ops.get_aos_for_resource(resource)
         assert '/archival_objects/5678' in aolist
 
 
@@ -102,16 +100,14 @@ def test_replace_str():
     field_value = 'The cow jumped over the moon'
     new_value = models.replace_str(field_value, old_string, new_string)
     assert new_string in new_value
-#
-#
-# def test_update_record():
-#     """Test update_record function."""
-#     assert False
 
 
 def test_find_key():
     """Test find_key function."""
-    nest_dict = {'a': {'b': False, 'c': True}, 'c': True}
-    keys = models.find_key(nest_dict, 'c')
+    nest_dict = {'children': [{'publish': True, 'children': [{'publish':
+                 True}]}]}
+    keys = models.find_key(nest_dict, 'children')
+    key_count = 0
     for key in keys:
-        assert key is True
+        key_count += 1
+    assert key_count == 2
