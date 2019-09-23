@@ -104,28 +104,34 @@ def filter_note_type(client, csv_data, rec_obj, note_type, operation,
 
     Triggers post of updated record if changes are made.
     """
-    for note in rec_obj['notes']:
-        try:
-            if note['type'] == note_type:
-                for subnote in note['subnotes']:
-                    if operation == 'replace_str':
-                        subnote['content'] = replace_str(rec_obj,
-                                                         subnote['content'],
-                                                         old_string,
-                                                         new_string)
-        except KeyError:
-            pass
+    for note in [n for n in rec_obj['notes'] if n.get('type') == note_type]:
+        for subnote in note.get('subnotes', []):
+            csv_row = {'uri': rec_obj['uri'], 'note_type': note_type,
+                       'old_value': subnote['content']}
+            new_value = subnote['content'].replace(old_string,
+                                                   new_string)
+            if operation == 'replace_str':
+                subnote['content'] = new_value
+                if rec_obj.modified is True:
+                    csv_row['new_value'] = subnote['content']
+                    post = client.save_record(rec_obj['uri'])
+                    csv_row['post'] = post
+                    csv_data.append(csv_row)
+            elif operation == 'find_replace_test':
+                if new_string in new_value:
+                    csv_row['new_value'] = new_string
+                    csv_data.append(csv_row)
     return rec_obj
 
 
-def replace_str(field_value, old_string, new_string):
-    """Replace string in field."""
-    old_value = field_value
-    new_value = old_value.replace(old_string, new_string)
-    # if old_value != new_value:
-    #     rec_obj.old_value = old_value
-    #     rec_obj.new_value = new_value
-    return new_value
+# def replace_str(field_value, old_string, new_string):
+#     """Replace string in field."""
+#     old_value = field_value
+#     new_value = old_value.replace(old_string, new_string)
+#     # if old_value != new_value:
+#     #     rec_obj.old_value = old_value
+#     #     rec_obj.new_value = new_value
+#     return new_value
 
 
 def find_key(nest_dict, key):
