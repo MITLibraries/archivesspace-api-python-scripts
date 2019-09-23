@@ -93,13 +93,13 @@ def test_create_csv(as_ops):
 #     assert False
 
 
-def test_replace_str():
-    """Test replace_str function."""
-    old_string = 'The'
-    new_string = 'A'
-    field_value = 'The cow jumped over the moon'
-    new_value = models.replace_str(field_value, old_string, new_string)
-    assert new_string in new_value
+# def test_replace_str():
+#     """Test replace_str function."""
+#     old_string = 'The'
+#     new_string = 'A'
+#     field_value = 'The cow jumped over the moon'
+#     new_value = models.replace_str(field_value, old_string, new_string)
+#     assert new_string in new_value
 
 
 def test_find_key():
