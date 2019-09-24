@@ -25,10 +25,12 @@ def main(url, username, password):
     note_type = 'prefercite'
     old = 'the'
     new = 'that'
-    ids, endpoint = as_ops.get_all_records(rec_type, repo_id)
+    endpoint = as_ops.create_endpoint(rec_type, repo_id)
+    ids = as_ops.get_all_records(endpoint)
     print(ids)
     for id in ids:
         uri = f'{endpoint}/{id}'
+        print(uri)
         rec_obj = as_ops.get_record(uri)
         rec_obj = models.filter_note_type(as_ops, csv_data,
                                           rec_obj, note_type,
