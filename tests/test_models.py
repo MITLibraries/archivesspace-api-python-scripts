@@ -25,6 +25,18 @@ def test_get_record(as_ops):
         assert response == json_object
 
 
+def test_get_all_records(as_ops):
+    """Test get_all_records function."""
+    with requests_mock.Mocker() as m:
+        rec_type = 'resource'
+        repo_id = '0'
+        json_object = [1, 2, 3, 4]
+        m.get('/repositories/0/resources?all_ids=true', json=json_object)
+        ids, endpoint = as_ops.get_all_records(rec_type, repo_id)
+        assert ids == [1, 2, 3, 4]
+        assert endpoint == 'repositories/0/resources'
+
+
 def test_record_is_modified():
     record = models.Record()
     assert not record.modified
