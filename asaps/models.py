@@ -29,8 +29,8 @@ class AsOperations:
         record = self.client.get(uri).json()
         return Record(record)
 
-    def get_all_records(self, rec_type, repo_id):
-        """Retrieve records of a specified type."""
+    def create_endpoint(self, rec_type, repo_id):
+        """Create an endpoint for a specified type."""
         rec_type_dict = {'accession': 'accessions', 'resource': 'resources',
                          'archival_object': 'archival_objects,',
                          'agent_corporate_entity': 'corporate_entities',
@@ -44,9 +44,12 @@ class AsOperations:
             endpoint = rec_type
         else:
             endpoint = (f'repositories/{repo_id}/{rec_type_dict[rec_type]}')
-        print(endpoint)
+        return endpoint
+
+    def get_all_records(self, endpoint):
+        """Retrieve all records from a specified endpoint."""
         ids = self.client.get(f'{endpoint}?all_ids=true').json()
-        return ids, endpoint
+        return ids
 
     def search(self, string, repo_id, rec_type):
         """Search for a string across a particular record type."""
