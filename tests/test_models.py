@@ -36,7 +36,7 @@ def test_create_endpoint(as_ops):
 def test_get_all_records(as_ops):
     """Test get_all_records function."""
     with requests_mock.Mocker() as m:
-        endpoint = 'repositories/0/resources'
+        endpoint = '/repositories/0/resources'
         json_object = [1, 2, 3, 4]
         m.get('/repositories/0/resources?all_ids=true', json=json_object)
         ids = as_ops.get_all_records(endpoint)
@@ -54,13 +54,13 @@ def test_search(as_ops):
     """Test search method."""
     with requests_mock.Mocker() as m:
         string = 'string'
-        repo_id = '2'
+        repo_id = '0'
         rec_type = 'resource'
+        note_type = 'acqinfo'
         json_object = [{'uri': '1234'}]
-        url = f'mock://example.com/repositories/2/search?q="{string}'
-        url += f'"&page_size=100&type[]={rec_type}'
+        url = f'/repositories/{repo_id}/search?'
         m.get(url, json=json_object)
-        response = as_ops.search(string, repo_id, rec_type)
+        response = as_ops.search(string, repo_id, rec_type, note_type)
         for result in response:
             assert result == json_object[0]
 
@@ -104,20 +104,23 @@ def test_create_csv(as_ops):
     full_file_name = models.create_csv(csv_data, file_name)
     assert os.path.isfile(full_file_name)
     os.remove(full_file_name)
-#
-#
-# def test_filter_note_type():
-#     """Test filter_note_type function."""
-#     assert False
 
 
-# def test_replace_str():
-#     """Test replace_str function."""
-#     old_string = 'The'
-#     new_string = 'A'
-#     field_value = 'The cow jumped over the moon'
-#     new_value = models.replace_str(field_value, old_string, new_string)
-#     assert new_string in new_value
+def test_filter_note_type():
+    """Test filter_note_type function."""
+    rec_obj = {'notes': [{'note_type': 'acqinfo'}, {'note_type': 'bioghist'}]}
+    notes = models.filter_note_type(rec_obj, 'acqinfo')
+    for note in notes:
+        assert note['note_type'] == 'acqinfo'
+
+
+def test_replace_str():
+    """Test replace_str function."""
+    csv_row = {'old_values': [], 'new_values': []}
+    note = {'content': 'The dog jumped.'}
+    csv_row = models.replace_str(csv_row, note, 'dog', 'cow')
+    assert csv_row['old_values'] == ['The dog jumped.']
+    assert csv_row['new_values'] == ['The cow jumped.']
 
 
 def test_find_key():

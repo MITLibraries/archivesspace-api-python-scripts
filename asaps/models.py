@@ -28,6 +28,7 @@ class AsOperations:
     def get_record(self, uri):
         """Retrieve an individual record."""
         record = self.client.get(uri).json()
+        logger.info(uri)
         return Record(record)
 
     def create_endpoint(self, rec_type, repo_id):
@@ -52,11 +53,14 @@ class AsOperations:
         ids = self.client.get(f'{endpoint}?all_ids=true').json()
         return ids
 
-    def search(self, string, repo_id, rec_type):
+    def search(self, string, repo_id, rec_type, note_type='keyword'):
         """Search for a string across a particular record type."""
-        endpoint = (f'repositories/{repo_id}/search?q="{string}'
-                    f'"&page_size=100&type[]={rec_type}')
-        return self.client.get_paged(endpoint)
+        endpoint = f'repositories/{repo_id}/search?'
+        query = {'query': {'field': note_type, 'value': string,
+                 'jsonmodel_type': 'field_query'}}
+        params = {'aq': json.dumps(query), 'page_size': 100,
+                  'type[]': rec_type}
+        return self.client.get_paged(endpoint, params=params)
 
     def save_record(self, rec_obj):
         """Update ArchivesSpace record with POST of JSON data."""
@@ -67,6 +71,7 @@ class AsOperations:
 
     def get_aos_for_resource(self, uri):
         """Get archival objects associated with a resource."""
+        logger.info(f'Retrieving AOs for {uri}')
         aolist = []
         output = self.client.get(f'{uri}/tree').json()
         for ao_uri in find_key(output, 'record_uri'):
@@ -121,40 +126,21 @@ def create_csv(csv_data, file_name):
     return full_file_name
 
 
-def filter_note_type(client, csv_data, rec_obj, note_type, operation,
-                     old_string='', new_string=''):
-    """Filter notes by type for exporting or editing.
+def filter_note_type(rec_obj, note_type):
+    """Filter notes by type."""
+    return (n for n in rec_obj['notes'] if n.get('type') == note_type)
 
-    Triggers post of updated record if changes are made.
+
+def replace_str(csv_row, note, old_string='', new_string=''):
+    """Replace string and triggers post of updated record if changes are made.
     """
-    for note in [n for n in rec_obj['notes'] if n.get('type') == note_type]:
-        for subnote in note.get('subnotes', []):
-            csv_row = {'uri': rec_obj['uri'], 'note_type': note_type,
-                       'old_value': subnote['content']}
-            new_value = subnote['content'].replace(old_string,
-                                                   new_string)
-            if operation == 'replace_str':
-                subnote['content'] = new_value
-                if rec_obj.modified is True:
-                    csv_row['new_value'] = subnote['content']
-                    post = client.save_record(rec_obj['uri'])
-                    csv_row['post'] = post
-                    csv_data.append(csv_row)
-            elif operation == 'find_replace_test':
-                if new_string in new_value:
-                    csv_row['new_value'] = new_string
-                    csv_data.append(csv_row)
-    return rec_obj
-
-
-# def replace_str(field_value, old_string, new_string):
-#     """Replace string in field."""
-#     old_value = field_value
-#     new_value = old_value.replace(old_string, new_string)
-#     # if old_value != new_value:
-#     #     rec_obj.old_value = old_value
-#     #     rec_obj.new_value = new_value
-#     return new_value
+    old_value = note['content']
+    new_value = note['content'].replace(old_string, new_string)
+    note['content'] = new_value
+    if old_value != new_value:
+        csv_row['old_values'].append(old_value)
+        csv_row['new_values'].append(new_value)
+    return csv_row
 
 
 def find_key(nest_dict, key):
