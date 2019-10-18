@@ -62,7 +62,11 @@ class AsOperations:
                  'jsonmodel_type': 'field_query'}}
         params = {'aq': json.dumps(query), 'page_size': 100,
                   'type[]': rec_type}
-        return self.client.get_paged(endpoint, params=params)
+        uris = []
+        for result in self.client.get_paged(endpoint, params=params):
+            uri = result['uri']
+            uris.append(uri)
+        return uris
 
     def save_record(self, rec_obj):
         """Update ArchivesSpace record with POST of JSON data."""
@@ -126,7 +130,6 @@ class AuditMessage:
         return json.dumps(msg)
 
 
-# output functions
 def download_json(rec_obj):
     """Download a JSON file."""
     uri = rec_obj['uri']
@@ -179,6 +182,24 @@ def find_key(nest_dict, key):
     if isinstance(children, list):
         for child in children:
             yield from find_key(child, key)
+
+
+def find_and_replace(client, uri, old, new, csv_data, note_type='keyword',
+                     make_edits=False):
+    """Finds and replaces strings across a record type."""
+    rec_obj = client.get_record(uri)
+    csv_row = {'uri': rec_obj['uri'], 'note_type': note_type, 'new_values': [],
+               'old_values': []}
+    notes = filter_note_type(rec_obj, note_type)
+    for note in notes:
+        for subnote in note.get('subnotes', []):
+            csv_row = replace_str(csv_row, subnote, old, new)
+    if rec_obj.modified is True:
+        if make_edits is True:
+            post = client.save_record(rec_obj)
+            csv_row['post'] = post
+        csv_data.append(csv_row)
+        logger.info(csv_row)
 
 
 def elapsed_time(start_time, label):

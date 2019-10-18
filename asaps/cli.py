@@ -55,31 +55,12 @@ def main(url, username, password):
     skipped_uris = error_uris + skipped_resources + skipped_aos
 
     for old, new in corr_dict.items():
-        results = as_ops.search(old, '2', rec_type, note_type)
-        uris = []
-        for result in results:
-            uri = result['uri']
-            uris.append(uri)
-        count = len(uris)
-        for uri in uris:
-            count -= 1
-            print(count)
+        for uri in client.search(old, '2', rec_type, note_type):
             if uri not in skipped_uris:
-                rec_obj = as_ops.get_record(uri)
-                csv_row = {'uri': rec_obj['uri'], 'note_type': note_type,
-                           'new_values': [], 'old_values': []}
-                notes = models.filter_note_type(rec_obj, note_type)
-                for note in notes:
-                    for subnote in note.get('subnotes', []):
-                        csv_row = models.replace_str(csv_row, subnote, old,
-                                                     new)
-                if rec_obj.modified is True:
-                    post = as_ops.save_record(rec_obj)
-                    csv_row['post'] = post
-                    csv_data.append(csv_row)
-                    print(csv_row)
+                models.find_and_replace(as_ops, uri, old, new, csv_data,
+                                        'acqinfo', False)
             else:
-                print(uri, ' skipped')
+                print(f'{uri} skipped')
     if len(csv_data) != 0:
         models.create_csv(csv_data, f'{note_type}-replace_str')
     else:

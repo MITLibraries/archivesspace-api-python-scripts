@@ -28,7 +28,7 @@ def test_get_record(as_ops):
 def test_create_endpoint(as_ops):
     """Test create_endpoint function."""
     rec_type = 'resource'
-    repo_id = '0'
+    repo_id = 0
     endpoint = as_ops.create_endpoint(rec_type, repo_id)
     assert endpoint == 'repositories/0/resources'
 
@@ -69,15 +69,14 @@ def test_search(as_ops):
     """Test search method."""
     with requests_mock.Mocker() as m:
         string = 'string'
-        repo_id = '0'
+        repo_id = 0
         rec_type = 'resource'
         note_type = 'acqinfo'
         json_object = [{'uri': '1234'}]
         url = f'/repositories/{repo_id}/search?'
         m.get(url, json=json_object)
-        response = as_ops.search(string, repo_id, rec_type, note_type)
-        for result in response:
-            assert result == json_object[0]
+        for result in as_ops.search(string, repo_id, rec_type, note_type):
+            assert result == json_object[0]['uri']
 
 
 def test_save_record(as_ops):
@@ -114,7 +113,7 @@ def test_get_aos_for_resource(as_ops):
         assert '/archival_objects/5678' in aolist
 
 
-def test_download_json(as_ops):
+def test_download_json():
     """Test download_json function."""
     rec_obj = models.Record()
     rec_obj['uri'] = '/test/123'
@@ -123,7 +122,7 @@ def test_download_json(as_ops):
     os.remove(path)
 
 
-def test_create_csv(as_ops):
+def test_create_csv():
     """Test create_csv function."""
     csv_data = [{'test1': '1', 'test2': '2'}]
     file_name = 'test'
@@ -158,3 +157,24 @@ def test_find_key():
     for key in keys:
         key_count += 1
     assert key_count == 2
+
+
+def test_find_and_replace(as_ops):
+    """Test find_and_replace function."""
+    with requests_mock.Mocker() as m:
+        old = 'dog'
+        new = 'cow'
+        note_type = 'acqinfo'
+        uri = '/repositories/0/resources/123'
+        csv_data = []
+        rec_1 = {'uri': '/repositories/0/resources/123', 'notes':
+                 [{'type': 'acqinfo', 'subnotes': [{'content':
+                  'The dog jumped.'}]}]}
+        m.get(rec_1['uri'], json=rec_1)
+        models.find_and_replace(as_ops, uri, old, new, csv_data, note_type)
+        assert len(csv_data) == 1
+        for csv_row in csv_data:
+            for value in csv_row['new_values']:
+                assert 'cow' in value
+            for value in csv_row['old_values']:
+                assert 'dog' in value
