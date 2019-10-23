@@ -85,10 +85,11 @@ def test_save_record(as_ops):
         rec_obj = models.Record()
         uri = '/repositories/2/resources/423'
         rec_obj['uri'] = uri
+        csv_row = {}
         json_object = {'post': 'Success'}
         m.post(uri, json=json_object)
-        response = as_ops.save_record(rec_obj)
-        assert response == json_object
+        csv_row = as_ops.save_record(rec_obj, csv_row)
+        assert csv_row['post'] == json_object
 
 
 def test_save_record_flushes_changes(as_ops):
@@ -171,10 +172,9 @@ def test_find_and_replace(as_ops):
                  [{'type': 'acqinfo', 'subnotes': [{'content':
                   'The dog jumped.'}]}]}
         m.get(rec_1['uri'], json=rec_1)
-        models.find_and_replace(as_ops, uri, old, new, csv_data, note_type)
-        assert len(csv_data) == 1
-        for csv_row in csv_data:
-            for value in csv_row['new_values']:
-                assert 'cow' in value
-            for value in csv_row['old_values']:
-                assert 'dog' in value
+        rec_obj, csv_row = models.find_and_replace(as_ops, uri, old, new,
+                                                   csv_data, note_type)
+        for value in csv_row['new_values']:
+            assert 'cow' in value
+        for value in csv_row['old_values']:
+            assert 'dog' in value

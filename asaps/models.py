@@ -68,7 +68,7 @@ class AsOperations:
             uris.append(uri)
         return uris
 
-    def save_record(self, rec_obj):
+    def save_record(self, rec_obj, csv_row):
         """Update ArchivesSpace record with POST of JSON data."""
         response = self.client.post(rec_obj['uri'], json=rec_obj)
         response.raise_for_status()
@@ -184,8 +184,7 @@ def find_key(nest_dict, key):
             yield from find_key(child, key)
 
 
-def find_and_replace(client, uri, old, new, csv_data, note_type='keyword',
-                     make_edits=False):
+def find_and_replace(client, uri, old, new, csv_data, note_type='keyword'):
     """Finds and replaces strings across a record type."""
     rec_obj = client.get_record(uri)
     csv_row = {'uri': rec_obj['uri'], 'note_type': note_type, 'new_values': [],
@@ -194,12 +193,7 @@ def find_and_replace(client, uri, old, new, csv_data, note_type='keyword',
     for note in notes:
         for subnote in note.get('subnotes', []):
             csv_row = replace_str(csv_row, subnote, old, new)
-    if rec_obj.modified is True:
-        if make_edits is True:
-            post = client.save_record(rec_obj)
-            csv_row['post'] = post
-        csv_data.append(csv_row)
-        logger.info(csv_row)
+    return rec_obj, csv_row
 
 
 def elapsed_time(start_time, label):

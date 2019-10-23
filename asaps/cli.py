@@ -13,7 +13,9 @@ from asaps import models
 @click.option('-p', '--password', prompt='Enter password',
               hide_input=True, envvar='DOCKER_PASS',
               help='The password for authentication.')
-def main(url, username, password):
+@click.option('-d', '--dry_run', prompt='Dry run?', default=True,
+              help='Perform dry run that does not modify any records.')
+def main(url, username, password, dry_run):
     client = ASnakeClient(baseurl=url, username=username,
                           password=password)
     as_ops = models.AsOperations(client)
@@ -53,12 +55,16 @@ def main(url, username, password):
         aolist = as_ops.get_aos_for_resource(uri)
         skipped_aos.append(aolist)
     skipped_uris = error_uris + skipped_resources + skipped_aos
-
     for old, new in corr_dict.items():
-        for uri in client.search(old, '2', rec_type, note_type):
+        for uri in as_ops.search(old, '2', rec_type, note_type):
             if uri not in skipped_uris:
-                models.find_and_replace(as_ops, uri, old, new, csv_data,
-                                        'acqinfo', False)
+                rec_obj, csv_row = models.find_and_replace(as_ops, uri, old,
+                                                           new, csv_data,
+                                                           'acqinfo')
+                if dry_run is False:
+                    csv_row = as_ops.save_record(rec_obj, csv_row)
+                if csv_row['new_values'] != []:
+                    csv_data.append(csv_row)
             else:
                 print(f'{uri} skipped')
     if len(csv_data) != 0:
