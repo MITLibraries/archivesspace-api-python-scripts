@@ -50,6 +50,21 @@ def test_record_is_modified():
     assert record.modified
 
 
+def test_record_flush_persists_changes():
+    record = models.Record()
+    record['title'] = 'I am a title'
+    assert record.modified
+    record.flush()
+    assert not record.modified
+
+
+def test_changes_returns_json_patch_operations():
+    record = models.Record()
+    record['title'] = 'I am a title'
+    assert record.changes == \
+        [{'op': 'add', 'path': '/title', 'value': 'I am a title'}]
+
+
 def test_search(as_ops):
     """Test search method."""
     with requests_mock.Mocker() as m:
@@ -75,6 +90,17 @@ def test_save_record(as_ops):
         m.post(uri, json=json_object)
         response = as_ops.save_record(rec_obj)
         assert response == json_object
+
+
+def test_save_record_flushes_changes(as_ops):
+    with requests_mock.Mocker() as m:
+        uri = '/foo/bar/1'
+        m.post(uri, json={'post': 'Success'})
+        r = models.Record({'uri': uri})
+        r['title'] = 'A title'
+        assert r.modified
+        as_ops.save_record(r)
+        assert not r.modified
 
 
 def test_get_aos_for_resource(as_ops):
