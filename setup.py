@@ -8,9 +8,10 @@ setup(
     author='Eric Hanson',
     author_email='ehanson@mit.edu',
     install_requires=[
-        'attrs',
-        'click',
         'archivessnake'
+        'click',
+        'jsonpatch',
+        'jsonpointer',
     ],
     python_requires='>=3.7.1',
 )

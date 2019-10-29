@@ -1,7 +1,7 @@
+import copy
 import csv
 import datetime
 from functools import partial
-import hashlib
 import json
 import logging
 import logging.config
@@ -10,6 +10,8 @@ import os
 import time
 
 import attr
+import jsonpatch
+import jsonpointer
 
 
 op = operator.attrgetter('name')
@@ -66,6 +68,7 @@ class AsOperations:
         """Update ArchivesSpace record with POST of JSON data."""
         response = self.client.post(rec_obj['uri'], json=rec_obj)
         response.raise_for_status()
+        rec_obj.flush()
         logger.info(response.json())
         return response.json()
 
@@ -83,19 +86,44 @@ class AsOperations:
 class Record(dict):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.__update_hash()
+        self.__persisted = copy.deepcopy(self)
 
-    def __update_hash(self):
-        self.__record_hash = hash_record(self)
+    def flush(self):
+        for change in self.changes:
+            logger.info(AuditMessage(record=self.__persisted, **change))
+        self.__persisted = copy.deepcopy(self)
+
+    @property
+    def changes(self):
+        return list(jsonpatch.make_patch(self.__persisted, self))
 
     @property
     def modified(self):
-        return self.__record_hash != hash_record(self)
+        return bool(self.changes)
 
 
-def hash_record(record):
-    return hashlib.sha1(json.dumps(record, ensure_ascii=False,
-                                   sort_keys=True).encode("utf-8")).digest()
+class AuditMessage:
+    def __init__(self, **kwargs):
+        self.record = kwargs['record']
+        self.op = kwargs['op']
+        self.path = kwargs['path']
+        self.kwargs = kwargs
+
+    def __str__(self):
+        uri = self.record.get('uri')
+        if self.op == 'add':
+            new = self.kwargs.get('value')
+            msg = {'uri': uri, 'field': self.path, 'old': None, 'new': new}
+        elif self.op == 'replace':
+            old = jsonpointer.resolve_pointer(self.record, self.path)
+            new = self.kwargs.get('value')
+            msg = {'uri': uri, 'field': self.path, 'old': old, 'new': new}
+        elif self.op == 'remove':
+            old = jsonpointer.resolve_pointer(self.record, self.path)
+            msg = {'uri': uri, 'field': self.path, 'old': old, 'new': None}
+        else:
+            msg = {}
+        return json.dumps(msg)
 
 
 # output functions
