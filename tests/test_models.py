@@ -1,3 +1,4 @@
+import json
 import os
 
 from asnake.client import ASnakeClient
@@ -75,31 +76,34 @@ def test_search(as_ops):
         json_object = [{'uri': '1234'}]
         url = f'/repositories/{repo_id}/search?'
         m.get(url, json=json_object)
-        response = as_ops.search(string, repo_id, rec_type, note_type)
-        for result in response:
-            assert result == json_object[0]
+        results = as_ops.search(string, repo_id, rec_type, note_type)
+        for result in results:
+            assert result == json_object[0]['uri']
 
 
-def test_save_record(as_ops):
+def test_save_record(as_ops, caplog):
     """Test post_record method."""
     with requests_mock.Mocker() as m:
         rec_obj = models.Record()
         uri = '/repositories/2/resources/423'
+        dry_run = 'False'
         rec_obj['uri'] = uri
         json_object = {'post': 'Success'}
         m.post(uri, json=json_object)
-        response = as_ops.save_record(rec_obj)
-        assert response == json_object
+        as_ops.save_record(rec_obj, dry_run)
+        message = json.loads(caplog.messages[0])['event']
+        assert message == json_object
 
 
 def test_save_record_flushes_changes(as_ops):
     with requests_mock.Mocker() as m:
         uri = '/foo/bar/1'
+        dry_run = 'False'
         m.post(uri, json={'post': 'Success'})
         r = models.Record({'uri': uri})
         r['title'] = 'A title'
         assert r.modified
-        as_ops.save_record(r)
+        as_ops.save_record(r, dry_run)
         assert not r.modified
 
 
@@ -114,7 +118,7 @@ def test_get_aos_for_resource(as_ops):
         assert '/archival_objects/5678' in aolist
 
 
-def test_download_json(as_ops):
+def test_download_json():
     """Test download_json function."""
     rec_obj = models.Record()
     rec_obj['uri'] = '/test/123'
@@ -123,13 +127,10 @@ def test_download_json(as_ops):
     os.remove(path)
 
 
-def test_create_csv(as_ops):
-    """Test create_csv function."""
-    csv_data = [{'test1': '1', 'test2': '2'}]
-    file_name = 'test'
-    full_file_name = models.create_csv(csv_data, file_name)
-    assert os.path.isfile(full_file_name)
-    os.remove(full_file_name)
+# How to test this?
+# def test_create_csv_from_log():
+#   """"Test create_csv_from_log function."""
+#     assert False
 
 
 def test_filter_note_type():
@@ -138,15 +139,6 @@ def test_filter_note_type():
     notes = models.filter_note_type(rec_obj, 'acqinfo')
     for note in notes:
         assert note['note_type'] == 'acqinfo'
-
-
-def test_replace_str():
-    """Test replace_str function."""
-    csv_row = {'old_values': [], 'new_values': []}
-    note = {'content': 'The dog jumped.'}
-    csv_row = models.replace_str(csv_row, note, 'dog', 'cow')
-    assert csv_row['old_values'] == ['The dog jumped.']
-    assert csv_row['new_values'] == ['The cow jumped.']
 
 
 def test_find_key():
