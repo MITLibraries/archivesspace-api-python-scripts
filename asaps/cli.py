@@ -13,12 +13,13 @@ from asaps import models
 @click.option('-p', '--password', prompt='Enter password',
               hide_input=True, envvar='DOCKER_PASS',
               help='The password for authentication.')
-def main(url, username, password):
+@click.option('-d', '--dry_run', prompt='Dry run?', default=True,
+              help='Perform dry run that does not modify any records.')
+def main(url, username, password, dry_run):
     client = ASnakeClient(baseurl=url, username=username,
                           password=password)
     as_ops = models.AsOperations(client)
     start_time = time.time()
-    csv_data = []
     rec_type = 'resource'
     note_type = 'acqinfo'
 
@@ -55,36 +56,20 @@ def main(url, username, password):
     skipped_uris = error_uris + skipped_resources + skipped_aos
 
     for old, new in corr_dict.items():
-        results = as_ops.search(old, '2', rec_type, note_type)
-        uris = []
-        for result in results:
-            uri = result['uri']
-            uris.append(uri)
-        count = len(uris)
-        for uri in uris:
-            count -= 1
-            print(count)
+        for uri in as_ops.search(old, '2', rec_type, note_type):
             if uri not in skipped_uris:
                 rec_obj = as_ops.get_record(uri)
-                csv_row = {'uri': rec_obj['uri'], 'note_type': note_type,
-                           'new_values': [], 'old_values': []}
                 notes = models.filter_note_type(rec_obj, note_type)
                 for note in notes:
                     for subnote in note.get('subnotes', []):
-                        csv_row = models.replace_str(csv_row, subnote, old,
-                                                     new)
+                        subnote['content'] = subnote['content'].replace(old,
+                                                                        new)
                 if rec_obj.modified is True:
-                    post = as_ops.save_record(rec_obj)
-                    csv_row['post'] = post
-                    csv_data.append(csv_row)
-                    print(csv_row)
+                    as_ops.save_record(rec_obj, dry_run)
             else:
                 print(uri, ' skipped')
-    if len(csv_data) != 0:
-        models.create_csv(csv_data, f'{note_type}-replace_str')
-    else:
-        print('No files updated')
     models.elapsed_time(start_time, 'Total runtime:')
+    models.create_csv_from_log()
 
 
 if __name__ == '__main__':

@@ -1,24 +1,21 @@
 import copy
 import csv
 import datetime
-from functools import partial
 import json
 import logging
-import logging.config
-import operator
 import os
 import time
 
-import attr
 import jsonpatch
 import jsonpointer
+import structlog
 
-
-op = operator.attrgetter('name')
-Field = partial(attr.ib, default=None)
-
-logging.config.fileConfig(fname='logging.cfg', disable_existing_loggers=False)
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger()
+timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H.%M.%S')
+log_file_name = f'log-{timestamp}.log'
+logging.basicConfig(format="%(message)s",
+                    handlers=[logging.FileHandler(log_file_name, 'w'),
+                              logging.StreamHandler()], level=logging.INFO)
 logger.info('Application start')
 
 
@@ -62,15 +59,20 @@ class AsOperations:
                  'jsonmodel_type': 'field_query'}}
         params = {'aq': json.dumps(query), 'page_size': 100,
                   'type[]': rec_type}
-        return self.client.get_paged(endpoint, params=params)
+        uris = []
+        for result in self.client.get_paged(endpoint, params=params):
+            uri = result['uri']
+            uris.append(uri)
+        logger.info('Search results processed')
+        return uris
 
-    def save_record(self, rec_obj):
+    def save_record(self, rec_obj, dry_run):
         """Update ArchivesSpace record with POST of JSON data."""
-        response = self.client.post(rec_obj['uri'], json=rec_obj)
-        response.raise_for_status()
+        if dry_run == 'False':
+            response = self.client.post(rec_obj['uri'], json=rec_obj)
+            response.raise_for_status()
+            logger.info(response.json())
         rec_obj.flush()
-        logger.info(response.json())
-        return response.json()
 
     def get_aos_for_resource(self, uri):
         """Get archival objects associated with a resource."""
@@ -90,7 +92,9 @@ class Record(dict):
 
     def flush(self):
         for change in self.changes:
-            logger.info(AuditMessage(record=self.__persisted, **change))
+            kwargs = json.loads(str(AuditMessage(record=self.__persisted,
+                                    **change)))
+            logger.info(**kwargs)
         self.__persisted = copy.deepcopy(self)
 
     @property
@@ -126,7 +130,6 @@ class AuditMessage:
         return json.dumps(msg)
 
 
-# output functions
 def download_json(rec_obj):
     """Download a JSON file."""
     uri = rec_obj['uri']
@@ -137,38 +140,31 @@ def download_json(rec_obj):
     return f.name
 
 
-def create_csv(csv_data, file_name):
-    """Create CSV file from list of dicts.
-
-    Example: {'uri': rec_obj.uri,
-    'old_value': old_value , 'new_value': new_value}.
-    """
-    date = datetime.datetime.now().strftime('%Y-%m-%d %H.%M.%S')
-    header = list(csv_data[0].keys())
-    full_file_name = os.path.abspath(f'{file_name}{date}.csv')
-    with open(full_file_name, 'w') as fp:
-        f = csv.DictWriter(fp, fieldnames=header)
-        f.writeheader()
-        for csv_row in csv_data:
-            f.writerow(csv_row)
-    return full_file_name
+def create_csv_from_log():
+    """Create csv from log file."""
+    with open(log_file_name) as f:
+        logs = f.read().splitlines()
+        edit_log_lines = []
+        for line in logs:
+            line_dict = json.loads(line)
+            if 'uri' in line_dict.keys():
+                line_dict.pop('logger')
+                line_dict.pop('level')
+                line_dict.pop('timestamp')
+                edit_log_lines.append(line_dict)
+    full_file_name = os.path.abspath(f'{log_file_name}.csv')
+    if len(edit_log_lines) > 0:
+        with open(f'{full_file_name}', 'w') as fp:
+            header = list(edit_log_lines[0].keys())
+            f = csv.DictWriter(fp, fieldnames=header)
+            f.writeheader()
+            for edit_log_line in edit_log_lines:
+                f.writerow(edit_log_line)
 
 
 def filter_note_type(rec_obj, note_type):
     """Filter notes by type."""
     return (n for n in rec_obj['notes'] if n.get('type') == note_type)
-
-
-def replace_str(csv_row, note, old_string='', new_string=''):
-    """Replace string and triggers post of updated record if changes are made.
-    """
-    old_value = note['content']
-    new_value = note['content'].replace(old_string, new_string)
-    note['content'] = new_value
-    if old_value != new_value:
-        csv_row['old_values'].append(old_value)
-        csv_row['new_values'].append(new_value)
-    return csv_row
 
 
 def find_key(nest_dict, key):
