@@ -118,6 +118,57 @@ def test_get_aos_for_resource(as_ops):
         assert '/archival_objects/5678' in aolist
 
 
+def test_extract_fields(as_ops, caplog):
+    """"Test extract_fields function."""
+    repo_id = '0'
+    rec_type = 'resource'
+    field = 'publish'
+    with requests_mock.Mocker() as m:
+        all_ids = [1]
+        m.get('/repositories/0/resources?all_ids=true', json=all_ids)
+        res_1 = {'title': 'Title', 'publish': True}
+        m.get('/repositories/0/resources/1', json=res_1)
+        as_ops.extract_fields(repo_id, rec_type, field)
+        message = json.loads(caplog.messages[1])
+        assert message['uri'] == 'repositories/0/resources/1'
+        assert message['publish'] is True
+
+
+def test_extract_note_field(as_ops, caplog):
+    """"Test extract_note_field function."""
+    field = 'acqinfo'
+    rec_obj = {'notes': [{'type': 'acqinfo', 'subnotes': [{'content':
+               'test value'}]}]}
+    report_dict = {'uri': '123', 'title': 'Title', 'id': '456'}
+    as_ops.extract_note_field(field, rec_obj, report_dict)
+    message = json.loads(caplog.messages[0])
+    assert message['uri'] == '123'
+    assert message['acqinfo'] == 'test value'
+
+
+def test_extract_obj_field(as_ops, caplog):
+    """"Test extract_obj_field function."""
+    field = 'dates'
+    rec_obj = {'dates': [{'begin': '1900', 'end': '1901', 'date_type':
+               'inclusive'}]}
+    report_dict = {'uri': '123', 'title': 'Title', 'id': '456'}
+    obj_field_dict = {'dates': ['begin', 'end', 'expression', 'label',
+                      'date_type']}
+    as_ops.extract_obj_field(field, rec_obj, obj_field_dict, report_dict)
+    message = json.loads(caplog.messages[0])
+    assert message['uri'] == '123'
+    assert message['begin'] == '1900'
+    assert message['end'] == '1901'
+    assert message['date_type'] == 'inclusive'
+
+
+def test_concat_id():
+    """"Test concat_id function."""
+    rec_obj = {'id_0': '1', 'id_1': '2', 'id_2': '3', 'id_3': '4'}
+    coll_id = models.concat_id(rec_obj)
+    assert coll_id == '1-2-3-4'
+
+
 def test_download_json():
     """Test download_json function."""
     rec_obj = models.Record()
