@@ -30,17 +30,6 @@ def main(url, username, password, dry_run):
     # corr_dict = {'Distinctive Collections': 'Distinctive Collections (formerly the Institute Archives and Special Collections)'}
     # corr_dict = {'formerly the Department of Distinctive Collections': 'formerly Institute Archives and Special Collections'}
 
-    error_uris = ['/repositories/2/resources/424',
-                  '/repositories/2/resources/1233',
-                  '/repositories/2/resources/377',
-                  '/repositories/2/resources/356',
-                  '/repositories/2/resources/228',
-                  '/repositories/2/resources/658',
-                  '/repositories/2/resources/635',
-                  '/repositories/2/resources/704',
-                  '/repositories/2/resources/202',
-                  '/repositories/2/resources/586']
-
     skipped_resources = ['/repositories/2/resources/535',
                          '/repositories/2/resources/41',
                          '/repositories/2/resources/111',
@@ -53,7 +42,7 @@ def main(url, username, password, dry_run):
     for uri in skipped_resources:
         aolist = as_ops.get_aos_for_resource(uri)
         skipped_aos.append(aolist)
-    skipped_uris = error_uris + skipped_resources + skipped_aos
+    skipped_uris = skipped_resources + skipped_aos
 
     for old, new in corr_dict.items():
         for uri in as_ops.search(old, '2', rec_type, note_type):
