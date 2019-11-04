@@ -133,6 +133,15 @@ def test_download_json():
 #     assert False
 
 
+def test_audit():
+    """"Test audit function."""
+    sample_record = {'uri': '123'}
+    change = {'op': 'add', 'path': '/title', 'value': 'I am a title'}
+    msg = models.audit(record=sample_record, **change)
+    assert msg == {'uri': '123', 'field': '/title', 'old': None,
+                   'new': 'I am a title'}
+
+
 def test_filter_note_type():
     """Test filter_note_type function."""
     rec_obj = {'notes': [{'note_type': 'acqinfo'}, {'note_type': 'bioghist'}]}

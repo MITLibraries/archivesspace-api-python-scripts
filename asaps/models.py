@@ -92,9 +92,7 @@ class Record(dict):
 
     def flush(self):
         for change in self.changes:
-            kwargs = json.loads(str(AuditMessage(record=self.__persisted,
-                                    **change)))
-            logger.info(**kwargs)
+            logger.info(**audit(record=self.__persisted, **change))
         self.__persisted = copy.deepcopy(self)
 
     @property
@@ -106,28 +104,26 @@ class Record(dict):
         return bool(self.changes)
 
 
-class AuditMessage:
-    def __init__(self, **kwargs):
-        self.record = kwargs['record']
-        self.op = kwargs['op']
-        self.path = kwargs['path']
-        self.kwargs = kwargs
+def audit(**kwargs):
+    """Create audit message."""
+    record = kwargs['record']
+    op = kwargs['op']
+    path = kwargs['path']
 
-    def __str__(self):
-        uri = self.record.get('uri')
-        if self.op == 'add':
-            new = self.kwargs.get('value')
-            msg = {'uri': uri, 'field': self.path, 'old': None, 'new': new}
-        elif self.op == 'replace':
-            old = jsonpointer.resolve_pointer(self.record, self.path)
-            new = self.kwargs.get('value')
-            msg = {'uri': uri, 'field': self.path, 'old': old, 'new': new}
-        elif self.op == 'remove':
-            old = jsonpointer.resolve_pointer(self.record, self.path)
-            msg = {'uri': uri, 'field': self.path, 'old': old, 'new': None}
-        else:
-            msg = {}
-        return json.dumps(msg)
+    uri = record.get('uri')
+    if op == 'add':
+        new = kwargs.get('value')
+        msg = {'uri': uri, 'field': path, 'old': None, 'new': new}
+    elif op == 'replace':
+        old = jsonpointer.resolve_pointer(record, path)
+        new = kwargs.get('value')
+        msg = {'uri': uri, 'field': path, 'old': old, 'new': new}
+    elif op == 'remove':
+        old = jsonpointer.resolve_pointer(record, path)
+        msg = {'uri': uri, 'field': path, 'old': old, 'new': None}
+    else:
+        msg = {}
+    return msg
 
 
 def download_json(rec_obj):
