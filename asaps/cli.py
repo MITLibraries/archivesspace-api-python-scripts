@@ -23,7 +23,7 @@ def main(url, username, password, dry_run):
 
     # as_ops.extract_fields('2', 'resource', 'publish')
     # as_ops.extract_fields('2', 'resource', 'prefercite')
-    as_ops.extract_fields('2', 'resource', 'extents')
+    models.extract_fields(as_ops, '2', 'resource', 'extents')
 
     # rec_type = 'resource'
     # note_type = 'acqinfo'

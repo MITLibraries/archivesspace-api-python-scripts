@@ -84,53 +84,6 @@ class AsOperations:
                 aolist.append(ao_uri)
         return aolist
 
-    def extract_fields(self, repo_id, rec_type, field):
-        """Extract field (list or string value) from a type of records."""
-        endpoint = self.create_endpoint(rec_type, repo_id)
-        ids = self.get_all_records(endpoint)
-        for id in ids:
-            uri = f'{endpoint}/{id}'
-            rec_obj = self.get_record(uri)
-            coll_id = concat_id(rec_obj)
-            report_dict = {'uri': uri, 'title': rec_obj['title'],
-                           'id': coll_id}
-            obj_field_dict = {'dates': ['begin', 'end', 'expression', 'label',
-                              'date_type'],
-                              'extents': ['portion', 'number', 'extent_type',
-                                          'container_summary',
-                                          'physical_details', 'dimensions']}
-            note_type_fields = ['bioghist', 'accessrestrict', 'userestrict',
-                                'prefercite', 'altformavail',
-                                'relatedmaterial', 'acqinfo', 'arrangement',
-                                'processinfo', 'bibliography']
-            if field in note_type_fields:
-                self.extract_note_field(field, rec_obj, report_dict)
-            elif field in obj_field_dict.keys():
-                self.extract_obj_field(field, rec_obj, obj_field_dict,
-                                       report_dict)
-            else:
-                report_dict[field] = rec_obj.get(field, '')
-                logger.info(**report_dict)
-
-    def extract_note_field(self, field, rec_obj, report_dict):
-        """Extract note field content."""
-        notes = filter_note_type(rec_obj, field)
-        for note in notes:
-            for subnote in note.get('subnotes', []):
-                print(subnote)
-                report_dict[field] = subnote['content']
-                logger.info(**report_dict)
-
-    def extract_obj_field(self, field, rec_obj, obj_field_dict,
-                          report_dict):
-        """Extract field content where the value is an object."""
-        keys = obj_field_dict[field]
-        object_list = rec_obj[field]
-        for object in object_list:
-            for key in keys:
-                report_dict[key] = object.get(key, '')
-            logger.info(**report_dict)
-
 
 class Record(dict):
     def __init__(self, *args, **kwargs):
@@ -175,28 +128,8 @@ def audit(**kwargs):
 
 def concat_id(rec_obj):
     """Retrieve URI and concatenated IDs for record."""
-    id_0 = rec_obj.get('id_0', '')
-    id_1 = rec_obj.get('id_1', '')
-    id_2 = rec_obj.get('id_2', '')
-    id_3 = rec_obj.get('id_3', '')
-    coll_id = id_0
-    if id_1 != '':
-        coll_id += f'-{id_1}'
-        if id_2 != '':
-            coll_id += f'-{id_2}'
-            if id_3 != '':
-                coll_id += f'-{id_3}'
-    return coll_id
-
-
-def download_json(rec_obj):
-    """Download a JSON file."""
-    uri = rec_obj['uri']
-    file_name = uri[1:len(uri)].replace('/', '-')
-    f = open(file_name + '.json', 'w')
-    json.dump(rec_obj, f)
-    f.close()
-    return f.name
+    ids = [rec_obj.get(f'id_{x}', '') for x in range(4)]
+    return '-'.join(filter(None, ids))
 
 
 def create_csv_from_log():
@@ -219,6 +152,64 @@ def create_csv_from_log():
             f.writeheader()
             for edit_log_line in edit_log_lines:
                 f.writerow(edit_log_line)
+
+
+def download_json(rec_obj):
+    """Download a JSON file."""
+    uri = rec_obj['uri']
+    file_name = uri[1:len(uri)].replace('/', '-')
+    f = open(file_name + '.json', 'w')
+    json.dump(rec_obj, f)
+    f.close()
+    return f.name
+
+
+def extract_fields(client, repo_id, rec_type, field):
+    """Extract field (list or string value) from a type of records."""
+    endpoint = client.create_endpoint(rec_type, repo_id)
+    ids = client.get_all_records(endpoint)
+    for id in ids:
+        uri = f'{endpoint}/{id}'
+        rec_obj = client.get_record(uri)
+        coll_id = concat_id(rec_obj)
+        report_dict = {'uri': uri, 'title': rec_obj['title'],
+                       'id': coll_id}
+        obj_field_dict = {'dates': ['begin', 'end', 'expression', 'label',
+                          'date_type'],
+                          'extents': ['portion', 'number', 'extent_type',
+                                      'container_summary',
+                                      'physical_details', 'dimensions']}
+        note_type_fields = ['bioghist', 'accessrestrict', 'userestrict',
+                            'prefercite', 'altformavail',
+                            'relatedmaterial', 'acqinfo', 'arrangement',
+                            'processinfo', 'bibliography']
+        if field in note_type_fields:
+            extract_note_field(field, rec_obj, report_dict)
+        elif field in obj_field_dict.keys():
+            extract_obj_field(field, rec_obj, obj_field_dict, report_dict)
+        else:
+            report_dict[field] = rec_obj.get(field, '')
+            logger.info(**report_dict)
+
+
+def extract_note_field(field, rec_obj, report_dict):
+    """Extract note field content."""
+    notes = filter_note_type(rec_obj, field)
+    for note in notes:
+        for subnote in note.get('subnotes', []):
+            report_dict[field] = subnote['content']
+            logger.info(**report_dict)
+
+
+def extract_obj_field(field, rec_obj, obj_field_dict,
+                      report_dict):
+    """Extract field content where the value is an object."""
+    keys = obj_field_dict[field]
+    object_list = rec_obj[field]
+    for obj in object_list:
+        for key in keys:
+            report_dict[key] = obj.get(key, '')
+        logger.info(**report_dict)
 
 
 def filter_note_type(rec_obj, note_type):
