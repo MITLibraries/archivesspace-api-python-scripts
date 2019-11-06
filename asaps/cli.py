@@ -23,7 +23,9 @@ def main(url, username, password, dry_run):
 
     # as_ops.extract_fields('2', 'resource', 'publish')
     # as_ops.extract_fields('2', 'resource', 'prefercite')
-    models.extract_fields(as_ops, '2', 'resource', 'extents')
+    report_dicts = models.extract_fields(as_ops, '2', 'resource', 'extents')
+    for report_dict in report_dicts:
+        print(report_dict)
 
     # rec_type = 'resource'
     # note_type = 'acqinfo'

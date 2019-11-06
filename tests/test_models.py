@@ -118,7 +118,7 @@ def test_get_aos_for_resource(as_ops):
         assert '/archival_objects/5678' in aolist
 
 
-def test_extract_fields(as_ops, caplog):
+def test_extract_fields(as_ops):
     """"Test extract_fields function."""
     repo_id = '0'
     rec_type = 'resource'
@@ -128,25 +128,24 @@ def test_extract_fields(as_ops, caplog):
         m.get('/repositories/0/resources?all_ids=true', json=all_ids)
         res_1 = {'title': 'Title', 'publish': True}
         m.get('/repositories/0/resources/1', json=res_1)
-        models.extract_fields(as_ops, repo_id, rec_type, field)
-        message = json.loads(caplog.messages[1])
-        assert message['uri'] == 'repositories/0/resources/1'
-        assert message['publish'] is True
+        report_dicts = models.extract_fields(as_ops, repo_id, rec_type, field)
+        for report_dict in report_dicts:
+            assert report_dict['uri'] == 'repositories/0/resources/1'
+            assert report_dict['publish'] is True
 
 
-def test_extract_note_field(caplog):
+def test_extract_note_field():
     """"Test extract_note_field function."""
     field = 'acqinfo'
     rec_obj = {'notes': [{'type': 'acqinfo', 'subnotes': [{'content':
                'test value'}]}]}
     report_dict = {'uri': '123', 'title': 'Title', 'id': '456'}
-    models.extract_note_field(field, rec_obj, report_dict)
-    message = json.loads(caplog.messages[0])
-    assert message['uri'] == '123'
-    assert message['acqinfo'] == 'test value'
+    report_dict = models.extract_note_field(field, rec_obj, report_dict)
+    assert report_dict['uri'] == '123'
+    assert report_dict['acqinfo'] == 'test value'
 
 
-def test_extract_obj_field(caplog):
+def test_extract_obj_field():
     """"Test extract_obj_field function."""
     field = 'dates'
     rec_obj = {'dates': [{'begin': '1900', 'end': '1901', 'date_type':
@@ -154,12 +153,12 @@ def test_extract_obj_field(caplog):
     report_dict = {'uri': '123', 'title': 'Title', 'id': '456'}
     obj_field_dict = {'dates': ['begin', 'end', 'expression', 'label',
                       'date_type']}
-    models.extract_obj_field(field, rec_obj, obj_field_dict, report_dict)
-    message = json.loads(caplog.messages[0])
-    assert message['uri'] == '123'
-    assert message['begin'] == '1900'
-    assert message['end'] == '1901'
-    assert message['date_type'] == 'inclusive'
+    report_dict = models.extract_obj_field(field, rec_obj, obj_field_dict,
+                                           report_dict)
+    assert report_dict['uri'] == '123'
+    assert report_dict['begin'] == '1900'
+    assert report_dict['end'] == '1901'
+    assert report_dict['date_type'] == 'inclusive'
 
 
 def test_concat_id():

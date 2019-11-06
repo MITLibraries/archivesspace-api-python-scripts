@@ -165,7 +165,7 @@ def download_json(rec_obj):
 
 
 def extract_fields(client, repo_id, rec_type, field):
-    """Extract field (list or string value) from a type of records."""
+    """Extract field from a type of records."""
     endpoint = client.create_endpoint(rec_type, repo_id)
     ids = client.get_all_records(endpoint)
     for id in ids:
@@ -184,12 +184,13 @@ def extract_fields(client, repo_id, rec_type, field):
                             'relatedmaterial', 'acqinfo', 'arrangement',
                             'processinfo', 'bibliography']
         if field in note_type_fields:
-            extract_note_field(field, rec_obj, report_dict)
+            report_dict = extract_note_field(field, rec_obj, report_dict)
         elif field in obj_field_dict.keys():
-            extract_obj_field(field, rec_obj, obj_field_dict, report_dict)
+            report_dict = extract_obj_field(field, rec_obj, obj_field_dict,
+                                            report_dict)
         else:
             report_dict[field] = rec_obj.get(field, '')
-            logger.info(**report_dict)
+        yield report_dict
 
 
 def extract_note_field(field, rec_obj, report_dict):
@@ -198,7 +199,7 @@ def extract_note_field(field, rec_obj, report_dict):
     for note in notes:
         for subnote in note.get('subnotes', []):
             report_dict[field] = subnote['content']
-            logger.info(**report_dict)
+    return report_dict
 
 
 def extract_obj_field(field, rec_obj, obj_field_dict,
@@ -209,7 +210,7 @@ def extract_obj_field(field, rec_obj, obj_field_dict,
     for obj in object_list:
         for key in keys:
             report_dict[key] = obj.get(key, '')
-        logger.info(**report_dict)
+    return report_dict
 
 
 def filter_note_type(rec_obj, note_type):
