@@ -126,14 +126,10 @@ def audit(**kwargs):
     return msg
 
 
-def download_json(rec_obj):
-    """Download a JSON file."""
-    uri = rec_obj['uri']
-    file_name = uri[1:len(uri)].replace('/', '-')
-    f = open(file_name + '.json', 'w')
-    json.dump(rec_obj, f)
-    f.close()
-    return f.name
+def concat_id(rec_obj):
+    """Retrieve URI and concatenated IDs for record."""
+    ids = [rec_obj.get(f'id_{x}', '') for x in range(4)]
+    return '-'.join(filter(None, ids))
 
 
 def create_csv_from_log():
@@ -156,6 +152,65 @@ def create_csv_from_log():
             f.writeheader()
             for edit_log_line in edit_log_lines:
                 f.writerow(edit_log_line)
+
+
+def download_json(rec_obj):
+    """Download a JSON file."""
+    uri = rec_obj['uri']
+    file_name = uri[1:len(uri)].replace('/', '-')
+    f = open(file_name + '.json', 'w')
+    json.dump(rec_obj, f)
+    f.close()
+    return f.name
+
+
+def extract_fields(client, repo_id, rec_type, field):
+    """Extract field from a type of records."""
+    endpoint = client.create_endpoint(rec_type, repo_id)
+    ids = client.get_all_records(endpoint)
+    for id in ids:
+        uri = f'{endpoint}/{id}'
+        rec_obj = client.get_record(uri)
+        coll_id = concat_id(rec_obj)
+        report_dict = {'uri': uri, 'title': rec_obj['title'],
+                       'id': coll_id}
+        obj_field_dict = {'dates': ['begin', 'end', 'expression', 'label',
+                          'date_type'],
+                          'extents': ['portion', 'number', 'extent_type',
+                                      'container_summary',
+                                      'physical_details', 'dimensions']}
+        note_type_fields = ['bioghist', 'accessrestrict', 'userestrict',
+                            'prefercite', 'altformavail',
+                            'relatedmaterial', 'acqinfo', 'arrangement',
+                            'processinfo', 'bibliography']
+        if field in note_type_fields:
+            report_dict = extract_note_field(field, rec_obj, report_dict)
+        elif field in obj_field_dict.keys():
+            report_dict = extract_obj_field(field, rec_obj, obj_field_dict,
+                                            report_dict)
+        else:
+            report_dict[field] = rec_obj.get(field, '')
+        yield report_dict
+
+
+def extract_note_field(field, rec_obj, report_dict):
+    """Extract note field content."""
+    notes = filter_note_type(rec_obj, field)
+    for note in notes:
+        for subnote in note.get('subnotes', []):
+            report_dict[field] = subnote['content']
+    return report_dict
+
+
+def extract_obj_field(field, rec_obj, obj_field_dict,
+                      report_dict):
+    """Extract field content where the value is an object."""
+    keys = obj_field_dict[field]
+    object_list = rec_obj[field]
+    for obj in object_list:
+        for key in keys:
+            report_dict[key] = obj.get(key, '')
+    return report_dict
 
 
 def filter_note_type(rec_obj, note_type):
