@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 
 from asnake.client import ASnakeClient
@@ -83,6 +84,7 @@ def test_search(as_ops):
 
 def test_save_record(as_ops, caplog):
     """Test post_record method."""
+    caplog.set_level(logging.INFO)
     with requests_mock.Mocker() as m:
         rec_obj = models.Record()
         uri = '/repositories/2/resources/423'
@@ -118,47 +120,13 @@ def test_get_aos_for_resource(as_ops):
         assert '/archival_objects/5678' in aolist
 
 
-def test_extract_fields(as_ops):
-    """"Test extract_fields function."""
-    repo_id = '0'
-    rec_type = 'resource'
-    field = 'publish'
-    with requests_mock.Mocker() as m:
-        all_ids = [1]
-        m.get('/repositories/0/resources?all_ids=true', json=all_ids)
-        res_1 = {'title': 'Title', 'publish': True}
-        m.get('/repositories/0/resources/1', json=res_1)
-        report_dicts = models.extract_fields(as_ops, repo_id, rec_type, field)
-        for report_dict in report_dicts:
-            assert report_dict['uri'] == 'repositories/0/resources/1'
-            assert report_dict['publish'] is True
-
-
-def test_extract_note_field():
-    """"Test extract_note_field function."""
-    field = 'acqinfo'
-    rec_obj = {'notes': [{'type': 'acqinfo', 'subnotes': [{'content':
-               'test value'}]}]}
-    report_dict = {'uri': '123', 'title': 'Title', 'id': '456'}
-    report_dict = models.extract_note_field(field, rec_obj, report_dict)
-    assert report_dict['uri'] == '123'
-    assert report_dict['acqinfo'] == 'test value'
-
-
-def test_extract_obj_field():
-    """"Test extract_obj_field function."""
-    field = 'dates'
-    rec_obj = {'dates': [{'begin': '1900', 'end': '1901', 'date_type':
-               'inclusive'}]}
-    report_dict = {'uri': '123', 'title': 'Title', 'id': '456'}
-    obj_field_dict = {'dates': ['begin', 'end', 'expression', 'label',
-                      'date_type']}
-    report_dict = models.extract_obj_field(field, rec_obj, obj_field_dict,
-                                           report_dict)
-    assert report_dict['uri'] == '123'
-    assert report_dict['begin'] == '1900'
-    assert report_dict['end'] == '1901'
-    assert report_dict['date_type'] == 'inclusive'
+def test_audit():
+    """"Test audit function."""
+    sample_record = {'uri': '123'}
+    change = {'op': 'add', 'path': '/title', 'value': 'I am a title'}
+    msg = models.audit(record=sample_record, **change)
+    assert msg == {'uri': '123', 'field': '/title', 'old': None,
+                   'new': 'I am a title'}
 
 
 def test_concat_id():
@@ -166,6 +134,12 @@ def test_concat_id():
     rec_obj = {'id_0': '1', 'id_1': '2', 'id_2': '3', 'id_3': '4'}
     coll_id = models.concat_id(rec_obj)
     assert coll_id == '1-2-3-4'
+
+
+# How to test this?
+# def test_create_csv_from_log():
+#   """"Test create_csv_from_log function."""
+#     assert False
 
 
 def test_download_json():
@@ -177,19 +151,33 @@ def test_download_json():
     os.remove(path)
 
 
-# How to test this?
-# def test_create_csv_from_log():
-#   """"Test create_csv_from_log function."""
-#     assert False
+def test_extract_note_field():
+    """"Test extract_note_field function."""
+    field = 'acqinfo'
+    rec_obj = {'notes': [{'type': 'acqinfo', 'subnotes': [{'content':
+               'test value'}]}]}
+    report_dict = {'uri': '123', 'title': 'Title', 'id': '456'}
+    report_dicts = models.extract_note_field(field, rec_obj, report_dict)
+    for report_dict in report_dicts:
+        assert report_dict['uri'] == '123'
+        assert report_dict['acqinfo'] == 'test value'
 
 
-def test_audit():
-    """"Test audit function."""
-    sample_record = {'uri': '123'}
-    change = {'op': 'add', 'path': '/title', 'value': 'I am a title'}
-    msg = models.audit(record=sample_record, **change)
-    assert msg == {'uri': '123', 'field': '/title', 'old': None,
-                   'new': 'I am a title'}
+def test_extract_obj_field():
+    """"Test extract_obj_field function."""
+    field = 'dates'
+    rec_obj = {'dates': [{'begin': '1900', 'end': '1901', 'date_type':
+               'inclusive'}]}
+    report_dict = {'uri': '123', 'title': 'Title', 'id': '456'}
+    obj_field_dict = {'dates': ['begin', 'end', 'expression', 'label',
+                      'date_type']}
+    report_dicts = models.extract_obj_field(field, rec_obj, obj_field_dict,
+                                            report_dict)
+    for report_dict in report_dicts:
+        assert report_dict['uri'] == '123'
+        assert report_dict['begin'] == '1900'
+        assert report_dict['end'] == '1901'
+        assert report_dict['date_type'] == 'inclusive'
 
 
 def test_filter_note_type():

@@ -1,12 +1,28 @@
+import datetime
+import logging
 import time
 
 from asnake.client import ASnakeClient
 import click
+import structlog
 
 from asaps import models
 
+logger = structlog.get_logger()
 
-@click.command()
+
+note_type_fields = ['bioghist', 'accessrestrict', 'userestrict',
+                    'prefercite', 'altformavail',
+                    'relatedmaterial', 'acqinfo', 'arrangement',
+                    'processinfo', 'bibliography']
+obj_field_dict = {'dates': ['begin', 'end', 'expression', 'label',
+                  'date_type'],
+                  'extents': ['portion', 'number', 'extent_type',
+                              'container_summary',
+                              'physical_details', 'dimensions']}
+
+
+@click.group()
 @click.option('--url', envvar='ARCHIVESSPACE_URL')
 @click.option('-u', '--username', prompt='Enter username',
               help='The username for authentication.')
@@ -15,56 +31,105 @@ from asaps import models
               help='The password for authentication.')
 @click.option('-d', '--dry_run', prompt='Dry run?', default=True,
               help='Perform dry run that does not modify any records.')
-def main(url, username, password, dry_run):
-    client = ASnakeClient(baseurl=url, username=username,
-                          password=password)
+@click.pass_context
+def main(ctx, url, username, password, dry_run):
+    ctx.obj = {}
+    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H.%M.%S')
+    log_file_name = f'log-{timestamp}.log'
+    logging.basicConfig(format="%(message)s",
+                        handlers=[logging.FileHandler(log_file_name, 'w'),
+                                  logging.StreamHandler()], level=logging.INFO)
+    logger.info('Application start')
+
+    client = ASnakeClient(baseurl=url, username=username, password=password)
     as_ops = models.AsOperations(client)
     start_time = time.time()
+    ctx.obj['as_ops'] = as_ops
+    ctx.obj['start_time'] = start_time
+    ctx.obj['log_file_name'] = log_file_name
 
-    # as_ops.extract_fields('2', 'resource', 'publish')
-    # as_ops.extract_fields('2', 'resource', 'prefercite')
-    report_dicts = models.extract_fields(as_ops, '2', 'resource', 'extents')
-    for report_dict in report_dicts:
-        print(report_dict)
 
-    # rec_type = 'resource'
-    # note_type = 'acqinfo'
-    # corr_dict = {'Institute Archives and Special Collections':
-    #              'Department of Distinctive Collections'}
-    # # corr_dict = {'the Institute Archives': 'Distinctive Collections'}
-    # # corr_dict = {'Institute Archives': 'Distinctive Collections'}
-    # # corr_dict = {'Distinctive Collections': 'Distinctive Collections (formerly the Institute Archives and Special Collections)'}
-    # # corr_dict = {'formerly the Department of Distinctive Collections': 'formerly Institute Archives and Special Collections'}
-    #
-    # skipped_resources = ['/repositories/2/resources/535',
-    #                      '/repositories/2/resources/41',
-    #                      '/repositories/2/resources/111',
-    #                      '/repositories/2/resources/367',
-    #                      '/repositories/2/resources/231',
-    #                      '/repositories/2/resources/561',
-    #                      '/repositories/2/resources/563',
-    #                      '/repositories/2/resources/103']
-    # skipped_aos = []
-    # for uri in skipped_resources:
-    #     aolist = as_ops.get_aos_for_resource(uri)
-    #     skipped_aos.append(aolist)
-    # skipped_uris = skipped_resources + skipped_aos
-    #
-    # for old, new in corr_dict.items():
-    #     for uri in as_ops.search(old, '2', rec_type, note_type):
-    #         if uri not in skipped_uris:
-    #             rec_obj = as_ops.get_record(uri)
-    #             notes = models.filter_note_type(rec_obj, note_type)
-    #             for note in notes:
-    #                 for subnote in note.get('subnotes', []):
-    #                     subnote['content'] = subnote['content'].replace(old,
-    #                                                                     new)
-    #             if rec_obj.modified is True:
-    #                 as_ops.save_record(rec_obj, dry_run)
-    #         else:
-    #             print(uri, ' skipped')
+@main.command()
+@click.option('-r', '--repo_id', prompt='Enter the repository ID',
+              help='The ID of the repository to use.')
+@click.option('-t', '--rec_type', prompt='Enter the record type',
+              help='The record type to use.')
+@click.option('-f', '--field', prompt='Enter the field',
+              help='The field to extract.')
+@click.pass_context
+def report(ctx, repo_id, rec_type, field):
+    as_ops = ctx.obj['as_ops']
+    start_time = ctx.obj['start_time']
+    log_file_name = ctx.obj['log_file_name']
+    endpoint = as_ops.create_endpoint(rec_type, repo_id)
+    ids = as_ops.get_all_records(endpoint)
+    for id in ids:
+        uri = f'{endpoint}/{id}'
+        rec_obj = as_ops.get_record(uri)
+        coll_id = models.concat_id(rec_obj)
+        report_dict = {'uri': rec_obj['uri'], 'title': rec_obj['title'],
+                       'id': coll_id}
+        if field in note_type_fields:
+            report_dicts = models.extract_note_field(field, rec_obj,
+                                                     report_dict)
+            for report_dict in report_dicts:
+                logger.info(**report_dict)
+        elif field in obj_field_dict.keys():
+            report_dicts = models.extract_obj_field(field, rec_obj,
+                                                    obj_field_dict,
+                                                    report_dict)
+            for report_dict in report_dicts:
+                logger.info(**report_dict)
+        else:
+            report_dict[field] = rec_obj.get(field, '')
+            logger.info(**report_dict)
     models.elapsed_time(start_time, 'Total runtime:')
-    models.create_csv_from_log()
+    models.create_csv_from_log(log_file_name)
+
+# # Still in progress
+# @main.command()
+# @click.pass_context
+# def find_and_replace(ctx, dry_run):
+#     as_ops = ctx.obj['as_ops']
+#     start_time = ctx.obj['start_time']
+#     logger = ctx.obj['logger']
+#     log_file_name = ctx.obj['log_file_name']
+#     rec_type = 'resource'
+#     note_type = 'acqinfo'
+#     corr_dict = {'Institute Archives and Special Collections':
+#                  'Department of Distinctive Collections'}
+#     # corr_dict = {'the Institute Archives': 'Distinctive Collections'}
+#     # corr_dict = {'Institute Archives': 'Distinctive Collections'}
+#
+#     skipped_resources = ['/repositories/2/resources/535',
+#                          '/repositories/2/resources/41',
+#                          '/repositories/2/resources/111',
+#                          '/repositories/2/resources/367',
+#                          '/repositories/2/resources/231',
+#                          '/repositories/2/resources/561',
+#                          '/repositories/2/resources/563',
+#                          '/repositories/2/resources/103']
+#     skipped_aos = []
+#     for uri in skipped_resources:
+#         aolist = as_ops.get_aos_for_resource(uri, logger)
+#         skipped_aos.append(aolist)
+#     skipped_uris = skipped_resources + skipped_aos
+#
+#     for old, new in corr_dict.items():
+#         for uri in as_ops.search(old, '2', rec_type, note_type):
+#             if uri not in skipped_uris:
+#                 rec_obj = as_ops.get_record(uri, logger)
+#                 notes = models.filter_note_type(rec_obj, note_type)
+#                 for note in notes:
+#                     for subnote in note.get('subnotes', []):
+#                         subnote['content'] = subnote['content'].replace(old,
+#                                                                         new)
+#                 if rec_obj.modified is True:
+#                     as_ops.save_record(rec_obj, dry_run, logger)
+#             else:
+#                 print(uri, ' skipped')
+#     models.elapsed_time(start_time, 'Total runtime:', logger)
+#     models.create_csv_from_log(log_file_name)
 
 
 if __name__ == '__main__':
