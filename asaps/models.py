@@ -56,7 +56,7 @@ class AsOperations:
         for result in self.client.get_paged(endpoint, params=params):
             uri = result['uri']
             uris.append(uri)
-        logger.info('Search results processed')
+        logger.info(f'{len(uris)} search results processed')
         return uris
 
     def save_record(self, rec_obj, dry_run):
