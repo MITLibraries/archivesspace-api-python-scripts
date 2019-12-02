@@ -125,9 +125,9 @@ def concat_id(rec_obj):
     return '-'.join(filter(None, ids))
 
 
-def create_csv_from_log(log_file_name):
+def create_csv_from_log(log_file_name, log_suffix):
     """Create csv from log file."""
-    with open(log_file_name) as f:
+    with open(f'logs/log-{log_suffix}') as f:
         logs = f.read().splitlines()
         edit_log_lines = []
         for line in logs:
@@ -137,7 +137,7 @@ def create_csv_from_log(log_file_name):
                 line_dict.pop('level')
                 line_dict.pop('timestamp')
                 edit_log_lines.append(line_dict)
-    full_file_name = os.path.abspath(f'{log_file_name}.csv')
+    full_file_name = os.path.abspath(f'{log_file_name}{log_suffix}.csv')
     if len(edit_log_lines) > 0:
         with open(f'{full_file_name}', 'w') as fp:
             header = list(edit_log_lines[0].keys())

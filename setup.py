@@ -8,10 +8,16 @@ setup(
     author='Eric Hanson',
     author_email='ehanson@mit.edu',
     install_requires=[
-        'archivessnake'
+        'archivessnake',
         'click',
         'jsonpatch',
         'jsonpointer',
+        'structlog',
     ],
+    entry_points={
+        'console_scripts': [
+            'asaps=asaps.cli:main',
+        ]
+    },
     python_requires='>=3.7.1',
 )
