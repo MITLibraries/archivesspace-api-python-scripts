@@ -22,6 +22,17 @@ obj_field_dict = {'dates': ['begin', 'end', 'expression', 'label',
                               'physical_details', 'dimensions']}
 
 
+# I'll move this elsewhere soon since it's MIT-specific unlike the other two
+skipped_resources = ['/repositories/2/resources/535',
+                     '/repositories/2/resources/41',
+                     '/repositories/2/resources/111',
+                     '/repositories/2/resources/367',
+                     '/repositories/2/resources/231',
+                     '/repositories/2/resources/561',
+                     '/repositories/2/resources/563',
+                     '/repositories/2/resources/103']
+
+
 @click.group()
 @click.option('--url', envvar='ARCHIVESSPACE_URL')
 @click.option('-u', '--username', prompt='Enter username',
@@ -29,10 +40,8 @@ obj_field_dict = {'dates': ['begin', 'end', 'expression', 'label',
 @click.option('-p', '--password', prompt='Enter password',
               hide_input=True, envvar='DOCKER_PASS',
               help='The password for authentication.')
-@click.option('-d', '--dry_run', prompt='Dry run?', default=True,
-              help='Perform dry run that does not modify any records.')
 @click.pass_context
-def main(ctx, url, username, password, dry_run):
+def main(ctx, url, username, password):
     ctx.obj = {}
     timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H.%M.%S')
     log_file_name = f'log-{timestamp}.log'
@@ -86,50 +95,50 @@ def report(ctx, repo_id, rec_type, field):
     models.elapsed_time(start_time, 'Total runtime:')
     models.create_csv_from_log(log_file_name)
 
-# # Still in progress
-# @main.command()
-# @click.pass_context
-# def find_and_replace(ctx, dry_run):
-#     as_ops = ctx.obj['as_ops']
-#     start_time = ctx.obj['start_time']
-#     logger = ctx.obj['logger']
-#     log_file_name = ctx.obj['log_file_name']
-#     rec_type = 'resource'
-#     note_type = 'acqinfo'
-#     corr_dict = {'Institute Archives and Special Collections':
-#                  'Department of Distinctive Collections'}
-#     # corr_dict = {'the Institute Archives': 'Distinctive Collections'}
-#     # corr_dict = {'Institute Archives': 'Distinctive Collections'}
-#
-#     skipped_resources = ['/repositories/2/resources/535',
-#                          '/repositories/2/resources/41',
-#                          '/repositories/2/resources/111',
-#                          '/repositories/2/resources/367',
-#                          '/repositories/2/resources/231',
-#                          '/repositories/2/resources/561',
-#                          '/repositories/2/resources/563',
-#                          '/repositories/2/resources/103']
-#     skipped_aos = []
-#     for uri in skipped_resources:
-#         aolist = as_ops.get_aos_for_resource(uri, logger)
-#         skipped_aos.append(aolist)
-#     skipped_uris = skipped_resources + skipped_aos
-#
-#     for old, new in corr_dict.items():
-#         for uri in as_ops.search(old, '2', rec_type, note_type):
-#             if uri not in skipped_uris:
-#                 rec_obj = as_ops.get_record(uri, logger)
-#                 notes = models.filter_note_type(rec_obj, note_type)
-#                 for note in notes:
-#                     for subnote in note.get('subnotes', []):
-#                         subnote['content'] = subnote['content'].replace(old,
-#                                                                         new)
-#                 if rec_obj.modified is True:
-#                     as_ops.save_record(rec_obj, dry_run, logger)
-#             else:
-#                 print(uri, ' skipped')
-#     models.elapsed_time(start_time, 'Total runtime:', logger)
-#     models.create_csv_from_log(log_file_name)
+
+@main.command()
+@click.pass_context
+@click.argument('search_value')
+@click.option('-d', '--dry_run', prompt='Dry run?', default=True,
+              help='Perform dry run that does not modify any records.')
+@click.option('-i', '--repo_id', prompt='Enter the repository ID',
+              help='The ID of the repository to use.')
+@click.option('-t', '--rec_type', prompt='Enter the record type',
+              help='The record type to use.')
+@click.option('-n', '--note_type', prompt='Enter the note type',
+              help='The note type to edit.')
+@click.option('-r', '--rpl_value', prompt='Enter the replacement value',
+              help='The replacement value to be inserted.')
+def find(ctx, dry_run, repo_id, rec_type, note_type, search_value, rpl_value):
+    as_ops = ctx.obj['as_ops']
+    start_time = ctx.obj['start_time']
+    log_file_name = ctx.obj['log_file_name']
+    skipped_aos = []
+    if rec_type == 'archival_object':
+        for uri in skipped_resources:
+            aolist = as_ops.get_aos_for_resource(uri)
+            skipped_aos.append(aolist)
+    skipped_uris = skipped_resources + skipped_aos
+    for uri in as_ops.search(search_value, repo_id, rec_type, note_type):
+        if uri not in skipped_uris:
+            rec_obj = as_ops.get_record(uri)
+            notes = models.filter_note_type(rec_obj, note_type)
+            for note in notes:
+                for subnote in note.get('subnotes', []):
+                    if 'content' in subnote.keys():
+                        update = subnote['content'].replace(search_value,
+                                                            rpl_value)
+                        subnote['content'] = update
+                    elif 'definedlist' in subnote.keys():
+                        update = subnote['definedlist'].replace(search_value,
+                                                                rpl_value)
+                        subnote['definedlist'] = update
+            if rec_obj.modified is True:
+                as_ops.save_record(rec_obj, dry_run)
+        else:
+            logger.info(f'{uri} skipped')
+    models.elapsed_time(start_time, 'Total runtime:')
+    models.create_csv_from_log(log_file_name)
 
 
 if __name__ == '__main__':
