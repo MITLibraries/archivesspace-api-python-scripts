@@ -69,7 +69,7 @@ def main(ctx, url, username, password):
 
 
 @main.command()
-@click.option('-r', '--repo_id', prompt='Enter the repository ID',
+@click.option('-i', '--repo_id', prompt='Enter the repository ID',
               help='The ID of the repository to use.')
 @click.option('-t', '--rec_type', prompt='Enter the record type',
               help='The record type to use.')
@@ -103,7 +103,7 @@ def report(ctx, repo_id, rec_type, field):
             report_dict[field] = rec_obj.get(field, '')
             logger.info(**report_dict)
     models.elapsed_time(start_time, 'Total runtime:')
-    models.create_csv_from_log(log_suffix)
+    models.create_csv_from_log(f'{rec_type}-{field}-values', log_suffix)
 
 
 @main.command()
@@ -148,7 +148,7 @@ def find(ctx, dry_run, repo_id, rec_type, note_type, search_value, rpl_value):
         else:
             logger.info(f'{uri} skipped')
     models.elapsed_time(start_time, 'Total runtime:')
-    models.create_csv_from_log(f'{rec_type}-{note_type}-', log_suffix)
+    models.create_csv_from_log(f'{rec_type}-{note_type}-find', log_suffix)
 
 
 if __name__ == '__main__':
