@@ -43,11 +43,21 @@ skipped_resources = ['/repositories/2/resources/535',
 @click.pass_context
 def main(ctx, url, username, password):
     ctx.obj = {}
-    timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H.%M.%S')
-    log_file_name = f'log-{timestamp}.log'
+    dt = datetime.datetime.utcnow().isoformat(timespec='seconds')
+    log_suffix = f'{dt}.log'
+    structlog.configure(processors=[
+                        structlog.stdlib.filter_by_level,
+                        structlog.stdlib.add_log_level,
+                        structlog.stdlib.PositionalArgumentsFormatter(),
+                        structlog.processors.TimeStamper(fmt="iso"),
+                        structlog.processors.JSONRenderer()
+                        ],
+                        context_class=dict,
+                        logger_factory=structlog.stdlib.LoggerFactory())
     logging.basicConfig(format="%(message)s",
-                        handlers=[logging.FileHandler(log_file_name, 'w'),
-                                  logging.StreamHandler()], level=logging.INFO)
+                        handlers=[logging.FileHandler(f'logs/log-{log_suffix}',
+                                  'w')],
+                        level=logging.INFO)
     logger.info('Application start')
 
     client = ASnakeClient(baseurl=url, username=username, password=password)
@@ -55,7 +65,7 @@ def main(ctx, url, username, password):
     start_time = time.time()
     ctx.obj['as_ops'] = as_ops
     ctx.obj['start_time'] = start_time
-    ctx.obj['log_file_name'] = log_file_name
+    ctx.obj['log_suffix'] = log_suffix
 
 
 @main.command()
@@ -69,7 +79,7 @@ def main(ctx, url, username, password):
 def report(ctx, repo_id, rec_type, field):
     as_ops = ctx.obj['as_ops']
     start_time = ctx.obj['start_time']
-    log_file_name = ctx.obj['log_file_name']
+    log_suffix = ctx.obj['log_suffix']
     endpoint = as_ops.create_endpoint(rec_type, repo_id)
     ids = as_ops.get_all_records(endpoint)
     for id in ids:
@@ -93,7 +103,7 @@ def report(ctx, repo_id, rec_type, field):
             report_dict[field] = rec_obj.get(field, '')
             logger.info(**report_dict)
     models.elapsed_time(start_time, 'Total runtime:')
-    models.create_csv_from_log(log_file_name)
+    models.create_csv_from_log(log_suffix)
 
 
 @main.command()
@@ -112,7 +122,7 @@ def report(ctx, repo_id, rec_type, field):
 def find(ctx, dry_run, repo_id, rec_type, note_type, search_value, rpl_value):
     as_ops = ctx.obj['as_ops']
     start_time = ctx.obj['start_time']
-    log_file_name = ctx.obj['log_file_name']
+    log_suffix = ctx.obj['log_suffix']
     skipped_aos = []
     if rec_type == 'archival_object':
         for uri in skipped_resources:
@@ -138,7 +148,7 @@ def find(ctx, dry_run, repo_id, rec_type, note_type, search_value, rpl_value):
         else:
             logger.info(f'{uri} skipped')
     models.elapsed_time(start_time, 'Total runtime:')
-    models.create_csv_from_log(log_file_name)
+    models.create_csv_from_log(f'{rec_type}-{note_type}-', log_suffix)
 
 
 if __name__ == '__main__':
