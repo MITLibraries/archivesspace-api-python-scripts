@@ -5,7 +5,11 @@ This command line application provides several ways of interacting with the [Arc
 ## Installation
 Clone repo and install using [pipenv](https://github.com/pypa/pipenv):
 ```bash
-pipenv install -e .
+pipenv install
+```
+After it is installed, run the application with:
+```bash
+pipenv run asaps
 ```
 
 ## Authentication

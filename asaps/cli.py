@@ -11,26 +11,17 @@ from asaps import models
 logger = structlog.get_logger()
 
 
-note_type_fields = ['bioghist', 'accessrestrict', 'userestrict',
-                    'prefercite', 'altformavail',
-                    'relatedmaterial', 'acqinfo', 'arrangement',
-                    'processinfo', 'bibliography']
+note_type_fields = ['abstract', 'accessrestrict', 'acqinfo', 'altformavail',
+                    'arrangement', 'bibliography', 'bioghist', 'prefercite',
+                    'processinfo' 'relatedmaterial', 'scopecontent',
+                    'userestrict']
 obj_field_dict = {'dates': ['begin', 'end', 'expression', 'label',
                   'date_type'],
                   'extents': ['portion', 'number', 'extent_type',
                               'container_summary',
                               'physical_details', 'dimensions']}
 
-
-# I'll move this elsewhere soon since it's MIT-specific unlike the other two
-skipped_resources = ['/repositories/2/resources/535',
-                     '/repositories/2/resources/41',
-                     '/repositories/2/resources/111',
-                     '/repositories/2/resources/367',
-                     '/repositories/2/resources/231',
-                     '/repositories/2/resources/561',
-                     '/repositories/2/resources/563',
-                     '/repositories/2/resources/103']
+skipped_resources = []
 
 
 @click.group()
@@ -108,18 +99,18 @@ def report(ctx, repo_id, rec_type, field):
 
 @main.command()
 @click.pass_context
-@click.argument('search_value')
+@click.argument('search')
 @click.option('-d', '--dry_run', prompt='Dry run?', default=True,
               help='Perform dry run that does not modify any records.')
 @click.option('-i', '--repo_id', prompt='Enter the repository ID',
               help='The ID of the repository to use.')
 @click.option('-t', '--rec_type', prompt='Enter the record type',
               help='The record type to use.')
-@click.option('-n', '--note_type', prompt='Enter the note type',
-              help='The note type to edit.')
+@click.option('-f', '--field', prompt='Enter the field',
+              help='The field to edit.')
 @click.option('-r', '--rpl_value', prompt='Enter the replacement value',
               help='The replacement value to be inserted.')
-def find(ctx, dry_run, repo_id, rec_type, note_type, search_value, rpl_value):
+def find(ctx, dry_run, repo_id, rec_type, field, search, rpl_value):
     as_ops = ctx.obj['as_ops']
     start_time = ctx.obj['start_time']
     log_suffix = ctx.obj['log_suffix']
@@ -129,26 +120,30 @@ def find(ctx, dry_run, repo_id, rec_type, note_type, search_value, rpl_value):
             aolist = as_ops.get_aos_for_resource(uri)
             skipped_aos.append(aolist)
     skipped_uris = skipped_resources + skipped_aos
-    for uri in as_ops.search(search_value, repo_id, rec_type, note_type):
+    for uri in as_ops.search(search, repo_id, rec_type, field):
         if uri not in skipped_uris:
             rec_obj = as_ops.get_record(uri)
-            notes = models.filter_note_type(rec_obj, note_type)
-            for note in notes:
-                for subnote in note.get('subnotes', []):
-                    if 'content' in subnote.keys():
-                        update = subnote['content'].replace(search_value,
-                                                            rpl_value)
-                        subnote['content'] = update
-                    elif 'definedlist' in subnote.keys():
-                        update = subnote['definedlist'].replace(search_value,
+            if field in note_type_fields:
+                notes = models.filter_note_type(rec_obj, field)
+                for note in notes:
+                    for subnote in note.get('subnotes', []):
+                        if 'content' in subnote.keys():
+                            update = subnote['content'].replace(search,
                                                                 rpl_value)
-                        subnote['definedlist'] = update
+                            subnote['content'] = update
+                        elif 'definedlist' in subnote.keys():
+                            update = subnote['definedlist'].replace(search,
+                                                                    rpl_value)
+                            subnote['definedlist'] = update
+            else:
+                update = rec_obj.get(field, '').replace(search, rpl_value)
+                rec_obj[field] = update
             if rec_obj.modified is True:
                 as_ops.save_record(rec_obj, dry_run)
         else:
             logger.info(f'{uri} skipped')
     models.elapsed_time(start_time, 'Total runtime:')
-    models.create_csv_from_log(f'{rec_type}-{note_type}-find', log_suffix)
+    models.create_csv_from_log(f'{rec_type}-{field}-find', log_suffix)
 
 
 if __name__ == '__main__':
