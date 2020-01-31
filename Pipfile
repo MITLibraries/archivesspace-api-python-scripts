@@ -16,6 +16,7 @@ click = "*"
 jsonpatch = "*"
 jsonpointer = "*"
 structlog = "*"
+sickle = "*"
 
 [requires]
 python_version = "3.7"

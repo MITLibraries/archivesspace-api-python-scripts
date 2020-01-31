@@ -1,12 +1,15 @@
 import datetime
+import json
 import logging
 import time
 
 from asnake.client import ASnakeClient
 import click
+from sickle import Sickle
 import structlog
 
 from asaps import models
+from asaps import dos_models
 
 logger = structlog.get_logger()
 
@@ -144,6 +147,48 @@ def find(ctx, dry_run, repo_id, rec_type, field, search, rpl_value):
             logger.info(f'{uri} skipped')
     models.elapsed_time(start_time, 'Total runtime:')
     models.create_csv_from_log(f'{rec_type}-{field}-find', log_suffix)
+
+
+@main.command()
+@click.argument('do_uri')
+@click.option('-f', '--file_type', prompt='Enter file type',
+              help='The MIME file type to export.')
+@click.option('-u', '--target_url', prompt='Enter target URL',
+              help='The target URL for ingest.')
+@click.pass_context
+def dos(ctx, do_uri, file_type, target_url):
+    """"""
+    metadata_system = 'archivesspace'
+    source_system = 'dome'
+    as_ops = ctx.obj['as_ops']
+    start_time = ctx.obj['start_time']
+    rec_obj = as_ops.get_record(do_uri)
+    print(rec_obj)
+    handle = rec_obj['digital_object_id']
+    handle.replace('http://hdl.handle.net/', '')
+    sickle = Sickle('https://dome.mit.edu/oai/request')
+    dome_rec = sickle.GetRecord(identifier=f'oai:dome.mit.edu:{handle}',
+                                metadataPrefix='ore').xml
+    handle = dos_models.extract_handle(dome_rec, dos_models.NS)
+    logger.info(handle)
+    title = dome_rec.findtext('.//atom:title', namespaces=dos_models.NS)
+    bitstreams = dos_models.get_bitstreams(dome_rec, file_type, dos_models.NS)
+    bitstream_array = []
+    for bitstream in bitstreams:
+        bitstream_array.append(bitstream)
+    links = dos_models.post_parameters(target_url, metadata_system,
+                                       source_system, handle, title,
+                                       bitstream_array)
+    for link in links:
+        logger.info(link)
+    # this only works for a single file, need to address multiple file use case
+    rec_obj['digital_object_id'] = link
+    file_versions = rec_obj['file_versions']
+    for file_version in file_versions:
+        file_version['file_uri'] = link
+    print(json.dumps(rec_obj))
+    as_ops.save_record(rec_obj, 'False')
+    models.elapsed_time(start_time, 'Total runtime:')
 
 
 if __name__ == '__main__':
