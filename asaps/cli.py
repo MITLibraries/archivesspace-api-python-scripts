@@ -1,3 +1,4 @@
+import csv
 import datetime
 import json
 import logging
@@ -189,6 +190,95 @@ def dos(ctx, do_uri, file_type, target_url):
     print(json.dumps(rec_obj))
     as_ops.save_record(rec_obj, 'False')
     models.elapsed_time(start_time, 'Total runtime:')
+
+
+@main.command()
+@click.pass_context
+@click.option('-u', '--uri', prompt='Dry run?',
+              help='The URI of the resource.')
+def digobjcheck(ctx, uri):
+    as_ops = ctx.obj['as_ops']
+    aolist = as_ops.get_aos_for_resource(uri)
+    file_uris = []
+    dolist = []
+    for ao in aolist:
+        rec_obj = as_ops.get_record(ao)
+        instances = rec_obj['instances']
+        do_attached = False
+        for instance in [i for i in instances if i['instance_type'] ==
+                         "digital_object"]:
+            do_attached = True
+            do_uri = instance['digital_object']['ref']
+            dolist.append(do_uri)
+            do = as_ops.get_record(do_uri)
+            file_versions = do['file_versions']
+            if len(file_versions) > 1:
+                print(f'{ao}, has {len(file_versions)} file versions')
+            elif len(file_versions) == 0:
+                print(f'{ao}, has {len(file_versions)} file versions')
+            for file_version in file_versions:
+                print(ao, do['digital_object_id'],
+                      file_version['file_uri'])
+                file_uris.append(file_version['file_uri'])
+        if do_attached is False:
+            print(f'{ao} has no digital objects')
+    print(f'{len(file_uris)} file uris, {len(aolist)} DOs, {len(aolist)} AOs')
+
+
+@main.command()
+@click.pass_context
+@click.option('-u', '--uri', prompt='Enter the URI of the resource',
+              help='The URI of the resource.')
+def digobjreport(ctx, uri):
+    as_ops = ctx.obj['as_ops']
+    aolist = as_ops.get_aos_for_resource(uri)
+    rows = []
+    for ao_uri in aolist:
+        rec_obj = as_ops.get_record(ao_uri)
+        ao_title = rec_obj.get('title', '')
+        instances = rec_obj['instances']
+        do_uri = ''
+        file_uri = ''
+        do_attached = False
+        for instance in instances:
+            if instance['instance_type'] == 'digital_object':
+                do_attached = True
+                do_uri = instance['digital_object']['ref']
+                do = as_ops.get_record(do_uri)
+                do_id = do['digital_object_id']
+                file_versions = do['file_versions']
+                if len(file_versions) == 0:
+                    row = {}
+                    row['ao_uri'] = ao_uri
+                    row['ao_title'] = ao_title
+                    row['do_uri'] = do_uri
+                    row['do_id'] = do_id
+                    row['file_uri'] = ''
+                    rows.append(row)
+                for file_version in file_versions:
+                    file_uri = file_version['file_uri']
+                    row = {}
+                    row['ao_uri'] = ao_uri
+                    row['ao_title'] = ao_title
+                    row['do_uri'] = do_uri
+                    row['do_id'] = do_id
+                    row['file_uri'] = file_uri
+                    rows.append(row)
+        if do_attached is False:
+            row = {}
+            row['ao_uri'] = ao_uri
+            row['ao_title'] = ao_title
+            row['do_uri'] = ''
+            row['do_id'] = ''
+            row['file_uri'] = ''
+            rows.append(row)
+    file_name = uri[uri.rindex('/')+1:]
+    with open(f'{file_name}.csv', 'w') as fp:
+        header = list(rows[0].keys())
+        f = csv.DictWriter(fp, fieldnames=header)
+        f.writeheader()
+        for row in rows:
+            f.writerow(row)
 
 
 if __name__ == '__main__':
