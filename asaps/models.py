@@ -77,6 +77,21 @@ class AsOperations:
                 aolist.append(ao_uri)
         return aolist
 
+    def update_dig_obj_link(self, do, link):
+        """Get digital objects associated with an archival objects."""
+        do['digital_object_id'] = link
+        if len(do['file_versions']) != 0:
+            for file_version in do['file_versions']:
+                file_version['file_uri'] = link
+        else:
+            file_version = {}
+            file_version['file_uri'] = link
+            file_version['publish'] = True
+            file_version['is_representative'] = False
+            file_version['jsonmodel_type'] = 'file_version'
+            do['file_versions'] = [file_version]
+        return do
+
 
 class Record(dict):
     def __init__(self, *args, **kwargs):
