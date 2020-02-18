@@ -1,3 +1,4 @@
+import csv
 import datetime
 import logging
 import time
@@ -144,6 +145,29 @@ def find(ctx, dry_run, repo_id, rec_type, field, search, rpl_value):
             logger.info(f'{uri} skipped')
     models.elapsed_time(start_time, 'Total runtime:')
     models.create_csv_from_log(f'{rec_type}-{field}-find', log_suffix)
+
+
+@main.command()
+@click.pass_context
+@click.option('-d', '--dry_run', prompt='Dry run?', default=True,
+              help='Perform dry run that does not modify any records.')
+@click.option('-m', '--mapping_csv', prompt='Enter the mapping CSV file',
+              help='The mapping CSV file to use.')
+def updatedigobj(ctx, dry_run, mapping_csv):
+    as_ops = ctx.obj['as_ops']
+    start_time = ctx.obj['start_time']
+    log_suffix = ctx.obj['log_suffix']
+    with open(mapping_csv) as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            do_uri = row['do_uri']
+            link = row['link']
+            dig_obj = as_ops.get_record(do_uri)
+            upd_dig_obj = as_ops.update_dig_obj_link(dig_obj, link)
+            if upd_dig_obj.modified is True:
+                as_ops.save_record(upd_dig_obj, dry_run)
+    models.elapsed_time(start_time, 'Total runtime:')
+    models.create_csv_from_log('dig_obj', log_suffix)
 
 
 if __name__ == '__main__':

@@ -28,7 +28,7 @@ def test_get_record(as_ops):
 
 
 def test_create_endpoint(as_ops):
-    """Test create_endpoint function."""
+    """Test create_endpoint method."""
     rec_type = 'resource'
     repo_id = '0'
     endpoint = as_ops.create_endpoint(rec_type, repo_id)
@@ -36,7 +36,7 @@ def test_create_endpoint(as_ops):
 
 
 def test_get_all_records(as_ops):
-    """Test get_all_records function."""
+    """Test get_all_records method."""
     with requests_mock.Mocker() as m:
         endpoint = '/repositories/0/resources'
         json_object = [1, 2, 3, 4]
@@ -110,7 +110,7 @@ def test_save_record_flushes_changes(as_ops):
 
 
 def test_get_aos_for_resource(as_ops):
-    """Test get_aos_for_resource function."""
+    """Test get_aos_for_resource method."""
     with requests_mock.Mocker() as m:
         resource = '/repositories/2/resources/423'
         json_object = {'record_uri': '/archival_objects/1234', 'children':
@@ -118,6 +118,17 @@ def test_get_aos_for_resource(as_ops):
         m.get(f'{resource}/tree', json=json_object)
         aolist = as_ops.get_aos_for_resource(resource)
         assert '/archival_objects/5678' in aolist
+
+
+def test_update_dig_obj_link(as_ops):
+    """Test update_dig_obj_link method."""
+    update = 'TEST'
+    do = {'digital_object_id': 'fish', 'file_versions': [{'file_uri':
+          'fish'}]}
+    do = as_ops.update_dig_obj_link(do, update)
+    assert do['digital_object_id'] == update
+    for file_version in do['file_versions']:
+        assert file_version['file_uri'] == update
 
 
 def test_audit():
