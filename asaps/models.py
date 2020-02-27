@@ -45,10 +45,10 @@ class AsOperations:
         ids = self.client.get(f'{endpoint}?all_ids=true').json()
         return ids
 
-    def search(self, string, repo_id, rec_type, note_type='keyword'):
+    def search(self, string, repo_id, rec_type, field='keyword'):
         """Search for a string across a particular record type."""
         endpoint = f'repositories/{repo_id}/search?'
-        query = {'query': {'field': note_type, 'value': string,
+        query = {'query': {'field': field, 'value': string,
                  'jsonmodel_type': 'field_query'}}
         params = {'aq': json.dumps(query), 'page_size': 100,
                   'type[]': rec_type}
