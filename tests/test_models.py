@@ -73,11 +73,11 @@ def test_search(as_ops):
         string = 'string'
         repo_id = '0'
         rec_type = 'resource'
-        note_type = 'acqinfo'
+        field = 'acqinfo'
         json_object = [{'uri': '1234'}]
         url = f'/repositories/{repo_id}/search?'
         m.get(url, json=json_object)
-        results = as_ops.search(string, repo_id, rec_type, note_type)
+        results = as_ops.search(string, repo_id, rec_type, field)
         for result in results:
             assert result == json_object[0]['uri']
 

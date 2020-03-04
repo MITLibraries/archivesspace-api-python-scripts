@@ -1,6 +1,7 @@
 import csv
 import datetime
 import logging
+import os
 import time
 
 from asnake.client import ASnakeClient
@@ -35,6 +36,8 @@ skipped_resources = []
 @click.pass_context
 def main(ctx, url, username, password):
     ctx.obj = {}
+    if os.path.isdir('logs') is False:
+        os.mkdir('logs')
     dt = datetime.datetime.utcnow().isoformat(timespec='seconds')
     log_suffix = f'{dt}.log'
     structlog.configure(processors=[
