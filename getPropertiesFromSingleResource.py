@@ -28,8 +28,8 @@ headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json
 f = csv.writer(open('resourceProperties.csv', 'w'))
 f.writerow(['title']+['uri']+['bibnum']+['type']+['value'])
 
-
-endpoint = input('Enter resource ID: ')
+id = input('Enter resource ID: ')
+endpoint = '/repositories/3/resources/'+id
 output = requests.get(baseURL + endpoint, headers=headers).json()
 print(json.dumps(output))
 

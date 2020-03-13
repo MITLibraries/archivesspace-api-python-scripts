@@ -1,9 +1,9 @@
-import json
 import requests
 import secrets
 import time
-import csv
 import argparse
+import pandas as pd
+from datetime import datetime
 
 
 secretsVersion = input('To edit production server, enter the name of the secrets file: ')
@@ -17,7 +17,7 @@ else:
     print('Editing Development')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-i', '--id', help='resourceID of the object to retreive. optional - if not provided, the script will ask for input')
+parser.add_argument('-i', '--id', help='resourceID of the object to retreive.')
 
 args = parser.parse_args()
 
@@ -28,16 +28,6 @@ else:
 
 startTime = time.time()
 
-def findKey(d, key):
-    if key in d:
-        yield d[key]
-    for k in d:
-        if isinstance(d[k], list) and k == 'children':
-            for i in d[k]:
-                for j in findKey(i, key):
-                    yield j
-
-# def createMetadataElementCSV (key, valueSource, language):
 
 baseURL = secrets.baseURL
 user = secrets.user
@@ -49,112 +39,76 @@ session = auth["session"]
 headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 
 
+def findKey(d, key):
+    if key in d:
+        yield d[key]
+    for k in d:
+        if isinstance(d[k], list) and k == 'children':
+            for i in d[k]:
+                for j in findKey(i, key):
+                    yield j
+
+
 endpoint = '/repositories/'+repository+'/resources/'+resourceID+'/tree'
 print(endpoint)
 output = requests.get(baseURL + endpoint, headers=headers).json()
-
 archivalObjects = []
 for value in findKey(output, 'record_uri'):
     archivalObjects.append(value)
 
-collection = ''
-series = ''
-subseries = ''
-file = ''
 
-list = []
+def addToDict(arcDict, value):
+    try:
+        rowValue = output[value]
+        if rowValue:
+            arcDict[value] = rowValue
+    except KeyError:
+        arcDict[value] = ''
+
+
+def addToDictNest1(arcDict, value):
+    try:
+        rowValue = output[value]
+        if isinstance(rowValue, dict):
+            rowKeys = list(rowValue.keys())
+            dictValue = rowValue.get(rowKeys[0])
+            arcDict[value] = dictValue
+    except KeyError:
+        arcDict[value] = ''
+
+
+arcList = []
 for archivalObject in archivalObjects:
     output = requests.get(baseURL + archivalObject, headers=headers).json()
-    title = output['title']
-    uri = output['uri']
-    level = output['level']
-    if level == 'collection':
-        continue
-    if level == 'series':
-        series = output['title']
-    if level == 'subseries':
-        subseries = output['title']
-    if level == 'file':
-        file = output['title']
-    print(title, uri, level, series, subseries, file)
-    # try:
-    #     ref_id = output['ref_id']
-    # except:
-    #     ref_id = ''
-    # try:
-    #     parent = output['parent']['ref']
-    # except:
-    #     parent = ''
-    # for date in output['dates']:
-    #     try:
-    #         dateExpression = date['expression']
-    #     except:
-    #         dateExpression = ''
-    #     try:
-    #         dateBegin = date['begin']
-    #     except:
-    #         dateBegin = ''
-    # list.append({'title': title, 'uri': uri, 'parent': parent})
+    arcDict = {}
+    addToDict(arcDict, 'title')
+    addToDict(arcDict, 'uri')
+    addToDict(arcDict, 'level')
+    addToDict(arcDict, 'jsonmodel_type')
+    addToDict(arcDict, 'publish')
+    addToDictNest1(arcDict, 'resource')
+    addToDictNest1(arcDict, 'parent')
+    arcList.append(arcDict)
 
-# for item in list:
-#     try:
-#         parent = item['parent']
-#         for item2 in list:
-#              if parent == item2['uri']:
-#                  try:
-#                      grandparent = item2['parent']
-#                      parentTitle = item2['title']
-#                      item.update({'grandparent':grandparent, 'parentTitle': parentTitle})
-#                      print(item)
-#                  except:
-#                      item.update({'grandparent':'none'})
-#     except:
-#         pass
-#
-# for item in list:
-#     try:
-#         grandparent = item['grandparent']
-#         for item2 in list:
-#              if grandparent  == item2['uri']:
-#                  try:
-#                      greatgrandparent = item2['parent']
-#                      grandparentTitle = item2['title']
-#                      item.update({'greatgrandparent':greatgrandparent, 'grandparentTitle': grandparentTitle})
-#                      print(item)
-#                  except:
-#                      pass
-#     except:
-#         pass
-#
-# with open('resourceTree'+resourceID+'.csv', 'w') as resource:
-#     keys = ['title','uri','ref_id','dateExpression','dataBegin','level','parent','parentTitle','grandparent','grandparentTitle', 'greatgrandparent']
-#     f = csv.DictWriter(resource, keys)
-#     f.writeheader()
-#     f.writerows(list)
+print('Archival object information collected')
 
 
+df = pd.DataFrame.from_dict(arcList)
+df_titles = df[['title', 'uri', 'parent']].copy()
+df = df.rename(columns={'parent': 'level1'})
+number = 4
+for p in range(1, number):
+    parentL1 = 'level'+str(p)
+    parentL2 = 'level'+str(p+1)
+    df = df.merge(df_titles, how='left', left_on=parentL1, right_on='uri')
+    df = df.rename(columns={'uri_x': 'uri', 'title_y': parentL1+'Title', 'parent': parentL2})
+    del df['uri_y']
+    print(df.head(10))
 
-def findHierarchy(x, y, z):
-    for item in list:
-        try:
-            parent = item[x]
-            for item2 in list:
-                 if parent == item2['uri']:
-                     try:
-                         grandparent = item2['firstGen']
-                         parentTitle = item2['title']
-                         item.update({y: grandparent, z: parentTitle})
-                         print(item)
-                     except:
-                         item.update({y:'none'})
-        except:
-            pass
+print(df.head(15))
+dt = datetime.now().strftime('%Y-%m-%d %H.%M.%S')
+df.to_csv(path_or_buf='hierarchyForResource'+resourceID+'_'+dt+'.csv', header='column_names', encoding='utf-8', index=False)
 
-
-findHierarchy(x='firstGen', y='secondGen', z='firstGenName')
-findHierarchy(x='secondGen', y='thirdGen',z= 'secondGenName')
-findHierarchy(x='thirdGen', y='fourthGen', z='thirdGenName')
-findHierarchy(x='fourthGen', y='fifthGen', z='fourthGenName')
 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
