@@ -95,3 +95,47 @@ def test_updatedigobj(runner):
                                     '--mapping_csv', 'mapping.csv'
                                     ])
     assert result.exit_code == 0
+
+
+def test_newaos(runner):
+    """Test report command."""
+    with requests_mock.Mocker() as m:
+        with runner.isolated_filesystem():
+            with open('mapping.csv', 'w') as f:
+                writer = csv.writer(f)
+                writer.writerow(['resource'] + ['parent_uri'] + ['title'] +
+                                ['publisher'] + ['link'] + ['abstract'])
+                writer.writerow(['/repositories/0/resources/123'] +
+                                ['/repositories/0/archival_objects/456'] +
+                                ['Test title'] +
+                                ['/agents/corporate_entities/12'] +
+                                ['http://dos.com/123'] +
+                                ['This is an abstract'])
+            json_object1 = {'session': 'abcdefg1234567'}
+            json_object2 = {'status': 'Created', 'uri':
+                            '/repositories/0/digital_objects/789'}
+            json_object3 = {'uri': '/repositories/0/digital_objects/789',
+                            'file_versions': [{'file_uri':
+                                              'old_content_link'}]}
+            json_object4 = {'status': 'Updated'}
+            json_object5 = {'status': 'Created', 'uri':
+                            '/repositories/0/archival_objects/123'}
+            base_url = 'mock://mock.mock/users/test/login'
+            do_url = '/repositories/0/digital_objects'
+            item_url = '/repositories/0/digital_objects/789'
+            ao_url = '/repositories/0/archival_objects'
+            m.post(base_url, json=json_object1)
+            m.post(do_url, json=json_object2)
+            m.get(item_url, json=json_object3)
+            m.post(item_url, json=json_object4)
+            m.post(ao_url, json=json_object5)
+            result = runner.invoke(main,
+                                   ['--url', 'mock://mock.mock',
+                                    '--username', 'test',
+                                    '--password', 'testpass',
+                                    'newaos',
+                                    '--repo_id', '0',
+                                    '--mapping_csv', 'mapping.csv'
+                                    ])
+            print(result.output)
+    assert result.exit_code == 0

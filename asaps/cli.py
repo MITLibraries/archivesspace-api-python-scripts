@@ -173,5 +173,40 @@ def updatedigobj(ctx, dry_run, mapping_csv):
     models.create_csv_from_log('dig_obj', log_suffix)
 
 
+@main.command()
+@click.pass_context
+@click.option('-m', '--mapping_csv', prompt='Enter the mapping CSV file',
+              help='The mapping CSV file to use.')
+@click.option('-i', '--repo_id', prompt='Enter the repository ID',
+              help='The ID of the repository to use.')
+def newaos(ctx, mapping_csv, repo_id):
+    as_ops = ctx.obj['as_ops']
+    start_time = ctx.obj['start_time']
+    log_suffix = ctx.obj['log_suffix']
+    with open(mapping_csv) as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            agent_link = as_ops.create_agent_link(row['publisher'], 'creator',
+                                                  'pbl')
+            new_dig_obj = as_ops.create_dig_obj(row['title'], row['link'])
+            note = as_ops.create_note('scopecontent',
+                                      'Scope and Contents of the Collection',
+                                      row['abstract'])
+            arch_obj = as_ops.create_arch_obj(row['title'], 'file',
+                                              [agent_link], [note],
+                                              row['parent_uri'],
+                                              row['resource'])
+            do_endpoint = as_ops.create_endpoint('digital_object', repo_id)
+            do_resp = as_ops.post_new_record(new_dig_obj, do_endpoint)
+            arch_obj = as_ops.link_dig_obj(arch_obj, do_resp['uri'])
+            dig_obj = as_ops.get_record(do_resp['uri'])
+            upd_dig_obj = as_ops.update_dig_obj_link(dig_obj, row['link'])
+            as_ops.save_record(upd_dig_obj, 'False')
+            ao_endpoint = as_ops.create_endpoint('archival_object', repo_id)
+            ao_resp = as_ops.post_new_record(arch_obj, ao_endpoint)
+    models.elapsed_time(start_time, 'Total runtime:')
+    models.create_csv_from_log('dig_obj', log_suffix)
+
+
 if __name__ == '__main__':
     main()

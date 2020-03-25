@@ -97,6 +97,73 @@ def test_save_record(as_ops, caplog):
         assert message == json_object
 
 
+def test_post_new_record(as_ops):
+    """Test post_new_record method."""
+    with requests_mock.Mocker() as m:
+        endpoint = '/repositories/0/resources'
+        json_object = {'status': 'Created'}
+        rec_obj = {'title': 'Test title'}
+        m.post(endpoint, json=json_object)
+        resp = as_ops.post_new_record(rec_obj, endpoint)
+        assert resp['status'] == 'Created'
+
+
+def test_create_arch_obj(as_ops):
+    """Test create_arch_obj method."""
+    title = 'Test title'
+    level = 'series'
+    notes = []
+    agents = [{'ref': '/agents/123'}]
+    parent = '/repositories/0/archival_objects/123'
+    resource = '/repositories/0/resources/456'
+    arch_obj = as_ops.create_arch_obj(title, level, agents, notes,
+                                      parent, resource)
+    assert arch_obj['title'] == title
+    assert arch_obj['level'] == level
+    assert arch_obj['linked_agents'] == agents
+    assert arch_obj['parent']['ref'] == parent
+    assert arch_obj['resource']['ref'] == resource
+
+
+def test_create_dig_obj(as_ops):
+    """Test create_dig_obj method."""
+    title = 'Test title'
+    link = '/repositories/0/digital_objects/123'
+    dig_obj = as_ops.create_dig_obj(title, link)
+    assert dig_obj['title'] == title
+    assert dig_obj['digital_object_id'] == link
+
+
+def test_create_note(as_ops):
+    """Test create_note method."""
+    content = 'Test content'
+    label = 'Scope and Content Note'
+    type = 'scopecontent'
+    note = as_ops.create_note(type, label, content)
+    assert note['label'] == label
+    assert note['subnotes'][0]['content'] == content
+    assert note['type'] == type
+
+
+def test_create_agent_link(as_ops):
+    """Test create_agent_link method."""
+    agent_uri = '/agents/123'
+    role = 'pbl'
+    relator = 'creator'
+    agent_link = as_ops.create_agent_link(agent_uri, role, relator)
+    assert agent_link['ref'] == agent_uri
+    assert agent_link['role'] == role
+    assert agent_link['relator'] == relator
+
+
+def test_link_dig_obj(as_ops):
+    """Test link_dig_obj method."""
+    arch_obj = {'instances': []}
+    dig_obj_uri = '/repositories/0/digital_objects/123'
+    arch_obj = as_ops.link_dig_obj(arch_obj, dig_obj_uri)
+    assert arch_obj['instances'][0]['digital_object']['ref'] == dig_obj_uri
+
+
 def test_save_record_flushes_changes(as_ops):
     with requests_mock.Mocker() as m:
         uri = '/foo/bar/1'
