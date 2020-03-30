@@ -97,20 +97,24 @@ def test_updatedigobj(runner):
     assert result.exit_code == 0
 
 
-def test_newaos(runner):
+def test_newarchobjs(runner):
     """Test report command."""
     with requests_mock.Mocker() as m:
         with runner.isolated_filesystem():
             with open('mapping.csv', 'w') as f:
                 writer = csv.writer(f)
                 writer.writerow(['resource'] + ['parent_uri'] + ['title'] +
-                                ['publisher'] + ['link'] + ['abstract'])
+                                ['publisher'] + ['link'] + ['abstract'] +
+                                ['top_container'] + ['child_type'] +
+                                ['child_indicator'])
                 writer.writerow(['/repositories/0/resources/123'] +
                                 ['/repositories/0/archival_objects/456'] +
                                 ['Test title'] +
                                 ['/agents/corporate_entities/12'] +
                                 ['http://dos.com/123'] +
-                                ['This is an abstract'])
+                                ['This is an abstract'] +
+                                ['/repositories/0/top_containers/123'] +
+                                ['reel'] + ['2'])
             json_object1 = {'session': 'abcdefg1234567'}
             json_object2 = {'status': 'Created', 'uri':
                             '/repositories/0/digital_objects/789'}
@@ -123,17 +127,17 @@ def test_newaos(runner):
             base_url = 'mock://mock.mock/users/test/login'
             do_url = '/repositories/0/digital_objects'
             item_url = '/repositories/0/digital_objects/789'
-            ao_url = '/repositories/0/archival_objects'
+            arch_obj_url = '/repositories/0/archival_objects'
             m.post(base_url, json=json_object1)
             m.post(do_url, json=json_object2)
             m.get(item_url, json=json_object3)
             m.post(item_url, json=json_object4)
-            m.post(ao_url, json=json_object5)
+            m.post(arch_obj_url, json=json_object5)
             result = runner.invoke(main,
                                    ['--url', 'mock://mock.mock',
                                     '--username', 'test',
                                     '--password', 'testpass',
-                                    'newaos',
+                                    'newarchobjs',
                                     '--repo_id', '0',
                                     '--mapping_csv', 'mapping.csv'
                                     ])

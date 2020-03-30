@@ -17,34 +17,41 @@ class AsOperations:
         """Create instance and import client as attribute."""
         self.client = client
 
+    def get_all_records(self, endpoint):
+        """Retrieve all records from a specified endpoint."""
+        ids = self.client.get(f'{endpoint}?all_ids=true').json()
+        return ids
+
+    def get_arch_objs_for_resource(self, uri):
+        """Get archival objects associated with a resource."""
+        logger.info(f'Retrieving AOs for {uri}')
+        arch_obj_list = []
+        output = self.client.get(f'{uri}/tree').json()
+        for arch_obj_uri in find_key(output, 'record_uri'):
+            if 'archival_objects' in arch_obj_uri:
+                arch_obj_list.append(arch_obj_uri)
+        return arch_obj_list
+
     def get_record(self, uri):
         """Retrieve an individual record."""
         record = self.client.get(uri).json()
         logger.info(uri)
         return Record(record)
 
-    def create_endpoint(self, rec_type, repo_id):
-        """Create an endpoint for a specified type."""
-        rec_type_dict = {'accession': 'accessions', 'resource': 'resources',
-                         'archival_object': 'archival_objects',
-                         'agent_corporate_entity': 'corporate_entities',
-                         'agent_person': 'people', 'agent_family': 'families',
-                         'digital_object': 'digital_objects',
-                         'top_container': 'top_containers'}
-        agents = ['corporate_entities', 'families', 'people']
-        non_repo_types = ['locations', 'subjects']
-        if rec_type in agents:
-            endpoint = f'agents/{rec_type}'
-        elif rec_type in non_repo_types:
-            endpoint = rec_type
-        else:
-            endpoint = (f'repositories/{repo_id}/{rec_type_dict[rec_type]}')
-        return endpoint
+    def post_new_record(self, rec_obj, endpoint):
+        """Create new ArchivesSpace record with POST of JSON data."""
+        response = self.client.post(endpoint, json=rec_obj)
+        response.raise_for_status()
+        logger.info(response.json())
+        return response.json()
 
-    def get_all_records(self, endpoint):
-        """Retrieve all records from a specified endpoint."""
-        ids = self.client.get(f'{endpoint}?all_ids=true').json()
-        return ids
+    def save_record(self, rec_obj, dry_run):
+        """Update ArchivesSpace record with POST of JSON data."""
+        if dry_run == 'False':
+            response = self.client.post(rec_obj['uri'], json=rec_obj)
+            response.raise_for_status()
+            logger.info(response.json())
+        rec_obj.flush()
 
     def search(self, string, repo_id, rec_type, field='keyword'):
         """Search for a string across a particular record type."""
@@ -59,98 +66,6 @@ class AsOperations:
             uris.append(uri)
         logger.info(f'{len(uris)} search results processed')
         return uris
-
-    def save_record(self, rec_obj, dry_run):
-        """Update ArchivesSpace record with POST of JSON data."""
-        if dry_run == 'False':
-            response = self.client.post(rec_obj['uri'], json=rec_obj)
-            response.raise_for_status()
-            logger.info(response.json())
-        rec_obj.flush()
-
-    def post_new_record(self, rec_obj, endpoint):
-        """Create new ArchivesSpace record with POST of JSON data."""
-        response = self.client.post(endpoint, json=rec_obj)
-        response.raise_for_status()
-        logger.info(response.json())
-        return response.json()
-
-    def create_arch_obj(self, title, level, agents, notes, parent, resource):
-        """Create archival object."""
-        arch_obj = {}
-        arch_obj['title'] = title
-        arch_obj['level'] = level
-        arch_obj['linked_agents'] = agents
-        arch_obj['notes'] = notes
-        arch_obj['publish'] = True
-        arch_obj['parent'] = {'ref': parent}
-        arch_obj['resource'] = {'ref': resource}
-        return arch_obj
-
-    def create_dig_obj(self, title, link):
-        """Create digital object."""
-        dig_obj = {}
-        dig_obj['digital_object_id'] = link
-        dig_obj['title'] = title
-        dig_obj['publish'] = True
-        return dig_obj
-
-    def create_note(self, type, label, content):
-        """Create note object."""
-        note = {}
-        note['jsonmodel_type'] = 'note_multipart'
-        note['type'] = type
-        note['label'] = label
-        note['publish'] = True
-        subnote = {}
-        subnote['publish'] = True
-        subnote['content'] = content
-        subnote['jsonmodel_type'] = 'note_text'
-        note['subnotes'] = [subnote]
-        return note
-
-    def get_aos_for_resource(self, uri):
-        """Get archival objects associated with a resource."""
-        logger.info(f'Retrieving AOs for {uri}')
-        aolist = []
-        output = self.client.get(f'{uri}/tree').json()
-        for ao_uri in find_key(output, 'record_uri'):
-            if 'archival_objects' in ao_uri:
-                aolist.append(ao_uri)
-        return aolist
-
-    def create_agent_link(self, agent_uri, role, relator):
-        """Create link to agent URI."""
-        agent_link = {}
-        agent_link['role'] = role
-        agent_link['relator'] = relator
-        agent_link['ref'] = agent_uri
-        return agent_link
-
-    def link_dig_obj(self, arch_obj, dig_obj_uri):
-        """Link digital object to archival object."""
-        instance = {}
-        instance['instance_type'] = 'digital_object'
-        instance['jsonmodel_type'] = 'instance'
-        instance['digital_object'] = {'ref': dig_obj_uri}
-        instance['is_representative'] = True
-        arch_obj['instances'] = [instance]
-        return arch_obj
-
-    def update_dig_obj_link(self, do, link):
-        """Get digital objects associated with an archival objects."""
-        do['digital_object_id'] = link
-        if len(do['file_versions']) != 0:
-            for file_version in do['file_versions']:
-                file_version['file_uri'] = link
-        else:
-            file_version = {}
-            file_version['file_uri'] = link
-            file_version['publish'] = True
-            file_version['is_representative'] = True
-            file_version['jsonmodel_type'] = 'file_version'
-            do['file_versions'] = [file_version]
-        return do
 
 
 class Record(dict):
@@ -220,6 +135,25 @@ def create_csv_from_log(log_file_name, log_suffix):
             f.writeheader()
             for edit_log_line in edit_log_lines:
                 f.writerow(edit_log_line)
+
+
+def create_endpoint(rec_type, repo_id):
+    """Create an endpoint for a specified type."""
+    rec_type_dict = {'accession': 'accessions', 'resource': 'resources',
+                     'archival_object': 'archival_objects',
+                     'agent_corporate_entity': 'corporate_entities',
+                     'agent_person': 'people', 'agent_family': 'families',
+                     'digital_object': 'digital_objects',
+                     'top_container': 'top_containers'}
+    agents = ['corporate_entities', 'families', 'people']
+    non_repo_types = ['locations', 'subjects']
+    if rec_type in agents:
+        endpoint = f'agents/{rec_type}'
+    elif rec_type in non_repo_types:
+        endpoint = rec_type
+    else:
+        endpoint = (f'repositories/{repo_id}/{rec_type_dict[rec_type]}')
+    return endpoint
 
 
 def download_json(rec_obj):
