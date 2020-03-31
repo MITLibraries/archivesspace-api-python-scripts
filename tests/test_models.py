@@ -17,24 +17,6 @@ def as_ops():
     return as_ops
 
 
-def test_get_record(as_ops):
-    """Test get_record method."""
-    with requests_mock.Mocker() as m:
-        uri = '/repositories/2/resources/423'
-        json_object = {'jsonmodel_type': 'resource'}
-        m.get(uri, json=json_object)
-        response = as_ops.get_record(uri)
-        assert response == json_object
-
-
-def test_create_endpoint(as_ops):
-    """Test create_endpoint method."""
-    rec_type = 'resource'
-    repo_id = '0'
-    endpoint = as_ops.create_endpoint(rec_type, repo_id)
-    assert endpoint == 'repositories/0/resources'
-
-
 def test_get_all_records(as_ops):
     """Test get_all_records method."""
     with requests_mock.Mocker() as m:
@@ -45,26 +27,36 @@ def test_get_all_records(as_ops):
         assert ids == [1, 2, 3, 4]
 
 
-def test_record_is_modified():
-    record = models.Record()
-    assert not record.modified
-    record['title'] = "I am different"
-    assert record.modified
+def test_get_arch_objs_for_resource(as_ops):
+    """Test get_arch_objs_for_resource method."""
+    with requests_mock.Mocker() as m:
+        resource = '/repositories/2/resources/423'
+        json_object = {'record_uri': '/archival_objects/1234', 'children':
+                       [{'record_uri': '/archival_objects/5678'}]}
+        m.get(f'{resource}/tree', json=json_object)
+        arch_objlist = as_ops.get_arch_objs_for_resource(resource)
+        assert '/archival_objects/5678' in arch_objlist
 
 
-def test_record_flush_persists_changes():
-    record = models.Record()
-    record['title'] = 'I am a title'
-    assert record.modified
-    record.flush()
-    assert not record.modified
+def test_get_record(as_ops):
+    """Test get_record method."""
+    with requests_mock.Mocker() as m:
+        uri = '/repositories/2/resources/423'
+        json_object = {'jsonmodel_type': 'resource'}
+        m.get(uri, json=json_object)
+        response = as_ops.get_record(uri)
+        assert response == json_object
 
 
-def test_changes_returns_json_patch_operations():
-    record = models.Record()
-    record['title'] = 'I am a title'
-    assert record.changes == \
-        [{'op': 'add', 'path': '/title', 'value': 'I am a title'}]
+def test_post_new_record(as_ops):
+    """Test post_new_record method."""
+    with requests_mock.Mocker() as m:
+        endpoint = '/repositories/0/resources'
+        json_object = {'status': 'Created'}
+        rec_obj = {'title': 'Test title'}
+        m.post(endpoint, json=json_object)
+        resp = as_ops.post_new_record(rec_obj, endpoint)
+        assert resp['status'] == 'Created'
 
 
 def test_search(as_ops):
@@ -97,6 +89,28 @@ def test_save_record(as_ops, caplog):
         assert message == json_object
 
 
+def test_record_is_modified():
+    record = models.Record()
+    assert not record.modified
+    record['title'] = "I am different"
+    assert record.modified
+
+
+def test_record_flush_persists_changes():
+    record = models.Record()
+    record['title'] = 'I am a title'
+    assert record.modified
+    record.flush()
+    assert not record.modified
+
+
+def test_changes_returns_json_patch_operations():
+    record = models.Record()
+    record['title'] = 'I am a title'
+    assert record.changes == \
+        [{'op': 'add', 'path': '/title', 'value': 'I am a title'}]
+
+
 def test_save_record_flushes_changes(as_ops):
     with requests_mock.Mocker() as m:
         uri = '/foo/bar/1'
@@ -107,28 +121,6 @@ def test_save_record_flushes_changes(as_ops):
         assert r.modified
         as_ops.save_record(r, dry_run)
         assert not r.modified
-
-
-def test_get_aos_for_resource(as_ops):
-    """Test get_aos_for_resource method."""
-    with requests_mock.Mocker() as m:
-        resource = '/repositories/2/resources/423'
-        json_object = {'record_uri': '/archival_objects/1234', 'children':
-                       [{'record_uri': '/archival_objects/5678'}]}
-        m.get(f'{resource}/tree', json=json_object)
-        aolist = as_ops.get_aos_for_resource(resource)
-        assert '/archival_objects/5678' in aolist
-
-
-def test_update_dig_obj_link(as_ops):
-    """Test update_dig_obj_link method."""
-    update = 'TEST'
-    do = {'digital_object_id': 'fish', 'file_versions': [{'file_uri':
-          'fish'}]}
-    do = as_ops.update_dig_obj_link(do, update)
-    assert do['digital_object_id'] == update
-    for file_version in do['file_versions']:
-        assert file_version['file_uri'] == update
 
 
 def test_audit():
@@ -145,6 +137,14 @@ def test_concat_id():
     rec_obj = {'id_0': '1', 'id_1': '2', 'id_2': '3', 'id_3': '4'}
     coll_id = models.concat_id(rec_obj)
     assert coll_id == '1-2-3-4'
+
+
+def test_create_endpoint():
+    """Test create_endpoint method."""
+    rec_type = 'resource'
+    repo_id = '0'
+    endpoint = models.create_endpoint(rec_type, repo_id)
+    assert endpoint == 'repositories/0/resources'
 
 
 # How to test this?

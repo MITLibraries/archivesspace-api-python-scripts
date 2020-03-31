@@ -8,7 +8,7 @@ from asnake.client import ASnakeClient
 import click
 import structlog
 
-from asaps import models
+from asaps import models, records
 
 logger = structlog.get_logger()
 
@@ -75,7 +75,7 @@ def report(ctx, repo_id, rec_type, field):
     as_ops = ctx.obj['as_ops']
     start_time = ctx.obj['start_time']
     log_suffix = ctx.obj['log_suffix']
-    endpoint = as_ops.create_endpoint(rec_type, repo_id)
+    endpoint = models.create_endpoint(rec_type, repo_id)
     ids = as_ops.get_all_records(endpoint)
     for id in ids:
         uri = f'{endpoint}/{id}'
@@ -118,12 +118,12 @@ def find(ctx, dry_run, repo_id, rec_type, field, search, rpl_value):
     as_ops = ctx.obj['as_ops']
     start_time = ctx.obj['start_time']
     log_suffix = ctx.obj['log_suffix']
-    skipped_aos = []
+    skipped_arch_objs = []
     if rec_type == 'archival_object':
         for uri in skipped_resources:
-            aolist = as_ops.get_aos_for_resource(uri)
-            skipped_aos.append(aolist)
-    skipped_uris = skipped_resources + skipped_aos
+            arch_objlist = as_ops.get_arch_objs_for_resource(uri)
+            skipped_arch_objs.append(arch_objlist)
+    skipped_uris = skipped_resources + skipped_arch_objs
     for uri in as_ops.search(search, repo_id, rec_type, field):
         if uri not in skipped_uris:
             rec_obj = as_ops.get_record(uri)
@@ -166,9 +166,48 @@ def updatedigobj(ctx, dry_run, mapping_csv):
             do_uri = row['do_uri']
             link = row['link']
             dig_obj = as_ops.get_record(do_uri)
-            upd_dig_obj = as_ops.update_dig_obj_link(dig_obj, link)
+            upd_dig_obj = records.update_dig_obj_link(dig_obj, link)
             if upd_dig_obj.modified is True:
                 as_ops.save_record(upd_dig_obj, dry_run)
+    models.elapsed_time(start_time, 'Total runtime:')
+    models.create_csv_from_log('dig_obj', log_suffix)
+
+
+@main.command()
+@click.pass_context
+@click.option('-m', '--mapping_csv', prompt='Enter the mapping CSV file',
+              help='The mapping CSV file to use.')
+@click.option('-i', '--repo_id', prompt='Enter the repository ID',
+              help='The ID of the repository to use.')
+def newarchobjs(ctx, mapping_csv, repo_id):
+    as_ops = ctx.obj['as_ops']
+    start_time = ctx.obj['start_time']
+    log_suffix = ctx.obj['log_suffix']
+    with open(mapping_csv) as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            new_dig_obj = records.create_dig_obj(row['title'], row['link'])
+            dig_obj_endpoint = models.create_endpoint('digital_object',
+                                                      repo_id)
+            dig_obj_resp = as_ops.post_new_record(new_dig_obj,
+                                                  dig_obj_endpoint)
+            agent_link = {'role': 'creator', 'relator': 'pbl', 'ref':
+                          row['publisher']}
+            note = records.create_note('scopecontent',
+                                       'Scope and Contents of the Collection',
+                                       row['abstract'])
+            arch_obj = records.create_arch_obj(row['title'], 'file',
+                                               [agent_link], [note],
+                                               row['parent_uri'],
+                                               row['resource'])
+            arch_obj = records.link_dig_obj(arch_obj, dig_obj_resp['uri'])
+            arch_obj = records.link_top_container(arch_obj,
+                                                  row['top_container'],
+                                                  row['child_type'],
+                                                  row['child_indicator'])
+            arch_obj_endpoint = models.create_endpoint('archival_object',
+                                                       repo_id)
+            arch_obj_resp = as_ops.post_new_record(arch_obj, arch_obj_endpoint)
     models.elapsed_time(start_time, 'Total runtime:')
     models.create_csv_from_log('dig_obj', log_suffix)
 
