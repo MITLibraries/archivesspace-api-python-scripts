@@ -99,10 +99,10 @@ def extractValuesFromcmpntLvl(cmpntLvl):
 
 
 filepath = ''
-fileName = 'MS.0500_20190802_142211_UTC__ead.xml'
+fileName = ''
 xml = open(filepath + fileName)
 
-f = csv.writer(open(filepath + 'eadFields.csv', 'w'))
+f = csv.writer(open(filepath + 'eadFields.csv', 'w', newline=''))
 f.writerow(['sortOrder'] + ['hierarchy'] + ['level'] + ['containerType1']
            + ['container1'] + ['containerType2'] + ['container2']
            + ['unittitle'] + ['physdesc'] + ['dateexpression'] + ['datetype']
