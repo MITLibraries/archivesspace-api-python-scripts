@@ -14,9 +14,9 @@ logger = structlog.get_logger()
 
 
 note_type_fields = ['abstract', 'accessrestrict', 'acqinfo', 'altformavail',
-                    'arrangement', 'bibliography', 'bioghist', 'prefercite',
-                    'processinfo' 'relatedmaterial', 'scopecontent',
-                    'userestrict']
+                    'appraisal', 'arrangement', 'bibliography', 'bioghist',
+                    'custodhist', 'prefercite', 'processinfo',
+                    'relatedmaterial', 'scopecontent', 'userestrict']
 obj_field_dict = {'dates': ['begin', 'end', 'expression', 'label',
                   'date_type'],
                   'extents': ['portion', 'number', 'extent_type',
@@ -210,6 +210,54 @@ def newarchobjs(ctx, mapping_csv, repo_id):
             arch_obj_resp = as_ops.post_new_record(arch_obj, arch_obj_endpoint)
     models.elapsed_time(start_time, 'Total runtime:')
     models.create_csv_from_log('dig_obj', log_suffix)
+
+
+@main.command()
+@click.pass_context
+@click.option('-m', '--metadata_csv', prompt='Enter the metadata CSV file',
+              help='The metadata CSV file to use.')
+@click.option('-p', '--match_point', prompt='Enter the match point',
+              help='The match point to be used in the new record report.')
+def newagents(ctx, metadata_csv, match_point):
+    as_ops = ctx.obj['as_ops']
+    start_time = ctx.obj['start_time']
+    log_suffix = ctx.obj['log_suffix']
+    with open(metadata_csv) as csvfile:
+        reader = csv.DictReader(csvfile)
+        new_rec_data = {}
+        for row in reader:
+            agent_type = row['agent_type']
+            if agent_type == 'agent_person':
+                agent_rec = records.create_agent_pers(agent_type,
+                                                      row['primary_name'],
+                                                      row['sort_name'],
+                                                      row['rest_of_name'],
+                                                      row['fuller_form'],
+                                                      row['title'],
+                                                      row['prefix'],
+                                                      row['suffix'],
+                                                      row['dates'],
+                                                      row['begin'],
+                                                      row['end'],
+                                                      row['authority_id'])
+            if agent_type == 'agent_corporate_entity':
+                agent_rec = records.create_agent_corp(agent_type,
+                                                      row['primary_name'],
+                                                      row['sort_name'],
+                                                      row['subord_name_1'],
+                                                      row['subord_name_2'],
+                                                      row['number'],
+                                                      row['dates'],
+                                                      row['qualifier'],
+                                                      row['authority_id'])
+
+            agent_endpoint = models.create_endpoint(agent_type)
+            agent_resp = as_ops.post_new_record(agent_rec, agent_endpoint)
+            new_rec_data[row[match_point]] = agent_resp['uri']
+
+        models.create_new_rec_report(new_rec_data, metadata_csv)
+    models.elapsed_time(start_time, 'Total runtime:')
+    models.create_csv_from_log('agents', log_suffix)
 
 
 if __name__ == '__main__':

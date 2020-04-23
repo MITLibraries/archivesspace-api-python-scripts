@@ -1,3 +1,95 @@
+
+
+def create_agent_pers(agent_type, primary_name, sort_name, rest_of_name='',
+                      fuller_form='', title='', prefix='', suffix='', dates='',
+                      begin='', end='', authority_id=''):
+    """Create agent_person record."""
+    agent = {}
+    name = {}
+    name['primary_name'] = primary_name
+    name['name_order'] = 'inverted'
+    name['jsonmodel_type'] = 'name_person'
+    name['rules'] = 'rda'
+    name['sort_name'] = sort_name
+    if authority_id != '':
+        name['authority_id'] = authority_id
+        name['source'] = 'Virtual International Authority File (VIAF)'
+    else:
+        name['rules'] = 'dacs'
+        name['source'] = 'local'
+    if rest_of_name != '':
+        name['rest_of_name'] = rest_of_name
+    else:
+        name['name_order'] = 'direct'
+    if fuller_form != '':
+        name['fuller_form'] = fuller_form
+    if title != '':
+        name['title'] = title
+    if prefix != '':
+        name['prefix'] = prefix
+    if suffix != '':
+        name['suffix'] = suffix
+    if dates != '':
+        name['dates'] = dates
+    names = [name]
+    if dates != '':
+        date = {}
+        date['label'] = 'existence'
+        date['jsonmodel_type'] = 'date'
+        if begin != '' and end != '':
+            date['begin'] = begin
+            date['end'] = end
+            date['date_type'] = 'range'
+        elif begin != '':
+            date['begin'] = begin
+            date['date_type'] = 'single'
+        elif end != '':
+            date['end'] = end
+            date['date_type'] = 'single'
+        elif dates != '':
+            date['expression'] = dates
+            date['date_type'] = 'single'
+        agent['dates_of_existence'] = [date]
+    agent['names'] = names
+    agent['publish'] = True
+    agent['jsonmodel_type'] = agent_type
+    return agent
+
+
+def create_agent_corp(agent_type, primary_name, sort_name,
+                      subordinate_name_1='', subordinate_name_2='', number='',
+                      dates='', qualifier='', authority_id=''):
+    """Create agent_corporate_entity record."""
+    agent = {}
+    name = {}
+    name['primary_name'] = primary_name
+    name['name_order'] = 'direct'
+    name['jsonmodel_type'] = 'name_corporate_entity'
+    name['rules'] = 'rda'
+    name['sort_name'] = sort_name
+    if authority_id != '':
+        name['authority_id'] = authority_id
+        name['source'] = 'Virtual International Authority File (VIAF)'
+    else:
+        name['rules'] = 'dacs'
+        name['source'] = 'local'
+    if subordinate_name_1 != '':
+        name['subordinate_name_1'] = subordinate_name_1
+    if subordinate_name_2 != '':
+        name['subordinate_name_2'] = subordinate_name_2
+    if number != '':
+        name['number'] = number
+    if dates != '':
+        name['dates'] = dates
+    if qualifier != '':
+        name['qualifer'] = qualifier
+    names = [name]
+    agent['names'] = names
+    agent['publish'] = True
+    agent['jsonmodel_type'] = agent_type
+    return agent
+
+
 def create_arch_obj(title, level, agents, notes, parent, resource):
     """Create archival object."""
     arch_obj = {}

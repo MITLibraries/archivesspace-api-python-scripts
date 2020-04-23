@@ -1,8 +1,57 @@
 from asaps import records
 
 
+def test_create_agent_pers():
+    """Test create_agent_pers function."""
+    agent_type = 'agent_person'
+    primary_name = 'Smith'
+    sort_name = 'Smith, John, 1902-2049'
+    authority_id = 'mock://mock.mock/123'
+    rest_of_name = 'John'
+    fuller_form = ''
+    title = ''
+    prefix = ''
+    suffix = ''
+    dates = '1902-2049'
+    begin = '1902'
+    end = '2049'
+    agent_rec = records.create_agent_pers(agent_type, primary_name, sort_name,
+                                          rest_of_name, fuller_form, title,
+                                          prefix, suffix, dates, begin, end,
+                                          authority_id)
+    assert agent_rec['names'][0]['primary_name'] == primary_name
+    assert agent_rec['names'][0]['sort_name'] == sort_name
+    assert agent_rec['names'][0]['authority_id'] == authority_id
+    assert agent_rec['names'][0]['rest_of_name'] == rest_of_name
+    assert agent_rec['names'][0]['dates'] == dates
+    assert agent_rec['dates_of_existence'][0]['begin'] == begin
+    assert agent_rec['dates_of_existence'][0]['end'] == end
+
+
+def test_create_agent_corp():
+    """Test create_agent_corp function."""
+    agent_type = 'agent_corporate_entity'
+    primary_name = 'Company'
+    sort_name = 'Company. That Does. Stuff'
+    authority_id = 'mock://mock.mock/456'
+    subord_name_1 = 'That Does'
+    subord_name_2 = 'Stuff'
+    number = ''
+    qualifier = ''
+    dates = ''
+    agent_rec = records.create_agent_corp(agent_type, primary_name, sort_name,
+                                          subord_name_1, subord_name_2,
+                                          number, dates, qualifier,
+                                          authority_id)
+    assert agent_rec['names'][0]['primary_name'] == primary_name
+    assert agent_rec['names'][0]['sort_name'] == sort_name
+    assert agent_rec['names'][0]['authority_id'] == authority_id
+    assert agent_rec['names'][0]['subordinate_name_1'] == subord_name_1
+    assert agent_rec['names'][0]['subordinate_name_2'] == subord_name_2
+
+
 def test_create_arch_obj():
-    """Test create_arch_obj method."""
+    """Test create_arch_obj function."""
     title = 'Test title'
     level = 'series'
     notes = []
