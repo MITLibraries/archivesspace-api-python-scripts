@@ -13,12 +13,13 @@ def test_create_agent_pers():
     prefix = ''
     suffix = ''
     dates = '1902-2049'
+    expression = ''
     begin = '1902'
     end = '2049'
     agent_rec = records.create_agent_pers(agent_type, primary_name, sort_name,
                                           rest_of_name, fuller_form, title,
-                                          prefix, suffix, dates, begin, end,
-                                          authority_id)
+                                          prefix, suffix, dates, expression,
+                                          begin, end, authority_id)
     assert agent_rec['names'][0]['primary_name'] == primary_name
     assert agent_rec['names'][0]['sort_name'] == sort_name
     assert agent_rec['names'][0]['authority_id'] == authority_id

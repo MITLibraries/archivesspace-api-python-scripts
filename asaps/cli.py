@@ -237,6 +237,7 @@ def newagents(ctx, metadata_csv, match_point):
                                                       row['prefix'],
                                                       row['suffix'],
                                                       row['dates'],
+                                                      row['expression'],
                                                       row['begin'],
                                                       row['end'],
                                                       row['authority_id'])
@@ -250,7 +251,6 @@ def newagents(ctx, metadata_csv, match_point):
                                                       row['dates'],
                                                       row['qualifier'],
                                                       row['authority_id'])
-
             agent_endpoint = models.create_endpoint(agent_type)
             agent_resp = as_ops.post_new_record(agent_rec, agent_endpoint)
             new_rec_data[row[match_point]] = agent_resp['uri']

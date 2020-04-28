@@ -1,8 +1,11 @@
+import operator
+
+filter_crit = operator.itemgetter(1)
 
 
 def create_agent_pers(agent_type, primary_name, sort_name, rest_of_name='',
                       fuller_form='', title='', prefix='', suffix='', dates='',
-                      begin='', end='', authority_id=''):
+                      expression='', begin='', end='', authority_id=''):
     """Create agent_person record."""
     agent = {}
     name = {}
@@ -11,45 +14,39 @@ def create_agent_pers(agent_type, primary_name, sort_name, rest_of_name='',
     name['jsonmodel_type'] = 'name_person'
     name['rules'] = 'rda'
     name['sort_name'] = sort_name
-    if authority_id != '':
-        name['authority_id'] = authority_id
-        name['source'] = 'Virtual International Authority File (VIAF)'
-    else:
+    name['authority_id'] = authority_id
+    name['source'] = 'Virtual International Authority File (VIAF)'
+    name['rest_of_name'] = rest_of_name
+    name['fuller_form'] = fuller_form
+    name['title'] = title
+    name['prefix'] = prefix
+    name['suffix'] = suffix
+    name['dates'] = dates
+    name = dict(filter(filter_crit, name.items()))
+    if 'authority_id' not in name.keys():
         name['rules'] = 'dacs'
         name['source'] = 'local'
-    if rest_of_name != '':
-        name['rest_of_name'] = rest_of_name
-    else:
+    if 'rest_of_name' not in name.keys():
         name['name_order'] = 'direct'
-    if fuller_form != '':
-        name['fuller_form'] = fuller_form
-    if title != '':
-        name['title'] = title
-    if prefix != '':
-        name['prefix'] = prefix
-    if suffix != '':
-        name['suffix'] = suffix
-    if dates != '':
-        name['dates'] = dates
     names = [name]
-    if dates != '':
-        date = {}
+
+    date = {}
+    date['begin'] = begin
+    date['end'] = end
+    date['expression'] = expression
+    date = dict(filter(filter_crit, date.items()))
+    if 'begin' in date.keys() and 'end' in date.keys():
+        date['date_type'] = 'range'
+    elif 'begin' in date.keys():
+        date['date_type'] = 'single'
+    elif 'end' in date.keys():
+        date['date_type'] = 'single'
+    elif 'expression' in date.keys():
+        date['date_type'] = 'single'
+    if len(date.keys()) > 0:
         date['label'] = 'existence'
         date['jsonmodel_type'] = 'date'
-        if begin != '' and end != '':
-            date['begin'] = begin
-            date['end'] = end
-            date['date_type'] = 'range'
-        elif begin != '':
-            date['begin'] = begin
-            date['date_type'] = 'single'
-        elif end != '':
-            date['end'] = end
-            date['date_type'] = 'single'
-        elif dates != '':
-            date['expression'] = dates
-            date['date_type'] = 'single'
-        agent['dates_of_existence'] = [date]
+    agent['dates_of_existence'] = [date]
     agent['names'] = names
     agent['publish'] = True
     agent['jsonmodel_type'] = agent_type
@@ -67,22 +64,17 @@ def create_agent_corp(agent_type, primary_name, sort_name,
     name['jsonmodel_type'] = 'name_corporate_entity'
     name['rules'] = 'rda'
     name['sort_name'] = sort_name
-    if authority_id != '':
-        name['authority_id'] = authority_id
-        name['source'] = 'Virtual International Authority File (VIAF)'
-    else:
+    name['authority_id'] = authority_id
+    name['source'] = 'Virtual International Authority File (VIAF)'
+    name['subordinate_name_1'] = subordinate_name_1
+    name['subordinate_name_2'] = subordinate_name_2
+    name['number'] = number
+    name['dates'] = dates
+    name['qualifer'] = qualifier
+    name = dict(filter(filter_crit, name.items()))
+    if 'authority_id' not in name.keys():
         name['rules'] = 'dacs'
         name['source'] = 'local'
-    if subordinate_name_1 != '':
-        name['subordinate_name_1'] = subordinate_name_1
-    if subordinate_name_2 != '':
-        name['subordinate_name_2'] = subordinate_name_2
-    if number != '':
-        name['number'] = number
-    if dates != '':
-        name['dates'] = dates
-    if qualifier != '':
-        name['qualifer'] = qualifier
     names = [name]
     agent['names'] = names
     agent['publish'] = True

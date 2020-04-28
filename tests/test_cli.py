@@ -154,13 +154,13 @@ def test_newagents(runner):
                                 + ['sort_name'] + ['authority_id']
                                 + ['rest_of_name'] + ['fuller_form']
                                 + ['title'] + ['prefix'] + ['suffix']
-                                + ['dates'] + ['begin'] + ['end'])
+                                + ['dates'] + ['expression'] + ['begin']
+                                + ['end'])
                 writer.writerow(['Smith, J.'] + ['agent_person'] + ['Smith']
                                 + ['Smith, John, 1902-2049']
-                                + ['mock://mock.mock/123']
-                                + ['John'] + ['fuller_form']
-                                + [''] + [''] + ['']
-                                + ['1902-2049'] + ['1902'] + ['2049'])
+                                + ['mock://mock.mock/123'] + ['John']
+                                + [''] + [''] + [''] + [''] + ['1902-2049']
+                                + ['1902'] + ['2049'])
             json_object1 = {'session': 'abcdefg1234567'}
             json_object2 = {'status': 'Created', 'uri':
                             '/agents/people/789'}
