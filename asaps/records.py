@@ -29,23 +29,7 @@ def create_agent_pers(agent_type, primary_name, sort_name, rest_of_name='',
     if 'rest_of_name' not in name.keys():
         name['name_order'] = 'direct'
     names = [name]
-
-    date = {}
-    date['begin'] = begin
-    date['end'] = end
-    date['expression'] = expression
-    date = dict(filter(filter_crit, date.items()))
-    if 'begin' in date.keys() and 'end' in date.keys():
-        date['date_type'] = 'range'
-    elif 'begin' in date.keys():
-        date['date_type'] = 'single'
-    elif 'end' in date.keys():
-        date['date_type'] = 'single'
-    elif 'expression' in date.keys():
-        date['date_type'] = 'single'
-    if len(date.keys()) > 0:
-        date['label'] = 'existence'
-        date['jsonmodel_type'] = 'date'
+    date = create_date(begin, end, expression)
     agent['dates_of_existence'] = [date]
     agent['names'] = names
     agent['publish'] = True
@@ -94,6 +78,27 @@ def create_arch_obj(title, level, agents, notes, parent, resource):
     arch_obj['resource'] = {'ref': resource}
     arch_obj['instances'] = []
     return arch_obj
+
+
+def create_date(begin, end, expression):
+    """Create date object."""
+    date = {}
+    date['begin'] = begin
+    date['end'] = end
+    date['expression'] = expression
+    date = dict(filter(filter_crit, date.items()))
+    if 'begin' in date.keys() and 'end' in date.keys():
+        date['date_type'] = 'range'
+    elif 'begin' in date.keys():
+        date['date_type'] = 'single'
+    elif 'end' in date.keys():
+        date['date_type'] = 'single'
+    elif 'expression' in date.keys():
+        date['date_type'] = 'single'
+    if len(date.keys()) > 0:
+        date['label'] = 'existence'
+        date['jsonmodel_type'] = 'date'
+    return date
 
 
 def create_dig_obj(title, link):

@@ -68,6 +68,16 @@ def test_create_arch_obj():
     assert arch_obj['resource']['ref'] == resource
 
 
+def test_create_date():
+    """Test create_date function."""
+    expression = ''
+    begin = '1902'
+    end = '2049'
+    date = records.create_date(begin, end, expression)
+    assert date['begin'] == begin
+    assert date['end'] == end
+
+
 def test_create_dig_obj():
     """Test create_dig_obj method."""
     title = 'Test title'
