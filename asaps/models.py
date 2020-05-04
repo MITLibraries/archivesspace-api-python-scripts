@@ -49,8 +49,8 @@ class AsOperations:
         """Update ArchivesSpace record with POST of JSON data."""
         if dry_run == 'False':
             response = self.client.post(rec_obj['uri'], json=rec_obj)
-            response.raise_for_status()
             logger.info(response.json())
+            response.raise_for_status()
         rec_obj.flush()
 
     def search(self, string, repo_id, rec_type, field='keyword'):
@@ -214,3 +214,18 @@ def find_key(nest_dict, key):
     if isinstance(children, list):
         for child in children:
             yield from find_key(child, key)
+
+
+def string_to_uri(agent_links, string, uri_dict, role, relator=''):
+    uri_found = False
+    for label, uri in uri_dict.items():
+        if string == label:
+            uri_found = True
+            if role != '':
+                agent_links.append({'role': role, 'ref': uri,
+                                    'relator': relator})
+            else:
+                agent_links.append({'role': 'creator', 'ref': uri})
+    if uri_found is False:
+        logger.info(f'URI not found for string: {string}')
+    return agent_links

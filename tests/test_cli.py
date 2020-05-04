@@ -101,46 +101,55 @@ def test_newarchobjs(runner):
     """Test newarchobjs command."""
     with requests_mock.Mocker() as m:
         with runner.isolated_filesystem():
-            with open('mapping.csv', 'w') as f:
+            with open('agents.csv', 'w') as f:
                 writer = csv.writer(f)
-                writer.writerow(['resource'] + ['parent_uri'] + ['title'] +
-                                ['publisher'] + ['link'] + ['abstract'] +
-                                ['top_container'] + ['child_type'] +
-                                ['child_indicator'])
-                writer.writerow(['/repositories/0/resources/123'] +
-                                ['/repositories/0/archival_objects/456'] +
-                                ['Test title'] +
-                                ['/agents/corporate_entities/12'] +
-                                ['http://dos.com/123'] +
-                                ['This is an abstract'] +
-                                ['/repositories/0/top_containers/123'] +
-                                ['reel'] + ['2'])
-            json_object1 = {'session': 'abcdefg1234567'}
-            json_object2 = {'status': 'Created', 'uri':
-                            '/repositories/0/digital_objects/789'}
-            json_object3 = {'uri': '/repositories/0/digital_objects/789',
-                            'file_versions': [{'file_uri':
-                                              'old_content_link'}]}
-            json_object4 = {'status': 'Updated'}
-            json_object5 = {'status': 'Created', 'uri':
-                            '/repositories/0/archival_objects/123'}
-            base_url = 'mock://mock.mock/users/test/login'
-            do_url = '/repositories/0/digital_objects'
-            item_url = '/repositories/0/digital_objects/789'
-            arch_obj_url = '/repositories/0/archival_objects'
-            m.post(base_url, json=json_object1)
-            m.post(do_url, json=json_object2)
-            m.get(item_url, json=json_object3)
-            m.post(item_url, json=json_object4)
-            m.post(arch_obj_url, json=json_object5)
-            result = runner.invoke(main,
-                                   ['--url', 'mock://mock.mock',
-                                    '--username', 'test',
-                                    '--password', 'testpass',
-                                    'newarchobjs',
-                                    '--repo_id', '0',
-                                    '--mapping_csv', 'mapping.csv'
-                                    ])
+                writer.writerow(['match_point'] + ['uri'])
+                writer.writerow(['Smith, J.'] + ['agents/people/123'])
+                with open('metadata.csv', 'w') as f2:
+                    writer2 = csv.writer(f2)
+                    writer2.writerow(['resource'] + ['parent_uri'] + ['title']
+                                     + ['publisher'] + ['link'] + ['abstract']
+                                     + ['top_container_1']
+                                     + ['top_container_2'] + ['child_type']
+                                     + ['child_indicator'] + ['authors']
+                                     + ['begin'] + ['end'] + ['expression']
+                                     + ['certainty'] + ['label'])
+                    writer2.writerow(['/repositories/0/resources/123']
+                                     + ['/repositories/0/archival_objects/456']
+                                     + ['Test title']
+                                     + ['/agents/corporate_entities/12']
+                                     + ['http://dos.com/123']
+                                     + ['This is an abstract']
+                                     + ['/repositories/0/top_containers/123']
+                                     + ['/repositories/0/top_containers/456']
+                                     + ['reel'] + ['2'] + [['Smith, J.']]
+                                     + [''] + [''] + [''] + [''] + [''])
+                json_object1 = {'session': 'abcdefg1234567'}
+                json_object2 = {'status': 'Created', 'uri':
+                                '/repositories/0/digital_objects/789'}
+                json_object3 = {'uri': '/repositories/0/digital_objects/789',
+                                'file_versions': [{'file_uri':
+                                                  'old_content_link'}]}
+                json_object4 = {'status': 'Updated'}
+                json_object5 = {'status': 'Created', 'uri':
+                                '/repositories/0/archival_objects/123'}
+                base_url = 'mock://mock.mock/users/test/login'
+                do_url = '/repositories/0/digital_objects'
+                item_url = '/repositories/0/digital_objects/789'
+                arch_obj_url = '/repositories/0/archival_objects'
+                m.post(base_url, json=json_object1)
+                m.post(do_url, json=json_object2)
+                m.get(item_url, json=json_object3)
+                m.post(item_url, json=json_object4)
+                m.post(arch_obj_url, json=json_object5)
+                result = runner.invoke(main,
+                                       ['--url', 'mock://mock.mock',
+                                        '--username', 'test',
+                                        '--password', 'testpass',
+                                        'newarchobjs',
+                                        '--repo_id', '0',
+                                        '--metadata_csv', 'metadata.csv',
+                                        '--agent_file', 'agents.csv'])
     assert result.exit_code == 0
 
 
@@ -155,12 +164,12 @@ def test_newagents(runner):
                                 + ['rest_of_name'] + ['fuller_form']
                                 + ['title'] + ['prefix'] + ['suffix']
                                 + ['dates'] + ['expression'] + ['begin']
-                                + ['end'])
+                                + ['end'] + ['certainty'] + ['label'])
                 writer.writerow(['Smith, J.'] + ['agent_person'] + ['Smith']
                                 + ['Smith, John, 1902-2049']
                                 + ['mock://mock.mock/123'] + ['John']
                                 + [''] + [''] + [''] + [''] + ['1902-2049']
-                                + ['1902'] + ['2049'])
+                                + ['1902'] + ['2049'] + [''] + ['existence'])
             json_object1 = {'session': 'abcdefg1234567'}
             json_object2 = {'status': 'Created', 'uri':
                             '/agents/people/789'}

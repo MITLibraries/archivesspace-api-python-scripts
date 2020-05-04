@@ -16,10 +16,13 @@ def test_create_agent_pers():
     expression = ''
     begin = '1902'
     end = '2049'
+    certainty = ''
+    label = 'existence'
     agent_rec = records.create_agent_pers(agent_type, primary_name, sort_name,
                                           rest_of_name, fuller_form, title,
                                           prefix, suffix, dates, expression,
-                                          begin, end, authority_id)
+                                          begin, end, authority_id, certainty,
+                                          label)
     assert agent_rec['names'][0]['primary_name'] == primary_name
     assert agent_rec['names'][0]['sort_name'] == sort_name
     assert agent_rec['names'][0]['authority_id'] == authority_id
@@ -59,13 +62,22 @@ def test_create_arch_obj():
     agents = [{'ref': '/agents/123'}]
     parent = '/repositories/0/archival_objects/123'
     resource = '/repositories/0/resources/456'
-    arch_obj = records.create_arch_obj(title, level, agents, notes,
-                                       parent, resource)
+    begin = '1900'
+    end = '2020'
+    expression = ''
+    certainty = ''
+    label = 'creation'
+    arch_obj = records.create_arch_obj(title, level, agents, notes, parent,
+                                       resource, begin, end, expression,
+                                       certainty, label)
     assert arch_obj['title'] == title
     assert arch_obj['level'] == level
     assert arch_obj['linked_agents'] == agents
     assert arch_obj['parent']['ref'] == parent
     assert arch_obj['resource']['ref'] == resource
+    assert arch_obj['dates'][0]['begin'] == begin
+    assert arch_obj['dates'][0]['end'] == end
+    assert arch_obj['dates'][0]['label'] == label
 
 
 def test_create_date():
@@ -73,9 +85,12 @@ def test_create_date():
     expression = ''
     begin = '1902'
     end = '2049'
-    date = records.create_date(begin, end, expression)
+    certainty = ''
+    label = 'existence'
+    date = records.create_date(begin, end, expression, certainty, label)
     assert date['begin'] == begin
     assert date['end'] == end
+    assert date['label'] == label
 
 
 def test_create_dig_obj():
