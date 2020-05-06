@@ -41,8 +41,8 @@ class AsOperations:
     def post_new_record(self, rec_obj, endpoint):
         """Create new ArchivesSpace record with POST of JSON data."""
         response = self.client.post(endpoint, json=rec_obj)
-        response.raise_for_status()
         logger.info(response.json())
+        response.raise_for_status()
         return response.json()
 
     def save_record(self, rec_obj, dry_run):
@@ -137,7 +137,7 @@ def create_csv_from_log(log_file_name, log_suffix):
                 f.writerow(edit_log_line)
 
 
-def create_endpoint(rec_type, repo_id):
+def create_endpoint(rec_type, repo_id=''):
     """Create an endpoint for a specified type."""
     rec_type_dict = {'accession': 'accessions', 'resource': 'resources',
                      'archival_object': 'archival_objects',
@@ -145,15 +145,24 @@ def create_endpoint(rec_type, repo_id):
                      'agent_person': 'people', 'agent_family': 'families',
                      'digital_object': 'digital_objects',
                      'top_container': 'top_containers'}
-    agents = ['corporate_entities', 'families', 'people']
+    agents = ['agent_corporate_entity', 'agent_person', 'agent_family']
     non_repo_types = ['locations', 'subjects']
     if rec_type in agents:
-        endpoint = f'agents/{rec_type}'
+        endpoint = f'agents/{rec_type_dict[rec_type]}'
     elif rec_type in non_repo_types:
         endpoint = rec_type
     else:
         endpoint = (f'repositories/{repo_id}/{rec_type_dict[rec_type]}')
     return endpoint
+
+
+def create_new_rec_report(new_rec_data, file_name):
+    """Creates ingest report of handles and DOS links."""
+    with open(f'{file_name}-new-recs.csv', 'w') as writecsv:
+        writer = csv.writer(writecsv)
+        writer.writerow(['match_point'] + ['uri'])
+        for match_point, uri in new_rec_data.items():
+            writer.writerow([match_point] + [uri])
 
 
 def download_json(rec_obj):

@@ -1,3 +1,71 @@
+import operator
+
+filter_crit = operator.itemgetter(1)
+
+
+def create_agent_pers(agent_type, primary_name, sort_name, rest_of_name='',
+                      fuller_form='', title='', prefix='', suffix='', dates='',
+                      expression='', begin='', end='', authority_id=''):
+    """Create agent_person record."""
+    agent = {}
+    name = {}
+    name['primary_name'] = primary_name
+    name['name_order'] = 'inverted'
+    name['jsonmodel_type'] = 'name_person'
+    name['rules'] = 'rda'
+    name['sort_name'] = sort_name
+    name['authority_id'] = authority_id
+    name['source'] = 'Virtual International Authority File (VIAF)'
+    name['rest_of_name'] = rest_of_name
+    name['fuller_form'] = fuller_form
+    name['title'] = title
+    name['prefix'] = prefix
+    name['suffix'] = suffix
+    name['dates'] = dates
+    name = dict(filter(filter_crit, name.items()))
+    if 'authority_id' not in name:
+        name['rules'] = 'dacs'
+        name['source'] = 'local'
+    if 'rest_of_name' not in name:
+        name['name_order'] = 'direct'
+    names = [name]
+    date = create_date(begin, end, expression)
+    agent['dates_of_existence'] = [date]
+    agent['names'] = names
+    agent['publish'] = True
+    agent['jsonmodel_type'] = agent_type
+    return agent
+
+
+def create_agent_corp(agent_type, primary_name, sort_name,
+                      subordinate_name_1='', subordinate_name_2='', number='',
+                      dates='', qualifier='', authority_id=''):
+    """Create agent_corporate_entity record."""
+    agent = {}
+    name = {}
+    name['primary_name'] = primary_name
+    name['name_order'] = 'direct'
+    name['jsonmodel_type'] = 'name_corporate_entity'
+    name['rules'] = 'rda'
+    name['sort_name'] = sort_name
+    name['authority_id'] = authority_id
+    name['source'] = 'Virtual International Authority File (VIAF)'
+    name['subordinate_name_1'] = subordinate_name_1
+    name['subordinate_name_2'] = subordinate_name_2
+    name['number'] = number
+    name['dates'] = dates
+    name['qualifer'] = qualifier
+    name = dict(filter(filter_crit, name.items()))
+    if 'authority_id' not in name:
+        name['rules'] = 'dacs'
+        name['source'] = 'local'
+    names = [name]
+    agent['names'] = names
+    agent['publish'] = True
+    agent['jsonmodel_type'] = agent_type
+    return agent
+
+
 def create_arch_obj(title, level, agents, notes, parent, resource):
     """Create archival object."""
     arch_obj = {}
@@ -10,6 +78,27 @@ def create_arch_obj(title, level, agents, notes, parent, resource):
     arch_obj['resource'] = {'ref': resource}
     arch_obj['instances'] = []
     return arch_obj
+
+
+def create_date(begin, end, expression):
+    """Create date object."""
+    date = {}
+    date['begin'] = begin
+    date['end'] = end
+    date['expression'] = expression
+    date = dict(filter(filter_crit, date.items()))
+    if 'begin' in date and 'end' in date:
+        date['date_type'] = 'range'
+    elif 'begin' in date:
+        date['date_type'] = 'single'
+    elif 'end' in date:
+        date['date_type'] = 'single'
+    elif 'expression' in date:
+        date['date_type'] = 'single'
+    if len(date) > 0:
+        date['label'] = 'existence'
+        date['jsonmodel_type'] = 'date'
+    return date
 
 
 def create_dig_obj(title, link):

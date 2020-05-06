@@ -68,7 +68,7 @@ def test_find(runner):
 
 
 def test_updatedigobj(runner):
-    """Test report command."""
+    """Test updatedigobj command."""
     with requests_mock.Mocker() as m:
         with runner.isolated_filesystem():
             with open('mapping.csv', 'w') as f:
@@ -98,7 +98,7 @@ def test_updatedigobj(runner):
 
 
 def test_newarchobjs(runner):
-    """Test report command."""
+    """Test newarchobjs command."""
     with requests_mock.Mocker() as m:
         with runner.isolated_filesystem():
             with open('mapping.csv', 'w') as f:
@@ -141,5 +141,37 @@ def test_newarchobjs(runner):
                                     '--repo_id', '0',
                                     '--mapping_csv', 'mapping.csv'
                                     ])
-            print(result.output)
+    assert result.exit_code == 0
+
+
+def test_newagents(runner):
+    """Test newagents command."""
+    with requests_mock.Mocker() as m:
+        with runner.isolated_filesystem():
+            with open('metadata.csv', 'w') as f:
+                writer = csv.writer(f)
+                writer.writerow(['search'] + ['agent_type'] + ['primary_name']
+                                + ['sort_name'] + ['authority_id']
+                                + ['rest_of_name'] + ['fuller_form']
+                                + ['title'] + ['prefix'] + ['suffix']
+                                + ['dates'] + ['expression'] + ['begin']
+                                + ['end'])
+                writer.writerow(['Smith, J.'] + ['agent_person'] + ['Smith']
+                                + ['Smith, John, 1902-2049']
+                                + ['mock://mock.mock/123'] + ['John']
+                                + [''] + [''] + [''] + [''] + ['1902-2049']
+                                + ['1902'] + ['2049'])
+            json_object1 = {'session': 'abcdefg1234567'}
+            json_object2 = {'status': 'Created', 'uri':
+                            '/agents/people/789'}
+            base_url = 'mock://mock.mock/users/test/login'
+            agent_url = '/agents/people'
+            m.post(base_url, json=json_object1)
+            m.post(agent_url, json=json_object2)
+            result = runner.invoke(main,
+                                   ['--url', 'mock://mock.mock',
+                                    '--username', 'test',
+                                    '--password', 'testpass',
+                                    'newagents', '--metadata_csv',
+                                    'metadata.csv', '--match_point', 'search'])
     assert result.exit_code == 0
