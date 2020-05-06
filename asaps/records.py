@@ -23,10 +23,10 @@ def create_agent_pers(agent_type, primary_name, sort_name, rest_of_name='',
     name['suffix'] = suffix
     name['dates'] = dates
     name = dict(filter(filter_crit, name.items()))
-    if 'authority_id' not in name.keys():
+    if 'authority_id' not in name:
         name['rules'] = 'dacs'
         name['source'] = 'local'
-    if 'rest_of_name' not in name.keys():
+    if 'rest_of_name' not in name:
         name['name_order'] = 'direct'
     names = [name]
     date = create_date(begin, end, expression)
@@ -56,7 +56,7 @@ def create_agent_corp(agent_type, primary_name, sort_name,
     name['dates'] = dates
     name['qualifer'] = qualifier
     name = dict(filter(filter_crit, name.items()))
-    if 'authority_id' not in name.keys():
+    if 'authority_id' not in name:
         name['rules'] = 'dacs'
         name['source'] = 'local'
     names = [name]
@@ -87,15 +87,15 @@ def create_date(begin, end, expression):
     date['end'] = end
     date['expression'] = expression
     date = dict(filter(filter_crit, date.items()))
-    if 'begin' in date.keys() and 'end' in date.keys():
+    if 'begin' in date and 'end' in date:
         date['date_type'] = 'range'
-    elif 'begin' in date.keys():
+    elif 'begin' in date:
         date['date_type'] = 'single'
-    elif 'end' in date.keys():
+    elif 'end' in date:
         date['date_type'] = 'single'
-    elif 'expression' in date.keys():
+    elif 'expression' in date:
         date['date_type'] = 'single'
-    if len(date.keys()) > 0:
+    if len(date) > 0:
         date['label'] = 'existence'
         date['jsonmodel_type'] = 'date'
     return date

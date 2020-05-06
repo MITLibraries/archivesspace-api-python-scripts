@@ -88,7 +88,7 @@ def report(ctx, repo_id, rec_type, field):
                                                      report_dict)
             for report_dict in report_dicts:
                 logger.info(**report_dict)
-        elif field in obj_field_dict.keys():
+        elif field in obj_field_dict:
             report_dicts = models.extract_obj_field(field, rec_obj,
                                                     obj_field_dict,
                                                     report_dict)
@@ -131,11 +131,11 @@ def find(ctx, dry_run, repo_id, rec_type, field, search, rpl_value):
                 notes = models.filter_note_type(rec_obj, field)
                 for note in notes:
                     for subnote in note.get('subnotes', []):
-                        if 'content' in subnote.keys():
+                        if 'content' in subnote:
                             update = subnote['content'].replace(search,
                                                                 rpl_value)
                             subnote['content'] = update
-                        elif 'definedlist' in subnote.keys():
+                        elif 'definedlist' in subnote:
                             update = subnote['definedlist'].replace(search,
                                                                     rpl_value)
                             subnote['definedlist'] = update
