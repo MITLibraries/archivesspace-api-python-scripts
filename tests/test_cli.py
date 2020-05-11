@@ -122,7 +122,7 @@ def test_newarchobjs(runner):
                                      + ['This is an abstract']
                                      + ['/repositories/0/top_containers/123']
                                      + ['/repositories/0/top_containers/456']
-                                     + ['reel'] + ['2'] + [['Smith, J.']]
+                                     + ['reel'] + ['2'] + ['["Smith, J."]']
                                      + [''] + [''] + [''] + [''] + [''])
                 json_object1 = {'session': 'abcdefg1234567'}
                 json_object2 = {'status': 'Created', 'uri':

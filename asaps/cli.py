@@ -1,6 +1,6 @@
-import ast
 import csv
 import datetime
+import json
 import logging
 import os
 import time
@@ -198,7 +198,7 @@ def newarchobjs(ctx, metadata_csv, agent_file, repo_id):
             agent_links = models.string_to_uri(agent_links, row['publisher'],
                                                agent_uri_dict, 'creator',
                                                'pbl')
-            for author in ast.literal_eval(row['authors']):
+            for author in json.loads(row['authors']):
                 agent_links = models.string_to_uri(agent_links, author,
                                                    agent_uri_dict, 'creator',
                                                    '')
