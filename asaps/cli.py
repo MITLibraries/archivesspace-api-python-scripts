@@ -1,5 +1,6 @@
 import csv
 import datetime
+import json
 import logging
 import os
 import time
@@ -175,41 +176,58 @@ def updatedigobj(ctx, dry_run, mapping_csv):
 
 @main.command()
 @click.pass_context
-@click.option('-m', '--mapping_csv', prompt='Enter the mapping CSV file',
-              help='The mapping CSV file to use.')
+@click.option('-m', '--metadata_csv', prompt='Enter the metadata CSV file',
+              help='The metadata CSV file to use.')
+@click.option('-a', '--agent_file', prompt='Enter the agent CSV file',
+              help='The CSV mapping agent strings to URIs.')
 @click.option('-i', '--repo_id', prompt='Enter the repository ID',
               help='The ID of the repository to use.')
-def newarchobjs(ctx, mapping_csv, repo_id):
+def newarchobjs(ctx, metadata_csv, agent_file, repo_id):
     as_ops = ctx.obj['as_ops']
     start_time = ctx.obj['start_time']
     log_suffix = ctx.obj['log_suffix']
-    with open(mapping_csv) as csvfile:
+    agent_uri_dict = {}
+    with open(agent_file) as agentfile:
+        reader = csv.DictReader(agentfile)
+        for row in reader:
+            agent_uri_dict[row['match_point']] = row['uri']
+    with open(metadata_csv) as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
+            agent_links = []
+            agent_links = models.string_to_uri(agent_links, row['publisher'],
+                                               agent_uri_dict, 'creator',
+                                               'pbl')
+            for author in json.loads(row['authors']):
+                agent_links = models.string_to_uri(agent_links, author,
+                                                   agent_uri_dict, 'creator',
+                                                   '')
             new_dig_obj = records.create_dig_obj(row['title'], row['link'])
             dig_obj_endpoint = models.create_endpoint('digital_object',
                                                       repo_id)
             dig_obj_resp = as_ops.post_new_record(new_dig_obj,
                                                   dig_obj_endpoint)
-            agent_link = {'role': 'creator', 'relator': 'pbl', 'ref':
-                          row['publisher']}
-            note = records.create_note('scopecontent',
-                                       'Scope and Contents of the Collection',
+            note = records.create_note('scopecontent', 'Scope and Contents',
                                        row['abstract'])
             arch_obj = records.create_arch_obj(row['title'], 'file',
-                                               [agent_link], [note],
+                                               agent_links, [note],
                                                row['parent_uri'],
-                                               row['resource'])
+                                               row['resource'], row['begin'],
+                                               row['end'], row['expression'],
+                                               row['certainty'], row['label'])
             arch_obj = records.link_dig_obj(arch_obj, dig_obj_resp['uri'])
             arch_obj = records.link_top_container(arch_obj,
-                                                  row['top_container'],
+                                                  row['top_container_1'],
                                                   row['child_type'],
                                                   row['child_indicator'])
+            arch_obj = records.link_top_container(arch_obj,
+                                                  row['top_container_2'], '',
+                                                  '')
             arch_obj_endpoint = models.create_endpoint('archival_object',
                                                        repo_id)
             arch_obj_resp = as_ops.post_new_record(arch_obj, arch_obj_endpoint)
     models.elapsed_time(start_time, 'Total runtime:')
-    models.create_csv_from_log('dig_obj', log_suffix)
+    models.create_csv_from_log('arch_obj', log_suffix)
 
 
 @main.command()
@@ -240,7 +258,9 @@ def newagents(ctx, metadata_csv, match_point):
                                                       row['expression'],
                                                       row['begin'],
                                                       row['end'],
-                                                      row['authority_id'])
+                                                      row['authority_id'],
+                                                      row['certainty'],
+                                                      row['label'])
             if agent_type == 'agent_corporate_entity':
                 agent_rec = records.create_agent_corp(agent_type,
                                                       row['primary_name'],
@@ -254,7 +274,6 @@ def newagents(ctx, metadata_csv, match_point):
             agent_endpoint = models.create_endpoint(agent_type)
             agent_resp = as_ops.post_new_record(agent_rec, agent_endpoint)
             new_rec_data[row[match_point]] = agent_resp['uri']
-
         models.create_new_rec_report(new_rec_data, metadata_csv)
     models.elapsed_time(start_time, 'Total runtime:')
     models.create_csv_from_log('agents', log_suffix)

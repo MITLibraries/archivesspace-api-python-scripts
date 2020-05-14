@@ -208,3 +208,13 @@ def test_find_key():
     for key in keys:
         key_count += 1
     assert key_count == 2
+
+
+def test_string_to_uri():
+    agent_links = []
+    string = 'Smith, N.'
+    uri_dict = {'Smith, N.': 'mock.mock/123'}
+    role = 'creator'
+    agent_links = models.string_to_uri(agent_links, string, uri_dict, role, '')
+    assert agent_links[0]['ref'] == uri_dict[string]
+    assert agent_links[0]['role'] == role

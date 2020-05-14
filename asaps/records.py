@@ -3,9 +3,9 @@ import operator
 filter_crit = operator.itemgetter(1)
 
 
-def create_agent_pers(agent_type, primary_name, sort_name, rest_of_name='',
-                      fuller_form='', title='', prefix='', suffix='', dates='',
-                      expression='', begin='', end='', authority_id=''):
+def create_agent_pers(agent_type, primary_name, sort_name, rest_of_name,
+                      fuller_form, title, prefix, suffix, dates, expression,
+                      begin, end, authority_id, certainty, label):
     """Create agent_person record."""
     agent = {}
     name = {}
@@ -29,7 +29,7 @@ def create_agent_pers(agent_type, primary_name, sort_name, rest_of_name='',
     if 'rest_of_name' not in name:
         name['name_order'] = 'direct'
     names = [name]
-    date = create_date(begin, end, expression)
+    date = create_date(begin, end, expression, certainty, label)
     agent['dates_of_existence'] = [date]
     agent['names'] = names
     agent['publish'] = True
@@ -38,8 +38,8 @@ def create_agent_pers(agent_type, primary_name, sort_name, rest_of_name='',
 
 
 def create_agent_corp(agent_type, primary_name, sort_name,
-                      subordinate_name_1='', subordinate_name_2='', number='',
-                      dates='', qualifier='', authority_id=''):
+                      subordinate_name_1, subordinate_name_2, number,
+                      dates, qualifier, authority_id):
     """Create agent_corporate_entity record."""
     agent = {}
     name = {}
@@ -66,7 +66,8 @@ def create_agent_corp(agent_type, primary_name, sort_name,
     return agent
 
 
-def create_arch_obj(title, level, agents, notes, parent, resource):
+def create_arch_obj(title, level, agents, notes, parent, resource, begin,
+                    end, expression, certainty, label):
     """Create archival object."""
     arch_obj = {}
     arch_obj['title'] = title
@@ -77,15 +78,18 @@ def create_arch_obj(title, level, agents, notes, parent, resource):
     arch_obj['parent'] = {'ref': parent}
     arch_obj['resource'] = {'ref': resource}
     arch_obj['instances'] = []
+    date = create_date(begin, end, expression, certainty, label)
+    arch_obj['dates'] = [date]
     return arch_obj
 
 
-def create_date(begin, end, expression):
+def create_date(begin, end, expression, certainty, label):
     """Create date object."""
     date = {}
     date['begin'] = begin
     date['end'] = end
     date['expression'] = expression
+    date['certainty'] = certainty
     date = dict(filter(filter_crit, date.items()))
     if 'begin' in date and 'end' in date:
         date['date_type'] = 'range'
@@ -96,7 +100,7 @@ def create_date(begin, end, expression):
     elif 'expression' in date:
         date['date_type'] = 'single'
     if len(date) > 0:
-        date['label'] = 'existence'
+        date['label'] = label
         date['jsonmodel_type'] = 'date'
     return date
 
