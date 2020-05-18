@@ -66,6 +66,35 @@ def main(ctx, url, username, password):
 
 @main.command()
 @click.pass_context
+@click.option('-d', '--dry_run', prompt='Dry run?', default=True,
+              help='Perform dry run that does not modify any records.')
+@click.option('-m', '--metadata_csv', prompt='Enter the metadata CSV file',
+              help='The metadata CSV file to use.')
+@click.option('-f', '--field', prompt='Enter the field',
+              help='The field to edit.')
+def deletefield(ctx, dry_run, metadata_csv, field):
+    as_ops = ctx.obj['as_ops']
+    start_time = ctx.obj['start_time']
+    log_suffix = ctx.obj['log_suffix']
+    with open(metadata_csv) as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            uri = row['uri']
+            rec_obj = as_ops.get_record(uri)
+            if field in note_type_fields:
+                for note in (n for n in rec_obj['notes'] if
+                             n.get('type') == field):
+                    rec_obj['notes'].remove(note)
+            else:
+                rec_obj.pop(field, None)
+            if rec_obj.modified is True:
+                as_ops.save_record(rec_obj, dry_run)
+    models.elapsed_time(start_time, 'Total runtime:')
+    models.create_csv_from_log(f'update_rec_{field}', log_suffix)
+
+
+@main.command()
+@click.pass_context
 @click.argument('search')
 @click.option('-d', '--dry_run', prompt='Dry run?', default=True,
               help='Perform dry run that does not modify any records.')
@@ -84,8 +113,8 @@ def find(ctx, dry_run, repo_id, rec_type, field, search, rpl_value):
     skipped_arch_objs = []
     if rec_type == 'archival_object':
         for uri in skipped_resources:
-            arch_objlist = as_ops.get_arch_objs_for_resource(uri)
-            skipped_arch_objs.append(arch_objlist)
+            arch_obj_list = as_ops.get_arch_objs_for_resource(uri)
+            skipped_arch_objs.append(arch_obj_list)
     skipped_uris = skipped_resources + skipped_arch_objs
     for uri in as_ops.search(search, repo_id, rec_type, field):
         if uri not in skipped_uris:
@@ -128,7 +157,7 @@ def newagents(ctx, metadata_csv, match_point):
         new_rec_data = {}
         for row in reader:
             agent_type = row['agent_type']
-            if agent_type == 'agent_person':
+            if agent_type == 'people':
                 agent_rec = records.create_agent_pers(agent_type,
                                                       row['primary_name'],
                                                       row['sort_name'],
@@ -144,7 +173,7 @@ def newagents(ctx, metadata_csv, match_point):
                                                       row['authority_id'],
                                                       row['certainty'],
                                                       row['label'])
-            if agent_type == 'agent_corporate_entity':
+            if agent_type == 'corporate_entities':
                 agent_rec = records.create_agent_corp(agent_type,
                                                       row['primary_name'],
                                                       row['sort_name'],

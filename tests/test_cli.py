@@ -11,6 +11,36 @@ def runner():
     return CliRunner()
 
 
+def test_deletefield(runner):
+    """Test updaterecords command."""
+    with requests_mock.Mocker() as m:
+        with runner.isolated_filesystem():
+            with open('metadata.csv', 'w') as f:
+                writer = csv.writer(f)
+                writer.writerow(['uri'])
+                writer.writerow(['/repositories/0/archival_objects/1234'])
+                json_object1 = {'session': 'abcdefg1234567'}
+                json_object2 = {'uri': '/repositories/0/archival_objects/1234',
+                                'notes': [{'subnotes': [{'content':
+                                                        'Old note content'}]}]}
+                json_object3 = {'status': 'Updated'}
+                base_url = 'mock://mock.mock/users/test/login'
+                item_url = '/repositories/0/archival_objects/1234'
+                m.post(base_url, json=json_object1)
+                m.get(item_url, json=json_object2)
+                m.post(item_url, json=json_object3)
+                result = runner.invoke(main,
+                                       ['--url', 'mock://mock.mock',
+                                        '--username', 'test',
+                                        '--password', 'testpass',
+                                        'deletefield',
+                                        '--dry_run', 'False',
+                                        '--metadata_csv', 'metadata.csv',
+                                        '--field', 'accessrestrict'
+                                        ])
+        assert result.exit_code == 0
+
+
 def test_find(runner):
     """Test find command."""
     with requests_mock.Mocker() as m:
@@ -53,7 +83,7 @@ def test_newagents(runner):
                                 + ['title'] + ['prefix'] + ['suffix']
                                 + ['dates'] + ['expression'] + ['begin']
                                 + ['end'] + ['certainty'] + ['label'])
-                writer.writerow(['Smith, J.'] + ['agent_person'] + ['Smith']
+                writer.writerow(['Smith, J.'] + ['people'] + ['Smith']
                                 + ['Smith, John, 1902-2049']
                                 + ['mock://mock.mock/123'] + ['John']
                                 + [''] + [''] + [''] + [''] + ['1902-2049']

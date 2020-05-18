@@ -173,4 +173,6 @@ def update_dig_obj_link(dig_obj, link):
         file_version['is_representative'] = True
         file_version['jsonmodel_type'] = 'file_version'
         dig_obj['file_versions'] = [file_version]
+        file_version['xlink_actuate_attribute'] = 'onRequest'
+        file_version['xlink_show_attribute'] = 'new'
     return dig_obj
