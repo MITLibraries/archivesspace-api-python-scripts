@@ -11,32 +11,6 @@ def runner():
     return CliRunner()
 
 
-def test_report(runner):
-    """Test report command."""
-    with requests_mock.Mocker() as m:
-        json_object1 = {'session': 'abcdefg1234567'}
-        json_object2 = {'id_0': 'AB', 'id_1': '123', 'title': 'Test title',
-                        'uri': '/repositories/0/resources/1234', 'notes':
-                        [{'type': 'acqinfo', 'subnotes': [{'content':
-                         'test value'}]}]}
-        base_url = 'mock://mock.mock/users/test/login'
-        ids_url = '/repositories/0/resources?all_ids=true'
-        item_url = '/repositories/0/resources/1234'
-        m.post(base_url, json=json_object1)
-        m.get(ids_url, json=['1234'])
-        m.get(item_url, json=json_object2)
-        result = runner.invoke(main,
-                               ['--url', 'mock://mock.mock',
-                                '--username', 'test',
-                                '--password', 'testpass',
-                                'report',
-                                '--repo_id', '0',
-                                '--rec_type', 'resource',
-                                '--field', 'acqinfo',
-                                ])
-        assert result.exit_code == 0
-
-
 def test_find(runner):
     """Test find command."""
     with requests_mock.Mocker() as m:
@@ -67,33 +41,36 @@ def test_find(runner):
         assert result.exit_code == 0
 
 
-def test_updatedigobj(runner):
-    """Test updatedigobj command."""
+def test_newagents(runner):
+    """Test newagents command."""
     with requests_mock.Mocker() as m:
         with runner.isolated_filesystem():
-            with open('mapping.csv', 'w') as f:
+            with open('metadata.csv', 'w') as f:
                 writer = csv.writer(f)
-                writer.writerow(['do_uri'] + ['link'])
-                writer.writerow(['/repositories/0/digital_objects/1234'] +
-                                ['new_content_link'])
+                writer.writerow(['search'] + ['agent_type'] + ['primary_name']
+                                + ['sort_name'] + ['authority_id']
+                                + ['rest_of_name'] + ['fuller_form']
+                                + ['title'] + ['prefix'] + ['suffix']
+                                + ['dates'] + ['expression'] + ['begin']
+                                + ['end'] + ['certainty'] + ['label'])
+                writer.writerow(['Smith, J.'] + ['agent_person'] + ['Smith']
+                                + ['Smith, John, 1902-2049']
+                                + ['mock://mock.mock/123'] + ['John']
+                                + [''] + [''] + [''] + [''] + ['1902-2049']
+                                + ['1902'] + ['2049'] + [''] + ['existence'])
             json_object1 = {'session': 'abcdefg1234567'}
-            json_object2 = {'uri': '/repositories/0/digital_objects/1234',
-                            'file_versions': [{'file_uri':
-                                              'old_content_link'}]}
-            json_object3 = {'status': 'Updated'}
+            json_object2 = {'status': 'Created', 'uri':
+                            '/agents/people/789'}
             base_url = 'mock://mock.mock/users/test/login'
-            item_url = '/repositories/0/digital_objects/1234'
+            agent_url = '/agents/people'
             m.post(base_url, json=json_object1)
-            m.get(item_url, json=json_object2)
-            m.post(item_url, json=json_object3)
+            m.post(agent_url, json=json_object2)
             result = runner.invoke(main,
                                    ['--url', 'mock://mock.mock',
                                     '--username', 'test',
                                     '--password', 'testpass',
-                                    'updatedigobj',
-                                    '--dry_run', 'False',
-                                    '--mapping_csv', 'mapping.csv'
-                                    ])
+                                    'newagents', '--metadata_csv',
+                                    'metadata.csv', '--match_point', 'search'])
     assert result.exit_code == 0
 
 
@@ -153,34 +130,89 @@ def test_newarchobjs(runner):
     assert result.exit_code == 0
 
 
-def test_newagents(runner):
-    """Test newagents command."""
+def test_report(runner):
+    """Test report command."""
+    with requests_mock.Mocker() as m:
+        json_object1 = {'session': 'abcdefg1234567'}
+        json_object2 = {'id_0': 'AB', 'id_1': '123', 'title': 'Test title',
+                        'uri': '/repositories/0/resources/1234', 'notes':
+                        [{'type': 'acqinfo', 'subnotes': [{'content':
+                         'test value'}]}]}
+        base_url = 'mock://mock.mock/users/test/login'
+        ids_url = '/repositories/0/resources?all_ids=true'
+        item_url = '/repositories/0/resources/1234'
+        m.post(base_url, json=json_object1)
+        m.get(ids_url, json=['1234'])
+        m.get(item_url, json=json_object2)
+        result = runner.invoke(main,
+                               ['--url', 'mock://mock.mock',
+                                '--username', 'test',
+                                '--password', 'testpass',
+                                'report',
+                                '--repo_id', '0',
+                                '--rec_type', 'resource',
+                                '--field', 'acqinfo',
+                                ])
+        assert result.exit_code == 0
+
+
+def test_updatedigobj(runner):
+    """Test updatedigobj command."""
     with requests_mock.Mocker() as m:
         with runner.isolated_filesystem():
             with open('metadata.csv', 'w') as f:
                 writer = csv.writer(f)
-                writer.writerow(['search'] + ['agent_type'] + ['primary_name']
-                                + ['sort_name'] + ['authority_id']
-                                + ['rest_of_name'] + ['fuller_form']
-                                + ['title'] + ['prefix'] + ['suffix']
-                                + ['dates'] + ['expression'] + ['begin']
-                                + ['end'] + ['certainty'] + ['label'])
-                writer.writerow(['Smith, J.'] + ['agent_person'] + ['Smith']
-                                + ['Smith, John, 1902-2049']
-                                + ['mock://mock.mock/123'] + ['John']
-                                + [''] + [''] + [''] + [''] + ['1902-2049']
-                                + ['1902'] + ['2049'] + [''] + ['existence'])
+                writer.writerow(['do_uri'] + ['link'])
+                writer.writerow(['/repositories/0/digital_objects/1234'] +
+                                ['new_content_link'])
             json_object1 = {'session': 'abcdefg1234567'}
-            json_object2 = {'status': 'Created', 'uri':
-                            '/agents/people/789'}
+            json_object2 = {'uri': '/repositories/0/digital_objects/1234',
+                            'file_versions': [{'file_uri':
+                                              'old_content_link'}]}
+            json_object3 = {'status': 'Updated'}
             base_url = 'mock://mock.mock/users/test/login'
-            agent_url = '/agents/people'
+            item_url = '/repositories/0/digital_objects/1234'
             m.post(base_url, json=json_object1)
-            m.post(agent_url, json=json_object2)
+            m.get(item_url, json=json_object2)
+            m.post(item_url, json=json_object3)
             result = runner.invoke(main,
                                    ['--url', 'mock://mock.mock',
                                     '--username', 'test',
                                     '--password', 'testpass',
-                                    'newagents', '--metadata_csv',
-                                    'metadata.csv', '--match_point', 'search'])
+                                    'updatedigobj',
+                                    '--dry_run', 'False',
+                                    '--metadata_csv', 'metadata.csv'
+                                    ])
     assert result.exit_code == 0
+
+
+def test_updaterecords(runner):
+    """Test updaterecords command."""
+    with requests_mock.Mocker() as m:
+        with runner.isolated_filesystem():
+            with open('metadata.csv', 'w') as f:
+                writer = csv.writer(f)
+                writer.writerow(['uri'] + ['accessrestrict'])
+                writer.writerow(['/repositories/0/archival_objects/1234'] +
+                                ['New note content'])
+                json_object1 = {'session': 'abcdefg1234567'}
+                json_object2 = {'uri': '/repositories/0/archival_objects/1234',
+                                'notes': [{'subnotes': [{'content':
+                                                        'Old note content'}]}]}
+                json_object3 = {'status': 'Updated'}
+                base_url = 'mock://mock.mock/users/test/login'
+                item_url = '/repositories/0/archival_objects/1234'
+                m.post(base_url, json=json_object1)
+                m.get(item_url, json=json_object2)
+                m.post(item_url, json=json_object3)
+                result = runner.invoke(main,
+                                       ['--url', 'mock://mock.mock',
+                                        '--username', 'test',
+                                        '--password', 'testpass',
+                                        'updaterecords',
+                                        '--dry_run', 'False',
+                                        '--metadata_csv', 'metadata.csv',
+                                        '--field', 'accessrestrict',
+                                        '--rpl_value_col', 'accessrestrict'
+                                        ])
+        assert result.exit_code == 0

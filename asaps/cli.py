@@ -65,44 +65,6 @@ def main(ctx, url, username, password):
 
 
 @main.command()
-@click.option('-i', '--repo_id', prompt='Enter the repository ID',
-              help='The ID of the repository to use.')
-@click.option('-t', '--rec_type', prompt='Enter the record type',
-              help='The record type to use.')
-@click.option('-f', '--field', prompt='Enter the field',
-              help='The field to extract.')
-@click.pass_context
-def report(ctx, repo_id, rec_type, field):
-    as_ops = ctx.obj['as_ops']
-    start_time = ctx.obj['start_time']
-    log_suffix = ctx.obj['log_suffix']
-    endpoint = models.create_endpoint(rec_type, repo_id)
-    ids = as_ops.get_all_records(endpoint)
-    for id in ids:
-        uri = f'{endpoint}/{id}'
-        rec_obj = as_ops.get_record(uri)
-        coll_id = models.concat_id(rec_obj)
-        report_dict = {'uri': rec_obj['uri'], 'title': rec_obj['title'],
-                       'id': coll_id}
-        if field in note_type_fields:
-            report_dicts = models.extract_note_field(field, rec_obj,
-                                                     report_dict)
-            for report_dict in report_dicts:
-                logger.info(**report_dict)
-        elif field in obj_field_dict:
-            report_dicts = models.extract_obj_field(field, rec_obj,
-                                                    obj_field_dict,
-                                                    report_dict)
-            for report_dict in report_dicts:
-                logger.info(**report_dict)
-        else:
-            report_dict[field] = rec_obj.get(field, '')
-            logger.info(**report_dict)
-    models.elapsed_time(start_time, 'Total runtime:')
-    models.create_csv_from_log(f'{rec_type}-{field}-values', log_suffix)
-
-
-@main.command()
 @click.pass_context
 @click.argument('search')
 @click.option('-d', '--dry_run', prompt='Dry run?', default=True,
@@ -153,25 +115,51 @@ def find(ctx, dry_run, repo_id, rec_type, field, search, rpl_value):
 
 @main.command()
 @click.pass_context
-@click.option('-d', '--dry_run', prompt='Dry run?', default=True,
-              help='Perform dry run that does not modify any records.')
-@click.option('-m', '--mapping_csv', prompt='Enter the mapping CSV file',
-              help='The mapping CSV file to use.')
-def updatedigobj(ctx, dry_run, mapping_csv):
+@click.option('-m', '--metadata_csv', prompt='Enter the metadata CSV file',
+              help='The metadata CSV file to use.')
+@click.option('-p', '--match_point', prompt='Enter the match point',
+              help='The match point to be used in the new record report.')
+def newagents(ctx, metadata_csv, match_point):
     as_ops = ctx.obj['as_ops']
     start_time = ctx.obj['start_time']
     log_suffix = ctx.obj['log_suffix']
-    with open(mapping_csv) as csvfile:
+    with open(metadata_csv) as csvfile:
         reader = csv.DictReader(csvfile)
+        new_rec_data = {}
         for row in reader:
-            do_uri = row['do_uri']
-            link = row['link']
-            dig_obj = as_ops.get_record(do_uri)
-            upd_dig_obj = records.update_dig_obj_link(dig_obj, link)
-            if upd_dig_obj.modified is True:
-                as_ops.save_record(upd_dig_obj, dry_run)
+            agent_type = row['agent_type']
+            if agent_type == 'agent_person':
+                agent_rec = records.create_agent_pers(agent_type,
+                                                      row['primary_name'],
+                                                      row['sort_name'],
+                                                      row['rest_of_name'],
+                                                      row['fuller_form'],
+                                                      row['title'],
+                                                      row['prefix'],
+                                                      row['suffix'],
+                                                      row['dates'],
+                                                      row['expression'],
+                                                      row['begin'],
+                                                      row['end'],
+                                                      row['authority_id'],
+                                                      row['certainty'],
+                                                      row['label'])
+            if agent_type == 'agent_corporate_entity':
+                agent_rec = records.create_agent_corp(agent_type,
+                                                      row['primary_name'],
+                                                      row['sort_name'],
+                                                      row['subord_name_1'],
+                                                      row['subord_name_2'],
+                                                      row['number'],
+                                                      row['dates'],
+                                                      row['qualifier'],
+                                                      row['authority_id'])
+            agent_endpoint = models.create_endpoint(agent_type)
+            agent_resp = as_ops.post_new_record(agent_rec, agent_endpoint)
+            new_rec_data[row[match_point]] = agent_resp['uri']
+        models.create_new_rec_report(new_rec_data, metadata_csv)
     models.elapsed_time(start_time, 'Total runtime:')
-    models.create_csv_from_log('dig_obj', log_suffix)
+    models.create_csv_from_log('agents', log_suffix)
 
 
 @main.command()
@@ -231,52 +219,108 @@ def newarchobjs(ctx, metadata_csv, agent_file, repo_id):
 
 
 @main.command()
+@click.option('-i', '--repo_id', prompt='Enter the repository ID',
+              help='The ID of the repository to use.')
+@click.option('-t', '--rec_type', prompt='Enter the record type',
+              help='The record type to use.')
+@click.option('-f', '--field', prompt='Enter the field',
+              help='The field to extract.')
 @click.pass_context
+def report(ctx, repo_id, rec_type, field):
+    as_ops = ctx.obj['as_ops']
+    start_time = ctx.obj['start_time']
+    log_suffix = ctx.obj['log_suffix']
+    endpoint = models.create_endpoint(rec_type, repo_id)
+    ids = as_ops.get_all_records(endpoint)
+    for id in ids:
+        uri = f'{endpoint}/{id}'
+        rec_obj = as_ops.get_record(uri)
+        coll_id = models.concat_id(rec_obj)
+        report_dict = {'uri': rec_obj['uri'], 'title': rec_obj['title'],
+                       'id': coll_id}
+        if field in note_type_fields:
+            report_dicts = models.extract_note_field(field, rec_obj,
+                                                     report_dict)
+            for report_dict in report_dicts:
+                logger.info(**report_dict)
+        elif field in obj_field_dict:
+            report_dicts = models.extract_obj_field(field, rec_obj,
+                                                    obj_field_dict,
+                                                    report_dict)
+            for report_dict in report_dicts:
+                logger.info(**report_dict)
+        else:
+            report_dict[field] = rec_obj.get(field, '')
+            logger.info(**report_dict)
+    models.elapsed_time(start_time, 'Total runtime:')
+    models.create_csv_from_log(f'{rec_type}-{field}-values', log_suffix)
+
+
+@main.command()
+@click.pass_context
+@click.option('-d', '--dry_run', prompt='Dry run?', default=True,
+              help='Perform dry run that does not modify any records.')
 @click.option('-m', '--metadata_csv', prompt='Enter the metadata CSV file',
               help='The metadata CSV file to use.')
-@click.option('-p', '--match_point', prompt='Enter the match point',
-              help='The match point to be used in the new record report.')
-def newagents(ctx, metadata_csv, match_point):
+def updatedigobj(ctx, dry_run, metadata_csv):
     as_ops = ctx.obj['as_ops']
     start_time = ctx.obj['start_time']
     log_suffix = ctx.obj['log_suffix']
     with open(metadata_csv) as csvfile:
         reader = csv.DictReader(csvfile)
-        new_rec_data = {}
         for row in reader:
-            agent_type = row['agent_type']
-            if agent_type == 'agent_person':
-                agent_rec = records.create_agent_pers(agent_type,
-                                                      row['primary_name'],
-                                                      row['sort_name'],
-                                                      row['rest_of_name'],
-                                                      row['fuller_form'],
-                                                      row['title'],
-                                                      row['prefix'],
-                                                      row['suffix'],
-                                                      row['dates'],
-                                                      row['expression'],
-                                                      row['begin'],
-                                                      row['end'],
-                                                      row['authority_id'],
-                                                      row['certainty'],
-                                                      row['label'])
-            if agent_type == 'agent_corporate_entity':
-                agent_rec = records.create_agent_corp(agent_type,
-                                                      row['primary_name'],
-                                                      row['sort_name'],
-                                                      row['subord_name_1'],
-                                                      row['subord_name_2'],
-                                                      row['number'],
-                                                      row['dates'],
-                                                      row['qualifier'],
-                                                      row['authority_id'])
-            agent_endpoint = models.create_endpoint(agent_type)
-            agent_resp = as_ops.post_new_record(agent_rec, agent_endpoint)
-            new_rec_data[row[match_point]] = agent_resp['uri']
-        models.create_new_rec_report(new_rec_data, metadata_csv)
+            do_uri = row['do_uri']
+            link = row['link']
+            dig_obj = as_ops.get_record(do_uri)
+            upd_dig_obj = records.update_dig_obj_link(dig_obj, link)
+            if upd_dig_obj.modified is True:
+                as_ops.save_record(upd_dig_obj, dry_run)
     models.elapsed_time(start_time, 'Total runtime:')
-    models.create_csv_from_log('agents', log_suffix)
+    models.create_csv_from_log('dig_obj', log_suffix)
+
+
+@main.command()
+@click.pass_context
+@click.option('-d', '--dry_run', prompt='Dry run?', default=True,
+              help='Perform dry run that does not modify any records.')
+@click.option('-m', '--metadata_csv', prompt='Enter the metadata CSV file',
+              help='The metadata CSV file to use.')
+@click.option('-f', '--field', prompt='Enter the field',
+              help='The field to edit.')
+@click.option('-r', '--rpl_value_col',
+              prompt='Enter the replacement value column',
+              help='The replacement value to be inserted.')
+def updaterecords(ctx, dry_run, metadata_csv, field, rpl_value_col):
+    as_ops = ctx.obj['as_ops']
+    start_time = ctx.obj['start_time']
+    log_suffix = ctx.obj['log_suffix']
+    with open(metadata_csv) as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            uri = row['uri']
+            rpl_value = row[rpl_value_col]
+            rec_obj = as_ops.get_record(uri)
+            if field in note_type_fields:
+                notes = models.filter_note_type(rec_obj, field)
+                note_found = False
+                for note in notes:
+                    for subnote in note.get('subnotes', []):
+                        subnote['content'] = rpl_value
+                        note_found = True
+                if note_found is not True:
+                    note = {}
+                    note['jsonmodel_type'] = 'note_multipart'
+                    note['type'] = field
+                    note['publish'] = True
+                    note['subnotes'] = [{'jsonmodel_type': 'note_text',
+                                        'content': rpl_value, 'publish': True}]
+                    rec_obj['notes'].append(note)
+            else:
+                rec_obj[field] = rpl_value
+            if rec_obj.modified is True:
+                as_ops.save_record(rec_obj, dry_run)
+    models.elapsed_time(start_time, 'Total runtime:')
+    models.create_csv_from_log(f'update_rec_{field}', log_suffix)
 
 
 if __name__ == '__main__':
