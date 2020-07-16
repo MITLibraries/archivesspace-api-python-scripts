@@ -145,10 +145,10 @@ def create_endpoint(rec_type, repo_id=''):
                      'agent_person': 'people', 'agent_family': 'families',
                      'digital_object': 'digital_objects',
                      'top_container': 'top_containers'}
-    agents = ['agent_corporate_entity', 'agent_person', 'agent_family']
+    agents = ['corporate_entities', 'families', 'people']
     non_repo_types = ['locations', 'subjects']
     if rec_type in agents:
-        endpoint = f'agents/{rec_type_dict[rec_type]}'
+        endpoint = f'agents/{rec_type}'
     elif rec_type in non_repo_types:
         endpoint = rec_type
     else:
