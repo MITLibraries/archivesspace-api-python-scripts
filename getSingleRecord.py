@@ -18,18 +18,21 @@ parser.add_argument('-u', '--uri', help='URI of the object to retreive. optional
 
 args = parser.parse_args()
 
-if args.uri:
-    uri = args.uri
-else:
-    uri = input('Enter handle (\'/repositories/3/resources/564\'): ')
+# if args.uri:
+#     uri = args.uri
+# else:
+#     uri = raw_input('Enter handle (\'/repositories/3/resources/855\'): ')
 
+uri = '/repositories/3/digital_objects/141'
 baseURL = secrets.baseURL
 user = secrets.user
 password = secrets.password
 repository = secrets.repository
 
-auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
+auth = requests.post(baseURL+'/users/'+user+'/login?password='+password).json()
 session = auth['session']
+print(auth)
+print(session)
 headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 
 print(baseURL+uri)

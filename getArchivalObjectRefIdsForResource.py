@@ -1,10 +1,10 @@
-import json
 import requests
 import secrets
 import time
-import csv
+import pandas as pd
+from datetime import datetime
 
-secretsVersion = input('To edit production server, enter the name of the secrets file: ')
+secretsVersion = input('To edit production server, enter secrets file: ')
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
@@ -32,14 +32,11 @@ user = secrets.user
 password = secrets.password
 repository = secrets.repository
 
-auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json()
+auth = requests.post(baseURL+'/users/'+user+'/login?password='+password).json()
 session = auth["session"]
 headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 
 resourceID = input('Enter resource ID: ')
-
-f = csv.writer(open('archivalObjectRefIdForResource.csv', 'w'))
-f.writerow(['title']+['uri']+['ref_id']+['dateExpression']+['dataBegin']+['level'])
 
 endpoint = '/repositories/'+repository+'/resources/'+resourceID+'/tree'
 
@@ -52,23 +49,28 @@ for value in findKey(output, 'record_uri'):
         archivalObjects.append(value)
 
 print('downloading aos')
+
+fieldList = ['title', 'uri', 'ref_id', 'level']
+objectList = []
 for archivalObject in archivalObjects:
     output = requests.get(baseURL + archivalObject, headers=headers).json()
-    # print(json.dumps(output))
-    title = output['title']
-    uri = output['uri']
-    ref_id = output['ref_id']
-    level = output['level']
-    for date in output['dates']:
-        try:
-            dateExpression = date['expression']
-        except:
-            dateExpression = ''
-        try:
-            dateBegin = date['begin']
-        except:
-            dateBegin = ''
-    f.writerow([title]+[uri]+[ref_id]+[dateExpression]+[dateBegin]+[level])
+    aoDict = {}
+    for x in fieldList:
+        value = output.get(x)
+        aoDict[x] = value
+    if output.get('dates'):
+        express = output['dates'][0].get('expression')
+        begin = output['dates'][0].get('begin')
+        aoDict['dateExpression'] = express
+        aoDict['dateBegin'] = begin
+    objectList.append(aoDict)
+
+
+df = pd.DataFrame.from_dict(objectList)
+print(df.head(15))
+dt = datetime.now().strftime('%Y-%m-%d %H.%M.%S')
+df.to_csv(path_or_buf='RefIds'+resourceID+'_'+dt+'.csv', index=False)
+
 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
