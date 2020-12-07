@@ -4,7 +4,7 @@ import pandas as pd
 import argparse
 from datetime import datetime
 
-secretsVersion = input('To edit production server, enter the name of the secrets file: ')
+secretsVersion = input('To edit production server, enter secrets file name: ')
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
@@ -15,7 +15,7 @@ else:
     print('Editing Development')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-f', '--file', help='file_name to retreive')
+parser.add_argument('-f', '--file')
 args = parser.parse_args()
 
 if args.file:
@@ -29,37 +29,35 @@ password = secrets.password
 repository = secrets.repository
 
 df_1 = pd.read_csv(filename)
-container = df_1.container.dropna()
+container = df_1.top_container.dropna()
 itemList = container.unique()
 itemList = list(itemList)
 print(itemList)
 
 
-def collectProperty(dictionary, property, name=None):
-    if dictionary is not None:
+def collectValue(dictionary, property):
+    if dictionary:
         value = dictionary.get(property)
-        if value is not None:
-            if name:
-                tiny_dict[name] = value
-            else:
-                tiny_dict[property] = value
+        if value:
+            tiny_dict[property] = value
 
 
 auth = requests.post(baseURL+'/users/'+user+'/login?password='+password).json()
 session = auth['session']
-print(auth)
 print(session)
 headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
+
 all_items = []
 for count, item in enumerate(itemList):
     tiny_dict = {}
     print(baseURL+item)
     print(count)
     output = requests.get(baseURL+item, headers=headers).json()
-    collectProperty(output, 'barcode')
-    collectProperty(output, 'indicator')
-    collectProperty(output, 'display_string')
-    collectProperty(output, 'uri')
+    collectValue(output, 'barcode')
+    collectValue(output, 'type')
+    collectValue(output, 'indicator')
+    collectValue(output, 'display_string')
+    collectValue(output, 'uri')
     all_items.append(tiny_dict)
 
 

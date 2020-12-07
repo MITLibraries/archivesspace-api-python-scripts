@@ -63,6 +63,12 @@ for archivalObject in archivalObjects:
         begin = output['dates'][0].get('begin')
         aoDict['dateExpression'] = express
         aoDict['dateBegin'] = begin
+    if output.get('instances'):
+        sub_container = output['instances'][0].get('sub_container')
+        top_container = sub_container.get('top_container')
+        aoDict['container_type'] = sub_container.get('type_2')
+        aoDict['container_num'] = sub_container.get('indicator_2')
+        aoDict['top_container'] = top_container.get('ref')
     objectList.append(aoDict)
 
 
