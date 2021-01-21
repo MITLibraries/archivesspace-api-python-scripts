@@ -5,14 +5,14 @@ import csv
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-e', '--entity', help='enter either "people", "corporate_entites", or "families". optional - if not provided, the script will ask for input')
+parser.add_argument('-e', '--entity', help='options: people, corporate_entites, families')
 args = parser.parse_args()
 
 if args.entity:
     type_entity = args.entity
     print(type_entity)
 else:
-    type_entity = input('Enter type of entity-- either "people", "corporate_entities", or "families": ')
+    type_entity = input('options: people, corporate_entites, families: ')
 
 baseURL = secrets.baseURL
 user = secrets.user

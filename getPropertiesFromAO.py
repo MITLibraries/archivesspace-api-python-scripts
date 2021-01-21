@@ -27,6 +27,7 @@ baseURL = secrets.baseURL
 user = secrets.user
 password = secrets.password
 repository = secrets.repository
+verify = True
 
 df_1 = pd.read_csv(filename)
 itemList = df_1.record_uri.to_list()
@@ -42,22 +43,25 @@ def collectProperty(dictionary, property, name=None):
                 tiny_dict[property] = value
 
 
-auth = requests.post(baseURL+'/users/'+user+'/login?password='+password).json()
+auth = requests.post(baseURL+'/users/'+user+'/login?password='+password, verify=verify).json()
 session = auth['session']
 print(auth)
 print(session)
 headers = {'X-ArchivesSpace-Session': session, 'Content_Type': 'application/json'}
 all_items = []
 for count, item in enumerate(itemList):
-    if 2000 <= count:
         tiny_dict = {}
         print(baseURL+item)
-        output = requests.get(baseURL+item, headers=headers).json()
+        output = requests.get(baseURL+item, headers=headers, verify=verify).json()
         collectProperty(output, 'uri')
         collectProperty(output, 'title')
         dates = output.get('dates')
         for date in dates:
             collectProperty(date, 'expression')
+            collectProperty(date, 'begin')
+            collectProperty(date, 'end')
+            collectProperty(date, 'date_type')
+            collectProperty(date, 'label')
         instances = output.get('instances')
         for item in instances:
             sub_container = item.get('sub_container')
@@ -72,4 +76,4 @@ for count, item in enumerate(itemList):
 df = pd.DataFrame.from_dict(all_items)
 print(df.head)
 dt = datetime.now().strftime('%Y-%m-%d %H.%M.%S')
-df.to_csv(path_or_buf='childRecords3_'+dt+'.csv', index=False)
+df.to_csv(path_or_buf='archival_objects_'+dt+'.csv', index=False)

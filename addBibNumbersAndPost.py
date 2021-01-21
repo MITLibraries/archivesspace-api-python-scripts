@@ -1,11 +1,11 @@
-input(import json
+import json
 import requests
 import secrets
 import time
 import csv
 from datetime import datetime
 
-secretsVersion = raw_input('To edit production server, enter the name of the secrets file: ')
+secretsVersion = input('To edit production server, enter the name of the secrets file: ')
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
@@ -28,7 +28,7 @@ headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 
 urisBibs = csv.DictReader(open(''))
 
-f=csv.writer(open('bibNumberPush'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'w'))
+f = csv.writer(open('bibNumberPush'+datetime.now().strftime('%Y-%m-%d %H.%M.%S')+'.csv', 'w'))
 f.writerow(['uri']+['existingValue']+['bibNum'])
 
 for row in urisBibs:

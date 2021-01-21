@@ -6,7 +6,7 @@ import pandas as pd
 from datetime import datetime
 
 
-secretsVersion = input('To edit production server, enter the name of the secrets file: ')
+secretsVersion = input('To edit production server, enter secrets file name: ')
 if secretsVersion != '':
     try:
         secrets = __import__(secretsVersion)
