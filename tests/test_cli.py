@@ -71,6 +71,28 @@ def test_find(runner):
         assert result.exit_code == 0
 
 
+def test_metadata(runner):
+    """Test metadata command"""
+    with requests_mock.Mocker() as m:
+        json_object1 = {'session': 'abcdefg1234567'}
+        json_object2 = {'uri': '/repositories/0/resources/1234', 'ref_id':
+                        'a1b_2c3'}
+        base_url = 'mock://mock.mock/users/test/login'
+        item_url = '/repositories/0/resources/1234/tree'
+        m.post(base_url, json=json_object1)
+        m.get(item_url, json=json_object2)
+        result = runner.invoke(main,
+                               ['--url', 'mock://mock.mock',
+                                '--username', 'test',
+                                '--password', 'testpass',
+                                'metadata',
+                                '--resource',
+                                '/repositories/0/resources/1234',
+                                '--field', 'ref_id', '--repo_id', '0'
+                                ])
+        assert result.exit_code == 0
+
+
 def test_newagents(runner):
     """Test newagents command."""
     with requests_mock.Mocker() as m:
@@ -157,6 +179,48 @@ def test_newarchobjs(runner):
                                         '--repo_id', '0',
                                         '--metadata_csv', 'metadata.csv',
                                         '--agent_file', 'agents.csv'])
+    assert result.exit_code == 0
+
+
+def test_newdigobjs(runner):
+    """Test newdigobjs command"""
+    with requests_mock.Mocker() as m:
+        with runner.isolated_filesystem():
+            with open('ingest.csv', 'w') as f:
+                writer = csv.writer(f)
+                writer.writerow(['uri'] + ['display_string'] + ['link'])
+                writer.writerow(['/repositories/0/archival_objects/123']
+                                + ['AO Title']
+                                + ['mock://example.com/handle/111.1111'])
+
+                json_object1 = {'session': 'abcdefg1234567'}
+                json_object2 = {'status': 'Created', 'uri':
+                                '/repositories/0/digital_objects/789'}
+                json_object3 = {'uri': '/repositories/0/digital_objects/789',
+                                'file_versions': [
+                                        {'file_uri':
+                                         'mock://example.com/handle/111.1111'}]
+                                }
+                json_object4 = {'status': 'Updated'}
+                json_object5 = {'status': 'Updated', 'uri':
+                                '/repositories/0/archival_objects/123'}
+                base_url = 'mock://mock.mock/users/test/login'
+                do_url = '/repositories/0/digital_objects'
+                item_url = '/repositories/0/digital_objects/789'
+                arch_obj_url = '/repositories/0/digital_objects'
+                m.post(base_url, json=json_object1)
+                m.post(do_url, json=json_object2)
+                m.get(item_url, json=json_object3)
+                m.post(item_url, json=json_object4)
+                m.post(arch_obj_url, json=json_object5)
+                result = runner.invoke(main,
+                                       ['--url', 'mock://mock.mock',
+                                        '--username', 'test',
+                                        '--password', 'testpass',
+                                        'newdigobjs',
+                                        '--metadata_csv', 'ingest.csv',
+                                        '--repo_id', '0',
+                                        ])
     assert result.exit_code == 0
 
 

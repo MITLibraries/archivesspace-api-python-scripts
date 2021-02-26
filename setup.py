@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='ArchivesSpace API Python Scripts',
+    name='asaps',
     version='1.0.0',
     description='',
     packages=find_packages(exclude=['tests']),

@@ -59,21 +59,6 @@ def test_post_new_record(as_ops):
         assert resp['status'] == 'Created'
 
 
-def test_search(as_ops):
-    """Test search method."""
-    with requests_mock.Mocker() as m:
-        string = 'string'
-        repo_id = '0'
-        rec_type = 'resource'
-        field = 'acqinfo'
-        json_object = [{'uri': '1234'}]
-        url = f'/repositories/{repo_id}/search?'
-        m.get(url, json=json_object)
-        results = as_ops.search(string, repo_id, rec_type, field)
-        for result in results:
-            assert result == json_object[0]['uri']
-
-
 def test_save_record(as_ops, caplog):
     """Test post_record method."""
     caplog.set_level(logging.INFO)
@@ -87,6 +72,21 @@ def test_save_record(as_ops, caplog):
         as_ops.save_record(rec_obj, dry_run)
         message = json.loads(caplog.messages[0])['event']
         assert message == json_object
+
+
+def test_search(as_ops):
+    """Test search method."""
+    with requests_mock.Mocker() as m:
+        string = 'string'
+        repo_id = '0'
+        rec_type = 'resource'
+        field = 'acqinfo'
+        json_object = [{'uri': '1234'}]
+        url = f'/repositories/{repo_id}/search?'
+        m.get(url, json=json_object)
+        results = as_ops.search(string, repo_id, rec_type, field)
+        for result in results:
+            assert result == json_object[0]['uri']
 
 
 def test_record_is_modified():

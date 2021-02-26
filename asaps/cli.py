@@ -9,7 +9,7 @@ from asnake.client import ASnakeClient
 import click
 import structlog
 
-from asaps import models, records
+from asaps import models, records, workflows
 
 logger = structlog.get_logger()
 
@@ -144,6 +144,25 @@ def find(ctx, dry_run, repo_id, rec_type, field, search, rpl_value):
 
 @main.command()
 @click.pass_context
+@click.option('-r', '--resource', prompt='Enter the resource')
+@click.option('-i', '--field', prompt='Enter the field for file matching',
+              help='The field for file matching.')
+@click.option('-e', '--repo_id', prompt='Enter the repository ID',
+              help='The ID of the repository to use.')
+def metadata(ctx, resource, field, repo_id):
+    as_ops = ctx.obj['as_ops']
+    start_time = ctx.obj['start_time']
+    log_suffix = ctx.obj['log_suffix']
+    resource_num = resource.replace(f'/repositories/{repo_id}/resources/', '')
+    report_dicts = workflows.export_metadata(as_ops, resource, field, repo_id)
+    for report_dict in report_dicts:
+        logger.info(**report_dict)
+    models.elapsed_time(start_time, 'Total runtime:')
+    models.create_csv_from_log(resource_num, log_suffix, False)
+
+
+@main.command()
+@click.pass_context
 @click.option('-m', '--metadata_csv', prompt='Enter the metadata CSV file',
               help='The metadata CSV file to use.')
 @click.option('-p', '--match_point', prompt='Enter the match point',
@@ -245,6 +264,21 @@ def newarchobjs(ctx, metadata_csv, agent_file, repo_id):
             arch_obj_resp = as_ops.post_new_record(arch_obj, arch_obj_endpoint)
     models.elapsed_time(start_time, 'Total runtime:')
     models.create_csv_from_log('arch_obj', log_suffix)
+
+
+@main.command()
+@click.pass_context
+@click.option('-m', '--metadata_csv', prompt='Enter the metadata CSV file',
+              help='The metadata CSV file to use.')
+@click.option('-i', '--repo_id', prompt='Enter the repository ID',
+              help='The ID of the repository to use.')
+def newdigobjs(ctx, metadata_csv, repo_id):
+    as_ops = ctx.obj['as_ops']
+    start_time = ctx.obj['start_time']
+    log_suffix = ctx.obj['log_suffix']
+    workflows.create_new_dig_objs(as_ops, metadata_csv, repo_id)
+    models.elapsed_time(start_time, 'Total runtime:')
+    models.create_csv_from_log('new_dig_obj', log_suffix)
 
 
 @main.command()
