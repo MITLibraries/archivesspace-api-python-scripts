@@ -26,15 +26,16 @@ def as_ops():
 def test_export_metadata(as_ops):
     """Test export_metadata method."""
     with requests_mock.Mocker() as m:
-        resource = '/repositories/0/resources/423'
+        resource = '423'
         repo_id = '0'
         field = 'ref_id'
         ao_uri = '/repositories/0/archival_objects/1234'
-        json_object_1 = {'record_uri': ao_uri}
-        json_object_2 = {'uri': ao_uri, 'ref_id':
-                         'a2b2c2', 'display_string': 'Sample Title'}
-        m.get(f'{resource}/tree', json=json_object_1)
-        m.get(ao_uri, json=json_object_2)
+        tree_json = {'record_uri': ao_uri}
+        ao_json = {'uri': ao_uri, 'ref_id': 'a2b2c2', 'display_string':
+                   'Sample Title'}
+        m.get(f'/repositories/{repo_id}/resources/{resource}/tree',
+              json=tree_json)
+        m.get(ao_uri, json=ao_json)
         report_dicts = workflows.export_metadata(as_ops, resource, field,
                                                  repo_id)
         for report_dict in report_dicts:
@@ -56,16 +57,15 @@ def test_create_new_dig_objs(as_ops, caplog, runner):
             ao_uri = 'mock://example.com/repositories/0/archival_objects/1234'
             dos_uri = 'mock://example.com/repositories/0/digital_objects'
             do_uri = '/repositories/0/digital_objects/5678'
-            json_object_1 = {'uri': '/repositories/0/archival_objects/1234',
-                             'display_string': 'Sample Title',
-                             'instances': []}
-            json_object_2 = {'post': 'Success', 'uri': do_uri}
-            json_object_3 = {'post': 'Success'}
-            m.get(ao_uri, json=json_object_1)
-            m.post(dos_uri, json=json_object_2)
-            m.post(ao_uri, json=json_object_3)
+            ao_json = {'uri': '/repositories/0/archival_objects/1234',
+                       'display_string': 'Sample Title', 'instances': []}
+            do_upd_json = {'post': 'Success', 'uri': do_uri}
+            ao_upd_json = {'post': 'Success'}
+            m.get(ao_uri, json=ao_json)
+            m.post(dos_uri, json=do_upd_json)
+            m.post(ao_uri, json=ao_upd_json)
             workflows.create_new_dig_objs(as_ops, 'metadata.csv', '0')
             message_1 = json.loads(caplog.messages[1])['event']
             message_2 = json.loads(caplog.messages[2])['event']
-            assert message_1 == json_object_2
-            assert message_2 == json_object_3
+            assert message_1 == do_upd_json
+            assert message_2 == ao_upd_json

@@ -19,5 +19,5 @@ setup(
             'asaps=asaps.cli:main',
         ]
     },
-    python_requires='>=3.7.1',
+    python_requires='>=3.8',
 )

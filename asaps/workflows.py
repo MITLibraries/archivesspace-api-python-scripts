@@ -3,14 +3,15 @@ import csv
 from asaps import models, records
 
 
-def export_metadata(client, resource, field, repo_id):
-    """Export ArchivesSpace metadata as a CSV."""
-    arch_obj_list = client.get_arch_objs_for_resource(resource)
+def export_metadata(client, resource, file_identifier, repo_id):
+    """Export ArchivesSpace metadata as dicts for each archival object."""
+    resource_uri = f'/repositories/{repo_id}/resources/{resource}'
+    arch_obj_list = client.get_arch_objs_for_resource(resource_uri)
     for uri in arch_obj_list:
         rec_obj = client.get_record(uri)
         report_dict = {'uri': rec_obj['uri'],
                        'title': rec_obj['display_string'],
-                       'file_identifier': rec_obj.get(field)}
+                       'file_identifier': rec_obj.get(file_identifier)}
         yield report_dict
 
 

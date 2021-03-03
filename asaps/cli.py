@@ -73,6 +73,8 @@ def main(ctx, url, username, password):
 @click.option('-f', '--field', prompt='Enter the field',
               help='The field to edit.')
 def deletefield(ctx, dry_run, metadata_csv, field):
+    """Deletes the specified field from records that are specified in a CSV
+     file."""
     as_ops = ctx.obj['as_ops']
     start_time = ctx.obj['start_time']
     log_suffix = ctx.obj['log_suffix']
@@ -107,6 +109,8 @@ def deletefield(ctx, dry_run, metadata_csv, field):
 @click.option('-r', '--rpl_value', prompt='Enter the replacement value',
               help='The replacement value to be inserted.')
 def find(ctx, dry_run, repo_id, rec_type, field, search, rpl_value):
+    """Finds and replaces the specified string in the specified field in all
+     records of the specified type of records"""
     as_ops = ctx.obj['as_ops']
     start_time = ctx.obj['start_time']
     log_suffix = ctx.obj['log_suffix']
@@ -144,21 +148,24 @@ def find(ctx, dry_run, repo_id, rec_type, field, search, rpl_value):
 
 @main.command()
 @click.pass_context
-@click.option('-r', '--resource', prompt='Enter the resource')
-@click.option('-i', '--field', prompt='Enter the field for file matching',
+@click.option('-r', '--resource', prompt='Enter the resource number')
+@click.option('-i', '--file_identifier',
+              prompt='Enter the field for file matching',
               help='The field for file matching.')
 @click.option('-e', '--repo_id', prompt='Enter the repository ID',
               help='The ID of the repository to use.')
-def metadata(ctx, resource, field, repo_id):
+def metadata(ctx, resource, file_identifier, repo_id):
+    """Exports metadata from a resource's archival objects that will be matched
+     to files in prepartion for ingesting the files into a repository."""
     as_ops = ctx.obj['as_ops']
     start_time = ctx.obj['start_time']
     log_suffix = ctx.obj['log_suffix']
-    resource_num = resource.replace(f'/repositories/{repo_id}/resources/', '')
-    report_dicts = workflows.export_metadata(as_ops, resource, field, repo_id)
+    report_dicts = workflows.export_metadata(as_ops, resource,
+                                             file_identifier, repo_id)
     for report_dict in report_dicts:
         logger.info(**report_dict)
     models.elapsed_time(start_time, 'Total runtime:')
-    models.create_csv_from_log(resource_num, log_suffix, False)
+    models.create_csv_from_log(resource, log_suffix, False)
 
 
 @main.command()
@@ -168,6 +175,7 @@ def metadata(ctx, resource, field, repo_id):
 @click.option('-p', '--match_point', prompt='Enter the match point',
               help='The match point to be used in the new record report.')
 def newagents(ctx, metadata_csv, match_point):
+    """Creates new agent records based on a CSV file."""
     as_ops = ctx.obj['as_ops']
     start_time = ctx.obj['start_time']
     log_suffix = ctx.obj['log_suffix']
@@ -219,6 +227,7 @@ def newagents(ctx, metadata_csv, match_point):
 @click.option('-i', '--repo_id', prompt='Enter the repository ID',
               help='The ID of the repository to use.')
 def newarchobjs(ctx, metadata_csv, agent_file, repo_id):
+    """Creates new archival object records based on a CSV file."""
     as_ops = ctx.obj['as_ops']
     start_time = ctx.obj['start_time']
     log_suffix = ctx.obj['log_suffix']
@@ -261,7 +270,7 @@ def newarchobjs(ctx, metadata_csv, agent_file, repo_id):
                                                   '')
             arch_obj_endpoint = models.create_endpoint('archival_object',
                                                        repo_id)
-            arch_obj_resp = as_ops.post_new_record(arch_obj, arch_obj_endpoint)
+            as_ops.post_new_record(arch_obj, arch_obj_endpoint)
     models.elapsed_time(start_time, 'Total runtime:')
     models.create_csv_from_log('arch_obj', log_suffix)
 
@@ -273,6 +282,7 @@ def newarchobjs(ctx, metadata_csv, agent_file, repo_id):
 @click.option('-i', '--repo_id', prompt='Enter the repository ID',
               help='The ID of the repository to use.')
 def newdigobjs(ctx, metadata_csv, repo_id):
+    """Creates new digital object records based on a CSV file."""
     as_ops = ctx.obj['as_ops']
     start_time = ctx.obj['start_time']
     log_suffix = ctx.obj['log_suffix']
@@ -290,6 +300,8 @@ def newdigobjs(ctx, metadata_csv, repo_id):
               help='The field to extract.')
 @click.pass_context
 def report(ctx, repo_id, rec_type, field):
+    """Exports a report containing minimal metadata and a specified field from
+     all records of the specified type."""
     as_ops = ctx.obj['as_ops']
     start_time = ctx.obj['start_time']
     log_suffix = ctx.obj['log_suffix']
@@ -326,6 +338,7 @@ def report(ctx, repo_id, rec_type, field):
 @click.option('-m', '--metadata_csv', prompt='Enter the metadata CSV file',
               help='The metadata CSV file to use.')
 def updatedigobj(ctx, dry_run, metadata_csv):
+    """Updates the link in digital objects listed in a CSV file."""
     as_ops = ctx.obj['as_ops']
     start_time = ctx.obj['start_time']
     log_suffix = ctx.obj['log_suffix']
@@ -354,6 +367,7 @@ def updatedigobj(ctx, dry_run, metadata_csv):
               prompt='Enter the replacement value column',
               help='The replacement value to be inserted.')
 def updaterecords(ctx, dry_run, metadata_csv, field, rpl_value_col):
+    """Updates records with values listed in a CSV file."""
     as_ops = ctx.obj['as_ops']
     start_time = ctx.obj['start_time']
     log_suffix = ctx.obj['log_suffix']
