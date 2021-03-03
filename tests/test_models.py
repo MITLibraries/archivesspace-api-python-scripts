@@ -21,8 +21,8 @@ def test_get_all_records(as_ops):
     """Test get_all_records method."""
     with requests_mock.Mocker() as m:
         endpoint = '/repositories/0/resources'
-        json_object = [1, 2, 3, 4]
-        m.get('/repositories/0/resources?all_ids=true', json=json_object)
+        ids_json = [1, 2, 3, 4]
+        m.get('/repositories/0/resources?all_ids=true', json=ids_json)
         ids = as_ops.get_all_records(endpoint)
         assert ids == [1, 2, 3, 4]
 
@@ -31,9 +31,9 @@ def test_get_arch_objs_for_resource(as_ops):
     """Test get_arch_objs_for_resource method."""
     with requests_mock.Mocker() as m:
         resource = '/repositories/2/resources/423'
-        json_object = {'record_uri': '/archival_objects/1234', 'children':
-                       [{'record_uri': '/archival_objects/5678'}]}
-        m.get(f'{resource}/tree', json=json_object)
+        tree_json = {'record_uri': '/archival_objects/1234', 'children':
+                     [{'record_uri': '/archival_objects/5678'}]}
+        m.get(f'{resource}/tree', json=tree_json)
         arch_objlist = as_ops.get_arch_objs_for_resource(resource)
         assert '/archival_objects/5678' in arch_objlist
 
@@ -42,36 +42,21 @@ def test_get_record(as_ops):
     """Test get_record method."""
     with requests_mock.Mocker() as m:
         uri = '/repositories/2/resources/423'
-        json_object = {'jsonmodel_type': 'resource'}
-        m.get(uri, json=json_object)
+        rec_json = {'jsonmodel_type': 'resource'}
+        m.get(uri, json=rec_json)
         response = as_ops.get_record(uri)
-        assert response == json_object
+        assert response == rec_json
 
 
 def test_post_new_record(as_ops):
     """Test post_new_record method."""
     with requests_mock.Mocker() as m:
         endpoint = '/repositories/0/resources'
-        json_object = {'status': 'Created'}
+        crtd_json = {'status': 'Created'}
         rec_obj = {'title': 'Test title'}
-        m.post(endpoint, json=json_object)
+        m.post(endpoint, json=crtd_json)
         resp = as_ops.post_new_record(rec_obj, endpoint)
         assert resp['status'] == 'Created'
-
-
-def test_search(as_ops):
-    """Test search method."""
-    with requests_mock.Mocker() as m:
-        string = 'string'
-        repo_id = '0'
-        rec_type = 'resource'
-        field = 'acqinfo'
-        json_object = [{'uri': '1234'}]
-        url = f'/repositories/{repo_id}/search?'
-        m.get(url, json=json_object)
-        results = as_ops.search(string, repo_id, rec_type, field)
-        for result in results:
-            assert result == json_object[0]['uri']
 
 
 def test_save_record(as_ops, caplog):
@@ -82,11 +67,26 @@ def test_save_record(as_ops, caplog):
         uri = '/repositories/2/resources/423'
         dry_run = 'False'
         rec_obj['uri'] = uri
-        json_object = {'post': 'Success'}
-        m.post(uri, json=json_object)
+        upd_json = {'post': 'Success'}
+        m.post(uri, json=upd_json)
         as_ops.save_record(rec_obj, dry_run)
         message = json.loads(caplog.messages[0])['event']
-        assert message == json_object
+        assert message == upd_json
+
+
+def test_search(as_ops):
+    """Test search method."""
+    with requests_mock.Mocker() as m:
+        string = 'string'
+        repo_id = '0'
+        rec_type = 'resource'
+        field = 'acqinfo'
+        search_json = [{'uri': '1234'}]
+        url = f'/repositories/{repo_id}/search?'
+        m.get(url, json=search_json)
+        results = as_ops.search(string, repo_id, rec_type, field)
+        for result in results:
+            assert result == search_json[0]['uri']
 
 
 def test_record_is_modified():

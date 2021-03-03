@@ -115,7 +115,7 @@ def concat_id(rec_obj):
     return '-'.join(filter(None, ids))
 
 
-def create_csv_from_log(log_file_name, log_suffix):
+def create_csv_from_log(csv_file_name, log_suffix, include_suffix=True):
     """Create csv from log file."""
     with open(f'logs/log-{log_suffix}') as f:
         logs = f.read().splitlines()
@@ -127,7 +127,10 @@ def create_csv_from_log(log_file_name, log_suffix):
                 line_dict.pop('level')
                 line_dict.pop('timestamp')
                 edit_log_lines.append(line_dict)
-    full_file_name = os.path.abspath(f'{log_file_name}{log_suffix}.csv')
+    if include_suffix:
+        full_file_name = os.path.abspath(f'{csv_file_name}{log_suffix}.csv')
+    else:
+        full_file_name = os.path.abspath(f'{csv_file_name}.csv')
     if len(edit_log_lines) > 0:
         with open(f'{full_file_name}', 'w') as fp:
             header = list(edit_log_lines[0].keys())
@@ -217,6 +220,7 @@ def find_key(nest_dict, key):
 
 
 def string_to_uri(agent_links, string, uri_dict, role, relator=''):
+    """Creates an agent link from a dict of URIs and labels."""
     uri_found = False
     for label, uri in uri_dict.items():
         if string == label:
