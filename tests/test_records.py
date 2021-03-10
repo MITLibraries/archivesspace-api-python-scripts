@@ -93,19 +93,6 @@ def test_create_date():
     assert date['label'] == label
 
 
-def test_create_date():
-    """Test create_date function."""
-    expression = ''
-    begin = '1902'
-    end = '2049'
-    certainty = ''
-    label = 'existence'
-    date = records.create_date(begin, end, expression, certainty, label)
-    assert date['begin'] == begin
-    assert date['end'] == end
-    assert date['label'] == label
-
-
 def test_create_dig_obj():
     """Test create_dig_obj method."""
     title = 'Test title'

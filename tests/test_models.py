@@ -1,10 +1,10 @@
+import csv
 import json
 import logging
 import os
 
 from asnake.client import ASnakeClient
 import pytest
-import requests_mock
 
 from asaps import models
 
@@ -19,77 +19,58 @@ def as_ops():
 
 def test_get_all_records(as_ops):
     """Test get_all_records method."""
-    with requests_mock.Mocker() as m:
-        endpoint = '/repositories/0/resources'
-        ids_json = [1, 2, 3, 4]
-        m.get('/repositories/0/resources?all_ids=true', json=ids_json)
-        ids = as_ops.get_all_records(endpoint)
-        assert ids == [1, 2, 3, 4]
+    endpoint = '/repositories/0/resources'
+    ids = as_ops.get_all_records(endpoint)
+    assert ids == [1, 2, 3, 4]
 
 
 def test_get_arch_objs_for_resource(as_ops):
     """Test get_arch_objs_for_resource method."""
-    with requests_mock.Mocker() as m:
-        resource = '/repositories/2/resources/423'
-        tree_json = {'record_uri': '/archival_objects/1234', 'children':
-                     [{'record_uri': '/archival_objects/5678'}]}
-        m.get(f'{resource}/tree', json=tree_json)
-        arch_objlist = as_ops.get_arch_objs_for_resource(resource)
-        assert '/archival_objects/5678' in arch_objlist
+    resource = '/repositories/2/resources/423'
+    arch_objlist = as_ops.get_arch_objs_for_resource(resource)
+    assert '/archival_objects/5678' in arch_objlist
 
 
 def test_get_record(as_ops):
     """Test get_record method."""
-    with requests_mock.Mocker() as m:
-        uri = '/repositories/2/resources/423'
-        rec_json = {'jsonmodel_type': 'resource'}
-        m.get(uri, json=rec_json)
-        response = as_ops.get_record(uri)
-        assert response == rec_json
+    uri = '/repositories/2/resources/423'
+    response = as_ops.get_record(uri)
+    assert response['jsonmodel_type'] == 'resource'
 
 
 def test_post_new_record(as_ops):
     """Test post_new_record method."""
-    with requests_mock.Mocker() as m:
-        endpoint = '/repositories/0/resources'
-        crtd_json = {'status': 'Created'}
-        rec_obj = {'title': 'Test title'}
-        m.post(endpoint, json=crtd_json)
-        resp = as_ops.post_new_record(rec_obj, endpoint)
-        assert resp['status'] == 'Created'
+    endpoint = '/repositories/0/resources'
+    rec_obj = {'title': 'Test title'}
+    resp = as_ops.post_new_record(rec_obj, endpoint)
+    assert resp['status'] == 'Created'
 
 
 def test_save_record(as_ops, caplog):
     """Test post_record method."""
     caplog.set_level(logging.INFO)
-    with requests_mock.Mocker() as m:
-        rec_obj = models.Record()
-        uri = '/repositories/2/resources/423'
-        dry_run = 'False'
-        rec_obj['uri'] = uri
-        upd_json = {'post': 'Success'}
-        m.post(uri, json=upd_json)
-        as_ops.save_record(rec_obj, dry_run)
-        message = json.loads(caplog.messages[0])['event']
-        assert message == upd_json
+    rec_obj = models.Record()
+    uri = '/repositories/0/resources/423'
+    dry_run = 'False'
+    rec_obj['uri'] = uri
+    as_ops.save_record(rec_obj, dry_run)
+    message = json.loads(caplog.messages[0])['event']
+    assert message == {'post': 'Success'}
 
 
 def test_search(as_ops):
     """Test search method."""
-    with requests_mock.Mocker() as m:
-        string = 'string'
-        repo_id = '0'
-        rec_type = 'resource'
-        field = 'acqinfo'
-        search_json = [{'uri': '1234'}]
-        url = f'/repositories/{repo_id}/search?'
-        m.get(url, json=search_json)
-        results = as_ops.search(string, repo_id, rec_type, field)
-        for result in results:
-            assert result == search_json[0]['uri']
+    string = 'string'
+    repo_id = '0'
+    rec_type = 'resource'
+    field = 'acqinfo'
+    results = as_ops.search(string, repo_id, rec_type, field)
+    for result in results:
+        assert result == '1234'
 
 
 def test_record_is_modified():
+    """Test record_is_modified method."""
     record = models.Record()
     assert not record.modified
     record['title'] = "I am different"
@@ -97,6 +78,7 @@ def test_record_is_modified():
 
 
 def test_record_flush_persists_changes():
+    """Test record_flush_persists_changes method."""
     record = models.Record()
     record['title'] = 'I am a title'
     assert record.modified
@@ -105,6 +87,7 @@ def test_record_flush_persists_changes():
 
 
 def test_changes_returns_json_patch_operations():
+    """Test changes_returns_json_patch_operations method."""
     record = models.Record()
     record['title'] = 'I am a title'
     assert record.changes == \
@@ -112,15 +95,14 @@ def test_changes_returns_json_patch_operations():
 
 
 def test_save_record_flushes_changes(as_ops):
-    with requests_mock.Mocker() as m:
-        uri = '/foo/bar/1'
-        dry_run = 'False'
-        m.post(uri, json={'post': 'Success'})
-        r = models.Record({'uri': uri})
-        r['title'] = 'A title'
-        assert r.modified
-        as_ops.save_record(r, dry_run)
-        assert not r.modified
+    """Test save_record_flushes_changes method."""
+    uri = '/repositories/0/resources/423'
+    dry_run = 'False'
+    r = models.Record({'uri': uri})
+    r['title'] = 'A title'
+    assert r.modified
+    as_ops.save_record(r, dry_run)
+    assert not r.modified
 
 
 def test_audit():
@@ -147,10 +129,24 @@ def test_create_endpoint():
     assert endpoint == 'repositories/0/resources'
 
 
-# How to test this?
-# def test_create_csv_from_log():
-#   """"Test create_csv_from_log function."""
-#     assert False
+def test_create_csv_from_log(runner):
+    """"Test create_csv_from_log function."""
+    with runner.isolated_filesystem():
+        os.mkdir('logs')
+        with open('logs/log-1790-01-01.log', 'w') as log_file:
+            log_data = json.dumps({'uri': '/repositories/0/events/123',
+                                  'event_type': 'processed',
+                                   'date': '1861-04-10', 'logger': 'asaps.cli',
+                                   'level': 'info',
+                                   'timestamp': '2021-03-04T15:21:28.616824Z'})
+            log_file.write(log_data)
+        models.create_csv_from_log('test-', '1790-01-01.log', True)
+        with open('test-1790-01-01.log.csv') as csvfile2:
+            reader = csv.DictReader(csvfile2)
+            for row in reader:
+                assert row['uri'] == '/repositories/0/events/123'
+                assert row['event_type'] == 'processed'
+                assert row['date'] == '1861-04-10'
 
 
 def test_download_json():
