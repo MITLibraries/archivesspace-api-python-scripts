@@ -21,19 +21,20 @@ def test_get_all_records(as_ops):
     """Test get_all_records method."""
     endpoint = '/repositories/0/resources'
     ids = as_ops.get_all_records(endpoint)
-    assert ids == [1, 2, 3, 4]
+    assert ids == [423, 756]
 
 
 def test_get_arch_objs_for_resource(as_ops):
     """Test get_arch_objs_for_resource method."""
     resource = '/repositories/2/resources/423'
-    arch_objlist = as_ops.get_arch_objs_for_resource(resource)
-    assert '/archival_objects/5678' in arch_objlist
+    arch_obj_list = as_ops.get_arch_objs_for_resource(resource)
+    assert '/repositories/0/archival_objects/5678' in arch_obj_list
+    assert '/repositories/0/archival_objects/1234' in arch_obj_list
 
 
 def test_get_record(as_ops):
     """Test get_record method."""
-    uri = '/repositories/2/resources/423'
+    uri = '/repositories/0/resources/423'
     response = as_ops.get_record(uri)
     assert response['jsonmodel_type'] == 'resource'
 
@@ -66,7 +67,7 @@ def test_search(as_ops):
     field = 'acqinfo'
     results = as_ops.search(string, repo_id, rec_type, field)
     for result in results:
-        assert result == '1234'
+        assert result == '/repositories/0/archival_objects/1234'
 
 
 def test_record_is_modified():
