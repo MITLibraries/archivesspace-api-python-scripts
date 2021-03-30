@@ -160,8 +160,8 @@ def create_endpoint(rec_type, repo_id=''):
 
 
 def create_new_rec_report(new_rec_data, file_name):
-    """Creates ingest report of handles and DOS links."""
-    with open(f'{file_name}-new-recs.csv', 'w') as writecsv:
+    """Creates a report of match points and ArchivesSpace URIs."""
+    with open(f'{file_name}.csv', 'w') as writecsv:
         writer = csv.writer(writecsv)
         writer.writerow(['match_point'] + ['uri'])
         for match_point, uri in new_rec_data.items():

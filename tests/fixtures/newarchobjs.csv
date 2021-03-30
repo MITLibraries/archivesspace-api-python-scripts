@@ -1,0 +1,2 @@
+resource,parent_uri,title,publisher,link,abstract,top_container_1,top_container_2,child_type,child_indicator,authors,begin,end,expression,certainty,label
+/repositories/0/resources/1234,/repositories/0/archival_objects/456,Test title,/agents/corporate_entities/12,http://dos.com/123,This is an abstract,/repositories/0/top_containers/123,/repositories/0/top_containers/456,reel,2,"[""Smith, J.""]",,,,,

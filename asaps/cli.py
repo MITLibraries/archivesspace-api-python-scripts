@@ -172,9 +172,12 @@ def metadata(ctx, resource, file_identifier, repo_id):
 @click.pass_context
 @click.option('-m', '--metadata_csv', prompt='Enter the metadata CSV file',
               help='The metadata CSV file to use.')
+@click.option('-o', '--output_path', prompt='Enter the output path',
+              default='', help='The path of the output files, include '
+              '/ at the end of the path')
 @click.option('-p', '--match_point', prompt='Enter the match point',
               help='The match point to be used in the new record report.')
-def newagents(ctx, metadata_csv, match_point):
+def newagents(ctx, metadata_csv, output_path, match_point):
     """Creates new agent records based on a CSV file."""
     as_ops = ctx.obj['as_ops']
     start_time = ctx.obj['start_time']
@@ -213,7 +216,8 @@ def newagents(ctx, metadata_csv, match_point):
             agent_endpoint = models.create_endpoint(agent_type)
             agent_resp = as_ops.post_new_record(agent_rec, agent_endpoint)
             new_rec_data[row[match_point]] = agent_resp['uri']
-        models.create_new_rec_report(new_rec_data, metadata_csv)
+        models.create_new_rec_report(new_rec_data,
+                                     f'{output_path}newagents')
     models.elapsed_time(start_time, 'Total runtime:')
     models.create_csv_from_log('agents', log_suffix)
 

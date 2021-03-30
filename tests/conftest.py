@@ -77,6 +77,13 @@ def logger():
     return logger
 
 
+@pytest.fixture()
+def output_dir(tmp_path):
+    output_dir = tmp_path / 'output'
+    output_dir.mkdir()
+    return str(f'{output_dir}/')
+
+
 @pytest.fixture(autouse=True)
 def runner():
     return CliRunner()
