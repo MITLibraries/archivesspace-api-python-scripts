@@ -130,6 +130,18 @@ def create_note(type, label, content):
     return note
 
 
+def create_top_container(start_date, indicator, location_id):
+    top_container = {}
+    top_container['type'] = 'DigitalStorage'
+    top_container['indicator'] = indicator
+    container_location = {"jsonmodel_type": "container_location",
+                          "status": "current",
+                          'ref': f'/locations/{location_id}',
+                          'start_date': start_date}
+    top_container['container_locations'] = [container_location]
+    return top_container
+
+
 def link_dig_obj(arch_obj, dig_obj_uri):
     """Link digital object to archival object."""
     instance = {}

@@ -1,5 +1,6 @@
 import csv
 import datetime
+import glob
 import json
 import logging
 import os
@@ -293,6 +294,70 @@ def newdigobjs(ctx, metadata_csv, repo_id):
     workflows.create_new_dig_objs(as_ops, metadata_csv, repo_id)
     models.elapsed_time(start_time, 'Total runtime:')
     models.create_csv_from_log('new_dig_obj', log_suffix)
+
+
+@main.command()
+@click.pass_context
+@click.option('-d', '--dry_run', default='True',
+              help='Perform dry run that does not modify any records.')
+@click.option('-p', '--package-directory', required=True,
+              help='The path of the digitization package.')
+@click.option('-t', '--file-type', required=True,
+              help='The file type to be uploaded.')
+@click.option('-l', '--location-id', required=True,
+              help='The location ID for the top container.')
+@click.option('-i', '--repo-id',
+              help='The ID of the repository to use.')
+def newtopcontainers(ctx, dry_run, package_directory, file_type, location_id,
+                     repo_id):
+    """Creates new top containers from a digitization package directory."""
+    as_ops = ctx.obj['as_ops']
+    start_time = ctx.obj['start_time']
+    log_suffix = ctx.obj['log_suffix']
+    files = glob.glob(f'{package_directory}/**/access/*.{file_type}',
+                      recursive=True)
+    # Extract indicator from folder name
+    indicator = os.path.split(package_directory)[1]
+    start_date = datetime.date.today().strftime("%Y-%m-%d")
+    # create list of archival objects to update with the new top container
+    arch_obj_uris = []
+    for file in files:
+        file_name = os.path.splitext(os.path.basename(file))[0]
+        split_file_name = file_name.split('-')
+        repo_id = int(split_file_name[0])
+        # check if there is a suffix after the archival object identifier
+        if '_' in split_file_name[1]:
+            arch_obj_id = int(
+                split_file_name[1][:split_file_name[1].index('_')]
+            )
+        else:
+            arch_obj_id = int(split_file_name[1])
+        arch_obj_uri = (
+            f'/repositories/{repo_id}/archival_objects/{arch_obj_id}'
+        )
+        if arch_obj_uri not in arch_obj_uris:
+            arch_obj_uris.append(arch_obj_uri)
+    # create new top container
+    if dry_run == 'False':
+        top_container = records.create_top_container(start_date, indicator,
+                                                     location_id)
+        top_con_endpoint = models.create_endpoint('top_container', repo_id)
+        top_con_resp = as_ops.post_new_record(top_container, top_con_endpoint)
+    else:
+        top_con_resp = {'uri': 'Dry run top container uri'}
+    # update archival objects with instances containing the new top container
+    for arch_obj_uri in arch_obj_uris:
+        arch_obj_rec = as_ops.get_record(arch_obj_uri)
+        ao_instance_type = arch_obj_rec['instances'][0]['instance_type']
+        instance = {'instance_type': ao_instance_type,
+                    'jsonmodel_type': 'instance', 'sub_container':
+                    {'jsonmodel_type': 'sub_container',
+                     'top_container': {'ref': top_con_resp['uri']}}}
+        arch_obj_rec['instances'].append(instance)
+        as_ops.save_record(arch_obj_rec, dry_run)
+    elapsed_time = datetime.timedelta(seconds=time.time() - start_time)
+    logger.info(f'Total runtime : {elapsed_time}')
+    models.create_csv_from_log('new-top-containers', log_suffix)
 
 
 @main.command()

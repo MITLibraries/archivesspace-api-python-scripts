@@ -83,6 +83,20 @@ def test_newdigobjs(runner):
     assert result.exit_code == 0
 
 
+def test_newtopcontainers(runner, package_directory):
+    """Test newtopcontainers command"""
+    result = runner.invoke(main,
+                           ['--url', 'mock://mock.mock',
+                            '--username', 'test',
+                            '--password', 'testpass',
+                            'newtopcontainers',
+                            '--package-directory', package_directory,
+                            '--file-type', 'pdf',
+                            '--location-id', '4312',
+                            '--repo-id', '0'])
+    assert result.exit_code == 0
+
+
 def test_report(runner):
     """Test report command."""
     result = runner.invoke(main,
@@ -104,7 +118,8 @@ def test_updatedigobj(runner):
                             '--password', 'testpass',
                             'updatedigobj',
                             '--dry_run', 'False',
-                            '--metadata_csv', 'tests/fixtures/updatedigobj.csv'])
+                            '--metadata_csv',
+                            'tests/fixtures/updatedigobj.csv'])
     assert result.exit_code == 0
 
 
@@ -116,7 +131,8 @@ def test_updaterecords(runner):
                             '--password', 'testpass',
                             'updaterecords',
                             '--dry_run', 'False',
-                            '--metadata_csv', 'tests/fixtures/updaterecords.csv',
+                            '--metadata_csv',
+                            'tests/fixtures/updaterecords.csv',
                             '--field', 'accessrestrict',
                             '--rpl_value_col', 'accessrestrict'])
     assert result.exit_code == 0

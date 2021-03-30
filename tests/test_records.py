@@ -94,7 +94,7 @@ def test_create_date():
 
 
 def test_create_dig_obj():
-    """Test create_dig_obj method."""
+    """Test create_dig_obj function."""
     title = 'Test title'
     link = '/repositories/0/digital_objects/123'
     dig_obj = records.create_dig_obj(title, link)
@@ -103,7 +103,7 @@ def test_create_dig_obj():
 
 
 def test_create_note():
-    """Test create_note method."""
+    """Test create_note function."""
     content = 'Test content'
     label = 'Scope and Content Note'
     type = 'scopecontent'
@@ -113,8 +113,20 @@ def test_create_note():
     assert note['type'] == type
 
 
+def test_create_top_container():
+    """Test create_top_container function"""
+    start_date = '1890-01-01'
+    indicator = 'abcd1234'
+    location_id = '1234'
+    top_container = records.create_top_container(start_date, indicator,
+                                                 location_id)
+    assert top_container['container_locations'][0]['start_date'] == start_date
+    assert top_container['indicator'] == indicator
+    assert top_container['container_locations'][0]['ref'] == '/locations/1234'
+
+
 def test_link_dig_obj():
-    """Test link_dig_obj method."""
+    """Test link_dig_obj function."""
     arch_obj = {'instances': []}
     dig_obj_uri = '/repositories/0/digital_objects/123'
     arch_obj = records.link_dig_obj(arch_obj, dig_obj_uri)
