@@ -177,6 +177,7 @@ data/*
 !data/.keep
 .profile
 *.csv
+!tests/fixtures/*.csv
 *.json
 local/*
 *.xml
