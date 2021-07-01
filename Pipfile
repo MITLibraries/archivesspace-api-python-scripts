@@ -18,7 +18,7 @@ jsonpointer = "*"
 structlog = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "3.9"
 
 [scripts]
 asaps = "python -c \"from asaps.cli import main; main()\""
