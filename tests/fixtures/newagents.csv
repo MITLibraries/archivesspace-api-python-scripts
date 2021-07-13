@@ -1,2 +1,2 @@
 search,agent_type,primary_name,sort_name,authority_id,rest_of_name,fuller_form,title,prefix,suffix,dates,expression,begin,end,certainty,label
-"Smith, J.",people,Smith,"Smith, John, 1902-2049",mock://mock.mock/123,John,,,,,1902-2049,1902,2049,,existence
+"Smith, J.",people,Smith,"Smith, John, 1902-2049",mock://mock.mock/123,John,,,,,,1902-2049,1902,2049,,existence

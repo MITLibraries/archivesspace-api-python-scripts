@@ -156,7 +156,7 @@ def find(ctx, dry_run, repo_id, rec_type, field, search, rpl_value):
               help='The ID of the repository to use.')
 def metadata(ctx, resource, file_identifier, repo_id):
     """Exports metadata from a resource's archival objects that will be matched
-     to files in prepartion for ingesting the files into a repository."""
+     to files in preparation for ingesting the files into a repository."""
     as_ops = ctx.obj['as_ops']
     start_time = ctx.obj['start_time']
     log_suffix = ctx.obj['log_suffix']
