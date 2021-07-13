@@ -104,7 +104,8 @@ def test_updatedigobj(runner):
                             '--password', 'testpass',
                             'updatedigobj',
                             '--dry_run', 'False',
-                            '--metadata_csv', 'tests/fixtures/updatedigobj.csv'])
+                            '--metadata_csv',
+                            'tests/fixtures/updatedigobj.csv'])
     assert result.exit_code == 0
 
 
@@ -116,7 +117,8 @@ def test_updaterecords(runner):
                             '--password', 'testpass',
                             'updaterecords',
                             '--dry_run', 'False',
-                            '--metadata_csv', 'tests/fixtures/updaterecords.csv',
+                            '--metadata_csv',
+                            'tests/fixtures/updaterecords.csv',
                             '--field', 'accessrestrict',
                             '--rpl_value_col', 'accessrestrict'])
     assert result.exit_code == 0
