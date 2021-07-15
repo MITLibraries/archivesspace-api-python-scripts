@@ -22,4 +22,4 @@ jobs:
       - name: Coveralls
         run: pipenv run coveralls
       - name: Flake8
-        run: pipenv run flake8 asaps tests
+        run: pipenv run flake8 asaps tests --ignore E203,E501,W503
