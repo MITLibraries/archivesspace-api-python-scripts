@@ -2,7 +2,7 @@ name: Tests
 on: push
 jobs:
   test:
-    name: Run tests
+    name: Run tests and linting
     env:
       COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
     runs-on: ubuntu-latest
@@ -17,7 +17,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip pipenv
           pipenv install --dev
-      - name: Test
+      - name: Tests and linting
         run: pipenv run pytest
       - name: Coveralls
         run: pipenv run coveralls
+      - name: Flake8
+        run: pipenv run flake8 asaps tests

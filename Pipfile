@@ -9,6 +9,10 @@ requests-mock = "*"
 coveralls = "*"
 coverage = "*"
 pytest-cov = "*"
+flake8 = "*"
+pylama = "*"
+black = "*"
+bandit = "*"
 
 [packages]
 archivessnake = "*"
@@ -22,3 +26,6 @@ python_version = "3.9"
 
 [scripts]
 asaps = "python -c \"from asaps.cli import main; main()\""
+
+[pipenv]
+allow_prereleases = true
