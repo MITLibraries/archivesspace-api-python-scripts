@@ -1,4 +1,4 @@
-all: bandit black flake8 pylama
+all: bandit black flake8 isort pylama
 
 bandit:
 	pipenv run bandit -r asaps tests --skip B101
@@ -8,6 +8,9 @@ black:
 
 flake8:
 	pipenv run flake8 asaps tests
+
+isort:
+	pipenv run isort . --diff
 
 pylama:
 	pipenv run pylama asaps tests

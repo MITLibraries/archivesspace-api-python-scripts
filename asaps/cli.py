@@ -5,9 +5,9 @@ import logging
 import os
 import time
 
-from asnake.client import ASnakeClient
 import click
 import structlog
+from asnake.client import ASnakeClient
 
 from asaps import models, records, workflows
 

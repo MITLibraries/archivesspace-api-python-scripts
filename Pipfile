@@ -20,6 +20,7 @@ click = "*"
 jsonpatch = "*"
 jsonpointer = "*"
 structlog = "*"
+isort = "*"
 
 [requires]
 python_version = "3.9"

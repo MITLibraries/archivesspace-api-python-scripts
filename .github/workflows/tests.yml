@@ -17,9 +17,13 @@ jobs:
         run: |
           python -m pip install --upgrade pip pipenv
           pipenv install --dev
-      - name: Tests and linting
+      - name: Tests
         run: pipenv run pytest
       - name: Coveralls
         run: pipenv run coveralls
       - name: Flake8
         run: pipenv run flake8 asaps tests --ignore E203,E501,W503
+      - name: isort
+        run: pipenv run isort . --diff
+      - name: pylama
+        run: pipenv run pylama asaps tests -l pycodestyle,pyflakes,pylint
