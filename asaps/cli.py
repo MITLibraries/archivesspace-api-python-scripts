@@ -14,7 +14,7 @@ from asaps import models, records, workflows
 logger = structlog.get_logger()
 
 
-note_type_fields = [
+NOTE_TYPES = [
     "abstract",
     "accessrestrict",
     "acqinfo",
@@ -30,7 +30,7 @@ note_type_fields = [
     "scopecontent",
     "userestrict",
 ]
-obj_field_dict = {
+OBJECT_FIELD_DICT = {
     "dates": ["begin", "end", "expression", "label", "date_type"],
     "extents": [
         "portion",
@@ -46,15 +46,14 @@ skipped_resources = []
 
 
 @click.group()
-@click.option("--url", envvar="ARCHIVESSPACE_URL")
+@click.option("--url", required=True, envvar="ARCHIVESSPACE_URL")
 @click.option(
-    "-u", "--username", prompt="Enter username", help="The username for authentication."
+    "-u", "--username", required=True, help="The username for authentication."
 )
 @click.option(
     "-p",
     "--password",
-    prompt="Enter password",
-    hide_input=True,
+    required=True,
     envvar="DOCKER_PASS",
     help="The password for authentication.",
 )
@@ -95,72 +94,69 @@ def main(ctx, url, username, password):
 @click.pass_context
 @click.option(
     "-d",
-    "--dry_run",
-    prompt="Dry run?",
-    default=True,
-    help="Perform dry run that does not modify any records.",
+    "--modify_records",
+    is_flag=True,
+    help="Modify records rather than performing a dry run",
 )
 @click.option(
     "-m",
     "--metadata_csv",
-    prompt="Enter the metadata CSV file",
+    required=True,
     help="The metadata CSV file to use.",
 )
-@click.option("-f", "--field", prompt="Enter the field", help="The field to edit.")
-def deletefield(ctx, dry_run, metadata_csv, field):
+@click.option("-f", "--field", required=True, help="The field to edit.")
+def deletefield(ctx, modify_records, metadata_csv, field):
     """Deletes the specified field from records that are specified in a CSV
     file."""
     as_ops = ctx.obj["as_ops"]
-    start_time = ctx.obj["start_time"]
-    log_suffix = ctx.obj["log_suffix"]
     with open(metadata_csv) as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             uri = row["uri"]
             rec_obj = as_ops.get_record(uri)
-            if field in note_type_fields:
+            if field in NOTE_TYPES:
                 for note in (n for n in rec_obj["notes"] if n.get("type") == field):
                     rec_obj["notes"].remove(note)
             else:
                 rec_obj.pop(field, None)
             if rec_obj.modified is True:
-                as_ops.save_record(rec_obj, dry_run)
-    models.elapsed_time(start_time, "Total runtime:")
-    models.create_csv_from_log(f"update_rec_{field}", log_suffix)
+                as_ops.save_record(rec_obj, modify_records)
+    models.elapsed_time(ctx.obj["start_time"], "Total runtime:")
+    models.create_csv_from_log(f"update_rec_{field}", ctx.obj["log_suffix"])
 
 
 @main.command()
 @click.pass_context
-@click.argument("search")
+@click.option(
+    "-s",
+    "--search",
+    required=True,
+    help="The string to search for.",
+)
 @click.option(
     "-d",
-    "--dry_run",
-    prompt="Dry run?",
-    default=True,
-    help="Perform dry run that does not modify any records.",
+    "--modify_records",
+    is_flag=True,
+    help="Modify records rather than performing a dry run",
 )
 @click.option(
     "-i",
     "--repo_id",
-    prompt="Enter the repository ID",
+    required=True,
     help="The ID of the repository to use.",
 )
-@click.option(
-    "-t", "--rec_type", prompt="Enter the record type", help="The record type to use."
-)
-@click.option("-f", "--field", prompt="Enter the field", help="The field to edit.")
+@click.option("-t", "--rec_type", required=True, help="The record type to use.")
+@click.option("-f", "--field", help="The field to edit.")
 @click.option(
     "-r",
     "--rpl_value",
-    prompt="Enter the replacement value",
+    required=True,
     help="The replacement value to be inserted.",
 )
-def find(ctx, dry_run, repo_id, rec_type, field, search, rpl_value):
+def find(ctx, modify_records, repo_id, rec_type, field, search, rpl_value):
     """Finds and replaces the specified string in the specified field in all
     records of the specified type of records"""
     as_ops = ctx.obj["as_ops"]
-    start_time = ctx.obj["start_time"]
-    log_suffix = ctx.obj["log_suffix"]
     skipped_arch_objs = []
     if rec_type == "archival_object":
         for uri in skipped_resources:
@@ -170,7 +166,7 @@ def find(ctx, dry_run, repo_id, rec_type, field, search, rpl_value):
     for uri in as_ops.search(search, repo_id, rec_type, field):
         if uri not in skipped_uris:
             rec_obj = as_ops.get_record(uri)
-            if field in note_type_fields:
+            if field in NOTE_TYPES:
                 notes = models.filter_note_type(rec_obj, field)
                 for note in notes:
                     for subnote in note.get("subnotes", []):
@@ -184,39 +180,37 @@ def find(ctx, dry_run, repo_id, rec_type, field, search, rpl_value):
                 update = rec_obj.get(field, "").replace(search, rpl_value)
                 rec_obj[field] = update
             if rec_obj.modified is True:
-                as_ops.save_record(rec_obj, dry_run)
+                as_ops.save_record(rec_obj, modify_records)
         else:
             logger.info(f"{uri} skipped")
-    models.elapsed_time(start_time, "Total runtime:")
-    models.create_csv_from_log(f"{rec_type}-{field}-find", log_suffix)
+    models.elapsed_time(ctx.obj["start_time"], "Total runtime:")
+    models.create_csv_from_log(f"{rec_type}-{field}-find", ctx.obj["log_suffix"])
 
 
 @main.command()
 @click.pass_context
-@click.option("-r", "--resource", prompt="Enter the resource number")
+@click.option("-r", "--resource", required=True, help="The resource number")
 @click.option(
     "-i",
     "--file_identifier",
-    prompt="Enter the field for file matching",
+    required=True,
     help="The field for file matching.",
 )
 @click.option(
     "-e",
     "--repo_id",
-    prompt="Enter the repository ID",
+    required=True,
     help="The ID of the repository to use.",
 )
 def metadata(ctx, resource, file_identifier, repo_id):
     """Exports metadata from a resource's archival objects that will be matched
     to files in preparation for ingesting the files into a repository."""
     as_ops = ctx.obj["as_ops"]
-    start_time = ctx.obj["start_time"]
-    log_suffix = ctx.obj["log_suffix"]
     report_dicts = workflows.export_metadata(as_ops, resource, file_identifier, repo_id)
     for report_dict in report_dicts:
         logger.info(**report_dict)
-    models.elapsed_time(start_time, "Total runtime:")
-    models.create_csv_from_log(resource, log_suffix, False)
+    models.elapsed_time(ctx.obj["start_time"], "Total runtime:")
+    models.create_csv_from_log(resource, ctx.obj["log_suffix"], False)
 
 
 @main.command()
@@ -224,27 +218,25 @@ def metadata(ctx, resource, file_identifier, repo_id):
 @click.option(
     "-m",
     "--metadata_csv",
-    prompt="Enter the metadata CSV file",
+    required=True,
     help="The metadata CSV file to use.",
 )
 @click.option(
     "-o",
     "--output_path",
-    prompt="Enter the output path",
+    required=True,
     default="",
     help="The path of the output files, include " "/ at the end of the path",
 )
 @click.option(
     "-p",
     "--match_point",
-    prompt="Enter the match point",
+    required=True,
     help="The match point to be used in the new record report.",
 )
 def newagents(ctx, metadata_csv, output_path, match_point):
     """Creates new agent records based on a CSV file."""
     as_ops = ctx.obj["as_ops"]
-    start_time = ctx.obj["start_time"]
-    log_suffix = ctx.obj["log_suffix"]
     with open(metadata_csv) as csvfile:
         reader = csv.DictReader(csvfile)
         new_rec_data = {}
@@ -284,8 +276,8 @@ def newagents(ctx, metadata_csv, output_path, match_point):
             agent_resp = as_ops.post_new_record(agent_rec, agent_endpoint)
             new_rec_data[row[match_point]] = agent_resp["uri"]
         models.create_new_rec_report(new_rec_data, f"{output_path}newagents")
-    models.elapsed_time(start_time, "Total runtime:")
-    models.create_csv_from_log("agents", log_suffix)
+    models.elapsed_time(ctx.obj["start_time"], "Total runtime:")
+    models.create_csv_from_log("agents", ctx.obj["log_suffix"])
 
 
 @main.command()
@@ -293,26 +285,25 @@ def newagents(ctx, metadata_csv, output_path, match_point):
 @click.option(
     "-m",
     "--metadata_csv",
-    prompt="Enter the metadata CSV file",
+    required=True,
     help="The metadata CSV file to use.",
 )
 @click.option(
     "-a",
     "--agent_file",
-    prompt="Enter the agent CSV file",
+    required=True,
     help="The CSV mapping agent strings to URIs.",
 )
 @click.option(
     "-i",
     "--repo_id",
-    prompt="Enter the repository ID",
+    required=True,
     help="The ID of the repository to use.",
 )
 def newarchobjs(ctx, metadata_csv, agent_file, repo_id):
     """Creates new archival object records based on a CSV file."""
     as_ops = ctx.obj["as_ops"]
-    start_time = ctx.obj["start_time"]
-    log_suffix = ctx.obj["log_suffix"]
+
     agent_uri_dict = {}
     with open(agent_file) as agentfile:
         reader = csv.DictReader(agentfile)
@@ -360,8 +351,8 @@ def newarchobjs(ctx, metadata_csv, agent_file, repo_id):
             )
             arch_obj_endpoint = models.create_endpoint("archival_object", repo_id)
             as_ops.post_new_record(arch_obj, arch_obj_endpoint)
-    models.elapsed_time(start_time, "Total runtime:")
-    models.create_csv_from_log("arch_obj", log_suffix)
+    models.elapsed_time(ctx.obj["start_time"], "Total runtime:")
+    models.create_csv_from_log("arch_obj", ctx.obj["log_suffix"])
 
 
 @main.command()
@@ -369,43 +360,38 @@ def newarchobjs(ctx, metadata_csv, agent_file, repo_id):
 @click.option(
     "-m",
     "--metadata_csv",
-    prompt="Enter the metadata CSV file",
+    required=True,
     help="The metadata CSV file to use.",
 )
 @click.option(
     "-i",
     "--repo_id",
-    prompt="Enter the repository ID",
+    required=True,
     help="The ID of the repository to use.",
 )
 def newdigobjs(ctx, metadata_csv, repo_id):
     """Creates new digital object records based on a CSV file."""
     as_ops = ctx.obj["as_ops"]
-    start_time = ctx.obj["start_time"]
-    log_suffix = ctx.obj["log_suffix"]
     workflows.create_new_dig_objs(as_ops, metadata_csv, repo_id)
-    models.elapsed_time(start_time, "Total runtime:")
-    models.create_csv_from_log("new_dig_obj", log_suffix)
+    models.elapsed_time(ctx.obj["start_time"], "Total runtime:")
+    models.create_csv_from_log("new_dig_obj", ctx.obj["log_suffix"])
 
 
 @main.command()
 @click.option(
     "-i",
     "--repo_id",
-    prompt="Enter the repository ID",
+    required=True,
     help="The ID of the repository to use.",
 )
-@click.option(
-    "-t", "--rec_type", prompt="Enter the record type", help="The record type to use."
-)
-@click.option("-f", "--field", prompt="Enter the field", help="The field to extract.")
+@click.option("-t", "--rec_type", required=True, help="The record type to use.")
+@click.option("-f", "--field", required=True, help="The field to extract.")
 @click.pass_context
 def report(ctx, repo_id, rec_type, field):
     """Exports a report containing minimal metadata and a specified field from
     all records of the specified type."""
     as_ops = ctx.obj["as_ops"]
-    start_time = ctx.obj["start_time"]
-    log_suffix = ctx.obj["log_suffix"]
+
     endpoint = models.create_endpoint(rec_type, repo_id)
     ids = as_ops.get_all_records(endpoint)
     for id in ids:
@@ -413,43 +399,40 @@ def report(ctx, repo_id, rec_type, field):
         rec_obj = as_ops.get_record(uri)
         coll_id = models.concat_id(rec_obj)
         report_dict = {"uri": rec_obj["uri"], "title": rec_obj["title"], "id": coll_id}
-        if field in note_type_fields:
+        if field in NOTE_TYPES:
             report_dicts = models.extract_note_field(field, rec_obj, report_dict)
             for report_dict in report_dicts:
                 logger.info(**report_dict)
-        elif field in obj_field_dict:
+        elif field in OBJECT_FIELD_DICT:
             report_dicts = models.extract_obj_field(
-                field, rec_obj, obj_field_dict, report_dict
+                field, rec_obj, OBJECT_FIELD_DICT, report_dict
             )
             for report_dict in report_dicts:
                 logger.info(**report_dict)
         else:
             report_dict[field] = rec_obj.get(field, "")
             logger.info(**report_dict)
-    models.elapsed_time(start_time, "Total runtime:")
-    models.create_csv_from_log(f"{rec_type}-{field}-values", log_suffix)
+    models.elapsed_time(ctx.obj["start_time"], "Total runtime:")
+    models.create_csv_from_log(f"{rec_type}-{field}-values", ctx.obj["log_suffix"])
 
 
 @main.command()
 @click.pass_context
 @click.option(
     "-d",
-    "--dry_run",
-    prompt="Dry run?",
-    default=True,
-    help="Perform dry run that does not modify any records.",
+    "--modify_records",
+    is_flag=True,
+    help="Modify records rather than performing a dry run",
 )
 @click.option(
     "-m",
     "--metadata_csv",
-    prompt="Enter the metadata CSV file",
+    required=True,
     help="The metadata CSV file to use.",
 )
-def updatedigobj(ctx, dry_run, metadata_csv):
+def updatedigobj(ctx, modify_records, metadata_csv):
     """Updates the link in digital objects listed in a CSV file."""
     as_ops = ctx.obj["as_ops"]
-    start_time = ctx.obj["start_time"]
-    log_suffix = ctx.obj["log_suffix"]
     with open(metadata_csv) as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
@@ -458,45 +441,42 @@ def updatedigobj(ctx, dry_run, metadata_csv):
             dig_obj = as_ops.get_record(do_uri)
             upd_dig_obj = records.update_dig_obj_link(dig_obj, link)
             if upd_dig_obj.modified is True:
-                as_ops.save_record(upd_dig_obj, dry_run)
-    models.elapsed_time(start_time, "Total runtime:")
-    models.create_csv_from_log("dig_obj", log_suffix)
+                as_ops.save_record(upd_dig_obj, modify_records)
+    models.elapsed_time(ctx.obj["start_time"], "Total runtime:")
+    models.create_csv_from_log("dig_obj", ctx.obj["log_suffix"])
 
 
 @main.command()
 @click.pass_context
 @click.option(
     "-d",
-    "--dry_run",
-    prompt="Dry run?",
-    default=True,
-    help="Perform dry run that does not modify any records.",
+    "--modify_records",
+    is_flag=True,
+    help="Modify records rather than performing a dry run",
 )
 @click.option(
     "-m",
     "--metadata_csv",
-    prompt="Enter the metadata CSV file",
+    required=True,
     help="The metadata CSV file to use.",
 )
-@click.option("-f", "--field", prompt="Enter the field", help="The field to edit.")
+@click.option("-f", "--field", help="The field to edit.")
 @click.option(
     "-r",
     "--rpl_value_col",
-    prompt="Enter the replacement value column",
+    required=True,
     help="The replacement value to be inserted.",
 )
-def updaterecords(ctx, dry_run, metadata_csv, field, rpl_value_col):
+def updaterecords(ctx, modify_records, metadata_csv, field, rpl_value_col):
     """Updates records with values listed in a CSV file."""
     as_ops = ctx.obj["as_ops"]
-    start_time = ctx.obj["start_time"]
-    log_suffix = ctx.obj["log_suffix"]
     with open(metadata_csv) as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             uri = row["uri"]
             rpl_value = row[rpl_value_col]
             rec_obj = as_ops.get_record(uri)
-            if field in note_type_fields:
+            if field in NOTE_TYPES:
                 notes = models.filter_note_type(rec_obj, field)
                 note_found = False
                 for note in notes:
@@ -519,6 +499,6 @@ def updaterecords(ctx, dry_run, metadata_csv, field, rpl_value_col):
             else:
                 rec_obj[field] = rpl_value
             if rec_obj.modified is True:
-                as_ops.save_record(rec_obj, dry_run)
-    models.elapsed_time(start_time, "Total runtime:")
-    models.create_csv_from_log(f"update_rec_{field}", log_suffix)
+                as_ops.save_record(rec_obj, modify_records)
+    models.elapsed_time(ctx.obj["start_time"], "Total runtime:")
+    models.create_csv_from_log(f"update_rec_{field}", ctx.obj["log_suffix"])

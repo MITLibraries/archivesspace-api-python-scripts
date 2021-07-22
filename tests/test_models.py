@@ -53,9 +53,8 @@ def test_save_record(as_ops, caplog):
     caplog.set_level(logging.INFO)
     rec_obj = models.Record()
     uri = "/repositories/0/resources/423"
-    dry_run = "False"
     rec_obj["uri"] = uri
-    as_ops.save_record(rec_obj, dry_run)
+    as_ops.save_record(rec_obj, True)
     message = json.loads(caplog.messages[0])["event"]
     assert message == {"post": "Success"}
 
@@ -98,11 +97,10 @@ def test_changes_returns_json_patch_operations():
 def test_save_record_flushes_changes(as_ops):
     """Test save_record_flushes_changes method."""
     uri = "/repositories/0/resources/423"
-    dry_run = "False"
     r = models.Record({"uri": uri})
     r["title"] = "A title"
     assert r.modified
-    as_ops.save_record(r, dry_run)
+    as_ops.save_record(r, True)
     assert not r.modified
 
 

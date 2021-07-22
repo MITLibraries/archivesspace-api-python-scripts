@@ -30,4 +30,4 @@ def create_new_dig_objs(client, metadata_csv, repo_id):
             dig_obj_endpoint = models.create_endpoint("digital_object", repo_id)
             dig_obj_resp = client.post_new_record(new_dig_obj, dig_obj_endpoint)
             arch_obj = records.link_dig_obj(arch_obj, dig_obj_resp["uri"])
-            client.save_record(arch_obj, "False")
+            client.save_record(arch_obj, True)

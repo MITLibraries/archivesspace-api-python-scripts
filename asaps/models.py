@@ -45,9 +45,9 @@ class AsOperations:
         response.raise_for_status()
         return response.json()
 
-    def save_record(self, rec_obj, dry_run):
+    def save_record(self, rec_obj, modify_records):
         """Update ArchivesSpace record with POST of JSON data."""
-        if dry_run == "False":
+        if modify_records:
             response = self.client.post(rec_obj["uri"], json=rec_obj)
             logger.info(response.json())
             response.raise_for_status()

@@ -19,7 +19,7 @@ jobs:
           pipenv install --dev
       - name: Tests
         run: make coveralls
-  linting:
+  lint:
     name: Run linting
     runs-on: ubuntu-latest
     steps:
