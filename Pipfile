@@ -11,8 +11,9 @@ coverage = "*"
 pytest-cov = "*"
 flake8 = "*"
 pylama = "*"
-black = "*"
 bandit = "*"
+isort = "*"
+black="==21.7b0"
 
 [packages]
 archivessnake = "*"
@@ -20,13 +21,9 @@ click = "*"
 jsonpatch = "*"
 jsonpointer = "*"
 structlog = "*"
-isort = "*"
 
 [requires]
 python_version = "3.9"
 
 [scripts]
 asaps = "python -c \"from asaps.cli import main; main()\""
-
-[pipenv]
-allow_prereleases = true
