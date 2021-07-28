@@ -1,16 +1,18 @@
-lint: bandit black flake8 isort pylama
+linting: bandit flake8 isort
+	
+testing: coveralls pytest
 
 bandit:
 	pipenv run bandit -r asaps
-
-black:
-	pipenv run black --check --diff .
+	
+coveralls: 
+	pipenv run coveralls
 
 flake8:
 	pipenv run flake8 .
 
 isort:
 	pipenv run isort . --diff
-
-pylama:
-	pipenv run pylama .
+	
+pytest:
+	pipenv run pytest
