@@ -18,7 +18,7 @@ jobs:
           python -m pip install --upgrade pip pipenv
           pipenv install --dev
       - name: Tests
-        run: make test
+        run: make coveralls
   linting:
     name: Run linting
     runs-on: ubuntu-latest

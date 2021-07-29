@@ -1,7 +1,5 @@
 lint: bandit flake8 isort
 	
-test: coveralls 
-
 bandit:
 	pipenv run bandit -r asaps
 	
