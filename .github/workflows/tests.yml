@@ -18,7 +18,7 @@ jobs:
           python -m pip install --upgrade pip pipenv
           pipenv install --dev
       - name: Tests
-        run: make testing
+        run: make test
   linting:
     name: Run linting
     runs-on: ubuntu-latest
@@ -34,4 +34,4 @@ jobs:
           python -m pip install --upgrade pip pipenv
           pipenv install --dev
       - name: Linting
-        run: make linting
+        run: make lint

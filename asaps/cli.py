@@ -402,7 +402,3 @@ def updaterecords(ctx, dry_run, metadata_csv, field, rpl_value_col):
                 as_ops.save_record(rec_obj, dry_run)
     models.elapsed_time(start_time, 'Total runtime:')
     models.create_csv_from_log(f'update_rec_{field}', log_suffix)
-
-
-if __name__ == '__main__':
-    main()

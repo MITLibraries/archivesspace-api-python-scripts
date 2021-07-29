@@ -1,11 +1,11 @@
-linting: bandit flake8 isort
+lint: bandit flake8 isort
 	
-testing: coveralls pytest
+test: coveralls 
 
 bandit:
 	pipenv run bandit -r asaps
 	
-coveralls: 
+coveralls: test
 	pipenv run coveralls
 
 flake8:
@@ -14,5 +14,5 @@ flake8:
 isort:
 	pipenv run isort . --diff
 	
-pytest:
-	pipenv run pytest
+test:
+	pipenv run pytest --cov=asaps
