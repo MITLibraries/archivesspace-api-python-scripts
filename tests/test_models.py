@@ -3,8 +3,8 @@ import json
 import logging
 import os
 
-from asnake.client import ASnakeClient
 import pytest
+from asnake.client import ASnakeClient
 
 from asaps import models
 

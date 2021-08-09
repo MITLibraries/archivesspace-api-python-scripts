@@ -9,6 +9,10 @@ requests-mock = "*"
 coveralls = "*"
 coverage = "*"
 pytest-cov = "*"
+flake8 = "*"
+bandit = "*"
+isort = "*"
+black="==21.7b0"
 
 [packages]
 archivessnake = "*"

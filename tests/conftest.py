@@ -1,10 +1,10 @@
 import logging
 
-from asnake.client import ASnakeClient
-from click.testing import CliRunner
 import pytest
 import requests_mock
 import structlog
+from asnake.client import ASnakeClient
+from click.testing import CliRunner
 
 from asaps import models
 
