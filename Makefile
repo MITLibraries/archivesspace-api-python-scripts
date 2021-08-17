@@ -1,7 +1,10 @@
-lint: bandit flake8 isort
-	
+lint: bandit black flake8 isort
+
 bandit:
 	pipenv run bandit -r asaps
+
+black:
+	pipenv run black --check --diff .
 	
 coveralls: test
 	pipenv run coveralls

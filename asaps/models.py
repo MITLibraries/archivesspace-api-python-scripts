@@ -19,16 +19,16 @@ class AsOperations:
 
     def get_all_records(self, endpoint):
         """Retrieve all records from a specified endpoint."""
-        ids = self.client.get(f'{endpoint}?all_ids=true').json()
+        ids = self.client.get(f"{endpoint}?all_ids=true").json()
         return ids
 
     def get_arch_objs_for_resource(self, uri):
         """Get archival objects associated with a resource."""
-        logger.info(f'Retrieving AOs for {uri}')
+        logger.info(f"Retrieving AOs for {uri}")
         arch_obj_list = []
-        output = self.client.get(f'{uri}/tree').json()
-        for arch_obj_uri in find_key(output, 'record_uri'):
-            if 'archival_objects' in arch_obj_uri:
+        output = self.client.get(f"{uri}/tree").json()
+        for arch_obj_uri in find_key(output, "record_uri"):
+            if "archival_objects" in arch_obj_uri:
                 arch_obj_list.append(arch_obj_uri)
         return arch_obj_list
 
@@ -47,24 +47,24 @@ class AsOperations:
 
     def save_record(self, rec_obj, dry_run):
         """Update ArchivesSpace record with POST of JSON data."""
-        if dry_run == 'False':
-            response = self.client.post(rec_obj['uri'], json=rec_obj)
+        if dry_run == "False":
+            response = self.client.post(rec_obj["uri"], json=rec_obj)
             logger.info(response.json())
             response.raise_for_status()
         rec_obj.flush()
 
-    def search(self, string, repo_id, rec_type, field='keyword'):
+    def search(self, string, repo_id, rec_type, field="keyword"):
         """Search for a string across a particular record type."""
-        endpoint = f'repositories/{repo_id}/search?'
-        query = {'query': {'field': field, 'value': string,
-                 'jsonmodel_type': 'field_query'}}
-        params = {'aq': json.dumps(query), 'page_size': 100,
-                  'type[]': rec_type}
+        endpoint = f"repositories/{repo_id}/search?"
+        query = {
+            "query": {"field": field, "value": string, "jsonmodel_type": "field_query"}
+        }
+        params = {"aq": json.dumps(query), "page_size": 100, "type[]": rec_type}
         uris = []
         for result in self.client.get_paged(endpoint, params=params):
-            uri = result['uri']
+            uri = result["uri"]
             uris.append(uri)
-        logger.info(f'{len(uris)} search results processed')
+        logger.info(f"{len(uris)} search results processed")
         return uris
 
 
@@ -89,21 +89,21 @@ class Record(dict):
 
 def audit(**kwargs):
     """Create audit message."""
-    record = kwargs['record']
-    op = kwargs['op']
-    path = kwargs['path']
+    record = kwargs["record"]
+    op = kwargs["op"]
+    path = kwargs["path"]
 
-    uri = record.get('uri')
-    if op == 'add':
-        new = kwargs.get('value')
-        msg = {'uri': uri, 'field': path, 'old': None, 'new': new}
-    elif op == 'replace':
+    uri = record.get("uri")
+    if op == "add":
+        new = kwargs.get("value")
+        msg = {"uri": uri, "field": path, "old": None, "new": new}
+    elif op == "replace":
         old = jsonpointer.resolve_pointer(record, path)
-        new = kwargs.get('value')
-        msg = {'uri': uri, 'field': path, 'old': old, 'new': new}
-    elif op == 'remove':
+        new = kwargs.get("value")
+        msg = {"uri": uri, "field": path, "old": old, "new": new}
+    elif op == "remove":
         old = jsonpointer.resolve_pointer(record, path)
-        msg = {'uri': uri, 'field': path, 'old': old, 'new': None}
+        msg = {"uri": uri, "field": path, "old": old, "new": None}
     else:
         msg = {}
     return msg
@@ -111,28 +111,28 @@ def audit(**kwargs):
 
 def concat_id(rec_obj):
     """Retrieve URI and concatenated IDs for record."""
-    ids = [rec_obj.get(f'id_{x}', '') for x in range(4)]
-    return '-'.join(filter(None, ids))
+    ids = [rec_obj.get(f"id_{x}", "") for x in range(4)]
+    return "-".join(filter(None, ids))
 
 
 def create_csv_from_log(csv_file_name, log_suffix, include_suffix=True):
     """Create csv from log file."""
-    with open(f'logs/log-{log_suffix}') as f:
+    with open(f"logs/log-{log_suffix}") as f:
         logs = f.read().splitlines()
         edit_log_lines = []
         for line in logs:
             line_dict = json.loads(line)
-            if 'uri' in line_dict.keys():
-                line_dict.pop('logger')
-                line_dict.pop('level')
-                line_dict.pop('timestamp')
+            if "uri" in line_dict.keys():
+                line_dict.pop("logger")
+                line_dict.pop("level")
+                line_dict.pop("timestamp")
                 edit_log_lines.append(line_dict)
     if include_suffix:
-        full_file_name = os.path.abspath(f'{csv_file_name}{log_suffix}.csv')
+        full_file_name = os.path.abspath(f"{csv_file_name}{log_suffix}.csv")
     else:
-        full_file_name = os.path.abspath(f'{csv_file_name}.csv')
+        full_file_name = os.path.abspath(f"{csv_file_name}.csv")
     if len(edit_log_lines) > 0:
-        with open(f'{full_file_name}', 'w') as fp:
+        with open(f"{full_file_name}", "w") as fp:
             header = list(edit_log_lines[0].keys())
             f = csv.DictWriter(fp, fieldnames=header)
             f.writeheader()
@@ -140,39 +140,43 @@ def create_csv_from_log(csv_file_name, log_suffix, include_suffix=True):
                 f.writerow(edit_log_line)
 
 
-def create_endpoint(rec_type, repo_id=''):
+def create_endpoint(rec_type, repo_id=""):
     """Create an endpoint for a specified type."""
-    rec_type_dict = {'accession': 'accessions', 'resource': 'resources',
-                     'archival_object': 'archival_objects',
-                     'agent_corporate_entity': 'corporate_entities',
-                     'agent_person': 'people', 'agent_family': 'families',
-                     'digital_object': 'digital_objects',
-                     'top_container': 'top_containers'}
-    agents = ['corporate_entities', 'families', 'people']
-    non_repo_types = ['locations', 'subjects']
+    rec_type_dict = {
+        "accession": "accessions",
+        "resource": "resources",
+        "archival_object": "archival_objects",
+        "agent_corporate_entity": "corporate_entities",
+        "agent_person": "people",
+        "agent_family": "families",
+        "digital_object": "digital_objects",
+        "top_container": "top_containers",
+    }
+    agents = ["corporate_entities", "families", "people"]
+    non_repo_types = ["locations", "subjects"]
     if rec_type in agents:
-        endpoint = f'agents/{rec_type}'
+        endpoint = f"agents/{rec_type}"
     elif rec_type in non_repo_types:
         endpoint = rec_type
     else:
-        endpoint = (f'repositories/{repo_id}/{rec_type_dict[rec_type]}')
+        endpoint = f"repositories/{repo_id}/{rec_type_dict[rec_type]}"
     return endpoint
 
 
 def create_new_rec_report(new_rec_data, file_name):
     """Creates a report of match points and ArchivesSpace URIs."""
-    with open(f'{file_name}.csv', 'w') as writecsv:
+    with open(f"{file_name}.csv", "w") as writecsv:
         writer = csv.writer(writecsv)
-        writer.writerow(['match_point'] + ['uri'])
+        writer.writerow(["match_point"] + ["uri"])
         for match_point, uri in new_rec_data.items():
             writer.writerow([match_point] + [uri])
 
 
 def download_json(rec_obj):
     """Download a JSON file."""
-    uri = rec_obj['uri']
-    file_name = uri[1:len(uri)].replace('/', '-')
-    f = open(file_name + '.json', 'w')
+    uri = rec_obj["uri"]
+    file_name = uri[1 : len(uri)].replace("/", "-")
+    f = open(file_name + ".json", "w")
     json.dump(rec_obj, f)
     f.close()
     return f.name
@@ -181,16 +185,16 @@ def download_json(rec_obj):
 def elapsed_time(start_time, label):
     """Calculate elapsed time."""
     td = datetime.timedelta(seconds=time.time() - start_time)
-    logger.info(f'{label} : {td}')
+    logger.info(f"{label} : {td}")
 
 
 def extract_note_field(field, rec_obj, report_dict):
     """Extract note field content."""
     notes = filter_note_type(rec_obj, field)
-    report_dict[field] = ''
+    report_dict[field] = ""
     for note in notes:
-        for subnote in note.get('subnotes', []):
-            report_dict[field] = subnote.get('content', '')
+        for subnote in note.get("subnotes", []):
+            report_dict[field] = subnote.get("content", "")
             yield report_dict
 
 
@@ -200,36 +204,35 @@ def extract_obj_field(field, rec_obj, obj_field_dict, report_dict):
     object_list = rec_obj[field]
     for obj in object_list:
         for key in keys:
-            report_dict[key] = obj.get(key, '')
+            report_dict[key] = obj.get(key, "")
         yield report_dict
 
 
 def filter_note_type(rec_obj, note_type):
     """Filter notes by type."""
-    return (n for n in rec_obj['notes'] if n.get('type') == note_type)
+    return (n for n in rec_obj["notes"] if n.get("type") == note_type)
 
 
 def find_key(nest_dict, key):
     """Find all instances of a key in a nested dictionary."""
     if key in nest_dict:
         yield nest_dict[key]
-    children = nest_dict.get('children')
+    children = nest_dict.get("children")
     if isinstance(children, list):
         for child in children:
             yield from find_key(child, key)
 
 
-def string_to_uri(agent_links, string, uri_dict, role, relator=''):
+def string_to_uri(agent_links, string, uri_dict, role, relator=""):
     """Creates an agent link from a dict of URIs and labels."""
     uri_found = False
     for label, uri in uri_dict.items():
         if string == label:
             uri_found = True
-            if role != '':
-                agent_links.append({'role': role, 'ref': uri,
-                                    'relator': relator})
+            if role != "":
+                agent_links.append({"role": role, "ref": uri, "relator": relator})
             else:
-                agent_links.append({'role': 'creator', 'ref': uri})
+                agent_links.append({"role": "creator", "ref": uri})
     if uri_found is False:
-        logger.info(f'URI not found for string: {string}')
+        logger.info(f"URI not found for string: {string}")
     return agent_links
