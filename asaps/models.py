@@ -22,15 +22,15 @@ class AsOperations:
         ids = self.client.get(f"{endpoint}?all_ids=true").json()
         return ids
 
-    def get_arch_objs_for_resource(self, uri):
+    def get_archival_objects_for_resource(self, uri):
         """Get archival objects associated with a resource."""
         logger.info(f"Retrieving AOs for {uri}")
-        arch_obj_list = []
+        archival_object_list = []
         output = self.client.get(f"{uri}/tree").json()
-        for arch_obj_uri in find_key(output, "record_uri"):
-            if "archival_objects" in arch_obj_uri:
-                arch_obj_list.append(arch_obj_uri)
-        return arch_obj_list
+        for archival_object_uri in find_key(output, "record_uri"):
+            if "archival_objects" in archival_object_uri:
+                archival_object_list.append(archival_object_uri)
+        return archival_object_list
 
     def get_record(self, uri):
         """Retrieve an individual record."""
@@ -38,28 +38,28 @@ class AsOperations:
         logger.info(uri)
         return Record(record)
 
-    def post_new_record(self, rec_obj, endpoint):
+    def post_new_record(self, record_object, endpoint):
         """Create new ArchivesSpace record with POST of JSON data."""
-        response = self.client.post(endpoint, json=rec_obj)
+        response = self.client.post(endpoint, json=record_object)
         logger.info(response.json())
         response.raise_for_status()
         return response.json()
 
-    def save_record(self, rec_obj, modify_records):
+    def save_record(self, record_object, modify_records):
         """Update ArchivesSpace record with POST of JSON data."""
         if modify_records:
-            response = self.client.post(rec_obj["uri"], json=rec_obj)
+            response = self.client.post(record_object["uri"], json=record_object)
             logger.info(response.json())
             response.raise_for_status()
-        rec_obj.flush()
+        record_object.flush()
 
-    def search(self, string, repo_id, rec_type, field="keyword"):
+    def search(self, string, repository_id, record_type, field="keyword"):
         """Search for a string across a particular record type."""
-        endpoint = f"repositories/{repo_id}/search?"
+        endpoint = f"repositories/{repository_id}/search?"
         query = {
             "query": {"field": field, "value": string, "jsonmodel_type": "field_query"}
         }
-        params = {"aq": json.dumps(query), "page_size": 100, "type[]": rec_type}
+        params = {"aq": json.dumps(query), "page_size": 100, "type[]": record_type}
         uris = []
         for result in self.client.get_paged(endpoint, params=params):
             uri = result["uri"]
@@ -109,9 +109,9 @@ def audit(**kwargs):
     return msg
 
 
-def concat_id(rec_obj):
+def concat_id(record_object):
     """Retrieve URI and concatenated IDs for record."""
-    ids = [rec_obj.get(f"id_{x}", "") for x in range(4)]
+    ids = [record_object.get(f"id_{x}", "") for x in range(4)]
     return "-".join(filter(None, ids))
 
 
@@ -140,9 +140,9 @@ def create_csv_from_log(csv_file_name, log_suffix, include_suffix=True):
                 f.writerow(edit_log_line)
 
 
-def create_endpoint(rec_type, repo_id=""):
+def create_endpoint(record_type, repository_id=""):
     """Create an endpoint for a specified type."""
-    rec_type_dict = {
+    record_type_dict = {
         "accession": "accessions",
         "resource": "resources",
         "archival_object": "archival_objects",
@@ -153,31 +153,31 @@ def create_endpoint(rec_type, repo_id=""):
         "top_container": "top_containers",
     }
     agents = ["corporate_entities", "families", "people"]
-    non_repo_types = ["locations", "subjects"]
-    if rec_type in agents:
-        endpoint = f"agents/{rec_type}"
-    elif rec_type in non_repo_types:
-        endpoint = rec_type
+    non_repository_types = ["locations", "subjects"]
+    if record_type in agents:
+        endpoint = f"agents/{record_type}"
+    elif record_type in non_repository_types:
+        endpoint = record_type
     else:
-        endpoint = f"repositories/{repo_id}/{rec_type_dict[rec_type]}"
+        endpoint = f"repositories/{repository_id}/{record_type_dict[record_type]}"
     return endpoint
 
 
-def create_new_rec_report(new_rec_data, file_name):
+def create_new_record_report(new_record_data, file_name):
     """Creates a report of match points and ArchivesSpace URIs."""
     with open(f"{file_name}.csv", "w") as writecsv:
         writer = csv.writer(writecsv)
         writer.writerow(["match_point"] + ["uri"])
-        for match_point, uri in new_rec_data.items():
+        for match_point, uri in new_record_data.items():
             writer.writerow([match_point] + [uri])
 
 
-def download_json(rec_obj):
+def download_json(record_object):
     """Download a JSON file."""
-    uri = rec_obj["uri"]
+    uri = record_object["uri"]
     file_name = uri[1 : len(uri)].replace("/", "-")
     f = open(file_name + ".json", "w")
-    json.dump(rec_obj, f)
+    json.dump(record_object, f)
     f.close()
     return f.name
 
@@ -188,9 +188,9 @@ def elapsed_time(start_time, label):
     logger.info(f"{label} : {td}")
 
 
-def extract_note_field(field, rec_obj, report_dict):
+def extract_note_field(field, record_object, report_dict):
     """Extract note field content."""
-    notes = filter_note_type(rec_obj, field)
+    notes = filter_note_type(record_object, field)
     report_dict[field] = ""
     for note in notes:
         for subnote in note.get("subnotes", []):
@@ -198,19 +198,19 @@ def extract_note_field(field, rec_obj, report_dict):
             yield report_dict
 
 
-def extract_obj_field(field, rec_obj, obj_field_dict, report_dict):
+def extract_obj_field(field, record_object, obj_field_dict, report_dict):
     """Extract field content where the value is an object."""
     keys = obj_field_dict[field]
-    object_list = rec_obj[field]
+    object_list = record_object[field]
     for obj in object_list:
         for key in keys:
             report_dict[key] = obj.get(key, "")
         yield report_dict
 
 
-def filter_note_type(rec_obj, note_type):
+def filter_note_type(record_object, note_type):
     """Filter notes by type."""
-    return (n for n in rec_obj["notes"] if n.get("type") == note_type)
+    return (n for n in record_object["notes"] if n.get("type") == note_type)
 
 
 def find_key(nest_dict, key):

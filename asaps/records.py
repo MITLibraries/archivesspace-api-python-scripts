@@ -88,7 +88,7 @@ def create_agent_corp(
     return agent
 
 
-def create_arch_obj(
+def create_archival_object(
     title,
     level,
     agents,
@@ -102,18 +102,18 @@ def create_arch_obj(
     label,
 ):
     """Create archival object."""
-    arch_obj = {}
-    arch_obj["title"] = title
-    arch_obj["level"] = level
-    arch_obj["linked_agents"] = agents
-    arch_obj["notes"] = notes
-    arch_obj["publish"] = True
-    arch_obj["parent"] = {"ref": parent}
-    arch_obj["resource"] = {"ref": resource}
-    arch_obj["instances"] = []
+    archival_object = {}
+    archival_object["title"] = title
+    archival_object["level"] = level
+    archival_object["linked_agents"] = agents
+    archival_object["notes"] = notes
+    archival_object["publish"] = True
+    archival_object["parent"] = {"ref": parent}
+    archival_object["resource"] = {"ref": resource}
+    archival_object["instances"] = []
     date = create_date(begin, end, expression, certainty, label)
-    arch_obj["dates"] = [date]
-    return arch_obj
+    archival_object["dates"] = [date]
+    return archival_object
 
 
 def create_date(begin, end, expression, certainty, label):
@@ -138,14 +138,14 @@ def create_date(begin, end, expression, certainty, label):
     return date
 
 
-def create_dig_obj(title, link):
+def create_digital_object(title, link):
     """Create digital object."""
-    dig_obj = {}
-    dig_obj["title"] = title
-    dig_obj["publish"] = True
-    dig_obj["file_versions"] = []
-    dig_obj = update_dig_obj_link(dig_obj, link)
-    return dig_obj
+    digital_object = {}
+    digital_object["title"] = title
+    digital_object["publish"] = True
+    digital_object["file_versions"] = []
+    digital_object = update_digital_object_link(digital_object, link)
+    return digital_object
 
 
 def create_note(type, label, content):
@@ -163,18 +163,18 @@ def create_note(type, label, content):
     return note
 
 
-def link_dig_obj(arch_obj, dig_obj_uri):
+def link_digital_object(archival_object, digital_object_uri):
     """Link digital object to archival object."""
     instance = {}
     instance["instance_type"] = "digital_object"
     instance["jsonmodel_type"] = "instance"
-    instance["digital_object"] = {"ref": dig_obj_uri}
+    instance["digital_object"] = {"ref": digital_object_uri}
     instance["is_representative"] = True
-    arch_obj["instances"].append(instance)
-    return arch_obj
+    archival_object["instances"].append(instance)
+    return archival_object
 
 
-def link_top_container(arch_obj, top_cont_uri, child_type, child_indicator):
+def link_top_container(archival_object, top_container_uri, child_type, child_indicator):
     """Link top container to archival object."""
     instance = {}
     instance["instance_type"] = "mixed_materials"
@@ -185,18 +185,18 @@ def link_top_container(arch_obj, top_cont_uri, child_type, child_indicator):
     sub_container["indicator_2"] = child_indicator
     sub_container["type_2"] = child_type
     sub_container["jsonmodel_type"] = "sub_container"
-    sub_container["top_container"] = {"ref": top_cont_uri}
+    sub_container["top_container"] = {"ref": top_container_uri}
     instance["sub_container"] = sub_container
     instance["is_representative"] = False
-    arch_obj["instances"].append(instance)
-    return arch_obj
+    archival_object["instances"].append(instance)
+    return archival_object
 
 
-def update_dig_obj_link(dig_obj, link):
+def update_digital_object_link(digital_object, link):
     """Get digital objects associated with an archival objects."""
-    dig_obj["digital_object_id"] = link
-    if len(dig_obj["file_versions"]) != 0:
-        for file_version in dig_obj["file_versions"]:
+    digital_object["digital_object_id"] = link
+    if len(digital_object["file_versions"]) != 0:
+        for file_version in digital_object["file_versions"]:
             file_version["file_uri"] = link
     else:
         file_version = {}
@@ -204,7 +204,7 @@ def update_dig_obj_link(dig_obj, link):
         file_version["publish"] = True
         file_version["is_representative"] = True
         file_version["jsonmodel_type"] = "file_version"
-        dig_obj["file_versions"] = [file_version]
+        digital_object["file_versions"] = [file_version]
         file_version["xlink_actuate_attribute"] = "onRequest"
         file_version["xlink_show_attribute"] = "new"
-    return dig_obj
+    return digital_object

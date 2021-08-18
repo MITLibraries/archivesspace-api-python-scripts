@@ -2,7 +2,6 @@ from asaps.cli import main
 
 
 def test_deletefield(runner):
-    """Test updaterecords command."""
     result = runner.invoke(
         main,
         [
@@ -24,7 +23,6 @@ def test_deletefield(runner):
 
 
 def test_find(runner):
-    """Test find command."""
     result = runner.invoke(
         main,
         [
@@ -38,13 +36,13 @@ def test_find(runner):
             "--search",
             "test value",
             "--modify_records",
-            "--repo_id",
+            "--repository_id",
             "0",
-            "--rec_type",
+            "--record_type",
             "resource",
             "--field",
             "acqinfo",
-            "--rpl_value",
+            "--replacement_value",
             "REPLACED",
         ],
     )
@@ -52,7 +50,6 @@ def test_find(runner):
 
 
 def test_metadata(runner):
-    """Test metadata command"""
     result = runner.invoke(
         main,
         [
@@ -67,7 +64,7 @@ def test_metadata(runner):
             "423",
             "--file_identifier",
             "ref_id",
-            "--repo_id",
+            "--repository_id",
             "0",
         ],
     )
@@ -75,7 +72,6 @@ def test_metadata(runner):
 
 
 def test_newagents(runner, output_dir):
-    """Test newagents command."""
     result = runner.invoke(
         main,
         [
@@ -98,7 +94,6 @@ def test_newagents(runner, output_dir):
 
 
 def test_newarchobjs(runner):
-    """Test newarchobjs command."""
     result = runner.invoke(
         main,
         [
@@ -109,7 +104,7 @@ def test_newarchobjs(runner):
             "--password",
             "testpass",
             "newarchobjs",
-            "--repo_id",
+            "--repository_id",
             "0",
             "--metadata_csv",
             "tests/fixtures/newarchobjs.csv",
@@ -121,7 +116,6 @@ def test_newarchobjs(runner):
 
 
 def test_newdigobjs(runner):
-    """Test newdigobjs command"""
     result = runner.invoke(
         main,
         [
@@ -134,7 +128,7 @@ def test_newdigobjs(runner):
             "newdigobjs",
             "--metadata_csv",
             "tests/fixtures/newdigobjs.csv",
-            "--repo_id",
+            "--repository_id",
             "0",
         ],
     )
@@ -142,7 +136,6 @@ def test_newdigobjs(runner):
 
 
 def test_report(runner):
-    """Test report command."""
     result = runner.invoke(
         main,
         [
@@ -153,9 +146,9 @@ def test_report(runner):
             "--password",
             "testpass",
             "report",
-            "--repo_id",
+            "--repository_id",
             "0",
-            "--rec_type",
+            "--record_type",
             "resource",
             "--field",
             "acqinfo",
@@ -165,7 +158,6 @@ def test_report(runner):
 
 
 def test_updatedigobj(runner):
-    """Test updatedigobj command."""
     result = runner.invoke(
         main,
         [
@@ -185,7 +177,6 @@ def test_updatedigobj(runner):
 
 
 def test_updaterecords(runner):
-    """Test updaterecords command."""
     result = runner.invoke(
         main,
         [
@@ -201,7 +192,7 @@ def test_updaterecords(runner):
             "tests/fixtures/updaterecords.csv",
             "--field",
             "accessrestrict",
-            "--rpl_value_col",
+            "--replacement_value_column",
             "accessrestrict",
         ],
     )

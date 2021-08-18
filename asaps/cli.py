@@ -113,16 +113,18 @@ def deletefield(ctx, modify_records, metadata_csv, field):
         reader = csv.DictReader(csvfile)
         for row in reader:
             uri = row["uri"]
-            rec_obj = as_ops.get_record(uri)
+            record_object = as_ops.get_record(uri)
             if field in NOTE_TYPES:
-                for note in (n for n in rec_obj["notes"] if n.get("type") == field):
-                    rec_obj["notes"].remove(note)
+                for note in (
+                    n for n in record_object["notes"] if n.get("type") == field
+                ):
+                    record_object["notes"].remove(note)
             else:
-                rec_obj.pop(field, None)
-            if rec_obj.modified is True:
-                as_ops.save_record(rec_obj, modify_records)
+                record_object.pop(field, None)
+            if record_object.modified is True:
+                as_ops.save_record(record_object, modify_records)
     models.elapsed_time(ctx.obj["start_time"], "Total runtime:")
-    models.create_csv_from_log(f"update_rec_{field}", ctx.obj["log_suffix"])
+    models.create_csv_from_log(f"update_record_{field}", ctx.obj["log_suffix"])
 
 
 @main.command()
@@ -141,50 +143,56 @@ def deletefield(ctx, modify_records, metadata_csv, field):
 )
 @click.option(
     "-i",
-    "--repo_id",
+    "--repository_id",
     required=True,
     help="The ID of the repository to use.",
 )
-@click.option("-t", "--rec_type", required=True, help="The record type to use.")
+@click.option("-t", "--record_type", required=True, help="The record type to use.")
 @click.option("-f", "--field", help="The field to edit.")
 @click.option(
     "-r",
-    "--rpl_value",
+    "--replacement_value",
     required=True,
     help="The replacement value to be inserted.",
 )
-def find(ctx, modify_records, repo_id, rec_type, field, search, rpl_value):
+def find(
+    ctx, modify_records, repository_id, record_type, field, search, replacement_value
+):
     """Finds and replaces the specified string in the specified field in all
     records of the specified type of records"""
     as_ops = ctx.obj["as_ops"]
-    skipped_arch_objs = []
-    if rec_type == "archival_object":
+    skipped_archival_objects = []
+    if record_type == "archival_object":
         for uri in skipped_resources:
-            arch_obj_list = as_ops.get_arch_objs_for_resource(uri)
-            skipped_arch_objs.append(arch_obj_list)
-    skipped_uris = skipped_resources + skipped_arch_objs
-    for uri in as_ops.search(search, repo_id, rec_type, field):
+            archival_object_list = as_ops.get_archival_objects_for_resource(uri)
+            skipped_archival_objects.append(archival_object_list)
+    skipped_uris = skipped_resources + skipped_archival_objects
+    for uri in as_ops.search(search, repository_id, record_type, field):
         if uri not in skipped_uris:
-            rec_obj = as_ops.get_record(uri)
+            record_object = as_ops.get_record(uri)
             if field in NOTE_TYPES:
-                notes = models.filter_note_type(rec_obj, field)
+                notes = models.filter_note_type(record_object, field)
                 for note in notes:
                     for subnote in note.get("subnotes", []):
                         if "content" in subnote:
-                            update = subnote["content"].replace(search, rpl_value)
+                            update = subnote["content"].replace(
+                                search, replacement_value
+                            )
                             subnote["content"] = update
                         elif "definedlist" in subnote:
-                            update = subnote["definedlist"].replace(search, rpl_value)
+                            update = subnote["definedlist"].replace(
+                                search, replacement_value
+                            )
                             subnote["definedlist"] = update
             else:
-                update = rec_obj.get(field, "").replace(search, rpl_value)
-                rec_obj[field] = update
-            if rec_obj.modified is True:
-                as_ops.save_record(rec_obj, modify_records)
+                update = record_object.get(field, "").replace(search, replacement_value)
+                record_object[field] = update
+            if record_object.modified is True:
+                as_ops.save_record(record_object, modify_records)
         else:
             logger.info(f"{uri} skipped")
     models.elapsed_time(ctx.obj["start_time"], "Total runtime:")
-    models.create_csv_from_log(f"{rec_type}-{field}-find", ctx.obj["log_suffix"])
+    models.create_csv_from_log(f"{record_type}-{field}-find", ctx.obj["log_suffix"])
 
 
 @main.command()
@@ -198,15 +206,17 @@ def find(ctx, modify_records, repo_id, rec_type, field, search, rpl_value):
 )
 @click.option(
     "-e",
-    "--repo_id",
+    "--repository_id",
     required=True,
     help="The ID of the repository to use.",
 )
-def metadata(ctx, resource, file_identifier, repo_id):
+def metadata(ctx, resource, file_identifier, repository_id):
     """Exports metadata from a resource's archival objects that will be matched
     to files in preparation for ingesting the files into a repository."""
     as_ops = ctx.obj["as_ops"]
-    report_dicts = workflows.export_metadata(as_ops, resource, file_identifier, repo_id)
+    report_dicts = workflows.export_metadata(
+        as_ops, resource, file_identifier, repository_id
+    )
     for report_dict in report_dicts:
         logger.info(**report_dict)
     models.elapsed_time(ctx.obj["start_time"], "Total runtime:")
@@ -239,11 +249,11 @@ def newagents(ctx, metadata_csv, output_path, match_point):
     as_ops = ctx.obj["as_ops"]
     with open(metadata_csv) as csvfile:
         reader = csv.DictReader(csvfile)
-        new_rec_data = {}
+        new_record_data = {}
         for row in reader:
             agent_type = row["agent_type"]
             if agent_type == "people":
-                agent_rec = records.create_agent_pers(
+                agent_record = records.create_agent_pers(
                     agent_type,
                     row["primary_name"],
                     row["sort_name"],
@@ -261,7 +271,7 @@ def newagents(ctx, metadata_csv, output_path, match_point):
                     row["label"],
                 )
             if agent_type == "corporate_entities":
-                agent_rec = records.create_agent_corp(
+                agent_record = records.create_agent_corp(
                     agent_type,
                     row["primary_name"],
                     row["sort_name"],
@@ -273,9 +283,9 @@ def newagents(ctx, metadata_csv, output_path, match_point):
                     row["authority_id"],
                 )
             agent_endpoint = models.create_endpoint(agent_type)
-            agent_resp = as_ops.post_new_record(agent_rec, agent_endpoint)
-            new_rec_data[row[match_point]] = agent_resp["uri"]
-        models.create_new_rec_report(new_rec_data, f"{output_path}newagents")
+            agent_resp = as_ops.post_new_record(agent_record, agent_endpoint)
+            new_record_data[row[match_point]] = agent_resp["uri"]
+        models.create_new_record_report(new_record_data, f"{output_path}newagents")
     models.elapsed_time(ctx.obj["start_time"], "Total runtime:")
     models.create_csv_from_log("agents", ctx.obj["log_suffix"])
 
@@ -296,11 +306,11 @@ def newagents(ctx, metadata_csv, output_path, match_point):
 )
 @click.option(
     "-i",
-    "--repo_id",
+    "--repository_id",
     required=True,
     help="The ID of the repository to use.",
 )
-def newarchobjs(ctx, metadata_csv, agent_file, repo_id):
+def newarchobjs(ctx, metadata_csv, agent_file, repository_id):
     """Creates new archival object records based on a CSV file."""
     as_ops = ctx.obj["as_ops"]
 
@@ -320,13 +330,19 @@ def newarchobjs(ctx, metadata_csv, agent_file, repo_id):
                 agent_links = models.string_to_uri(
                     agent_links, author, agent_uri_dict, "creator", ""
                 )
-            new_dig_obj = records.create_dig_obj(row["title"], row["link"])
-            dig_obj_endpoint = models.create_endpoint("digital_object", repo_id)
-            dig_obj_resp = as_ops.post_new_record(new_dig_obj, dig_obj_endpoint)
+            new_digital_object = records.create_digital_object(
+                row["title"], row["link"]
+            )
+            digital_object_endpoint = models.create_endpoint(
+                "digital_object", repository_id
+            )
+            digital_object_resp = as_ops.post_new_record(
+                new_digital_object, digital_object_endpoint
+            )
             note = records.create_note(
                 "scopecontent", "Scope and Contents", row["abstract"]
             )
-            arch_obj = records.create_arch_obj(
+            archival_object = records.create_archival_object(
                 row["title"],
                 "file",
                 agent_links,
@@ -339,20 +355,24 @@ def newarchobjs(ctx, metadata_csv, agent_file, repo_id):
                 row["certainty"],
                 row["label"],
             )
-            arch_obj = records.link_dig_obj(arch_obj, dig_obj_resp["uri"])
-            arch_obj = records.link_top_container(
-                arch_obj,
+            archival_object = records.link_digital_object(
+                archival_object, digital_object_resp["uri"]
+            )
+            archival_object = records.link_top_container(
+                archival_object,
                 row["top_container_1"],
                 row["child_type"],
                 row["child_indicator"],
             )
-            arch_obj = records.link_top_container(
-                arch_obj, row["top_container_2"], "", ""
+            archival_object = records.link_top_container(
+                archival_object, row["top_container_2"], "", ""
             )
-            arch_obj_endpoint = models.create_endpoint("archival_object", repo_id)
-            as_ops.post_new_record(arch_obj, arch_obj_endpoint)
+            archival_object_endpoint = models.create_endpoint(
+                "archival_object", repository_id
+            )
+            as_ops.post_new_record(archival_object, archival_object_endpoint)
     models.elapsed_time(ctx.obj["start_time"], "Total runtime:")
-    models.create_csv_from_log("arch_obj", ctx.obj["log_suffix"])
+    models.create_csv_from_log("archival_object", ctx.obj["log_suffix"])
 
 
 @main.command()
@@ -365,55 +385,59 @@ def newarchobjs(ctx, metadata_csv, agent_file, repo_id):
 )
 @click.option(
     "-i",
-    "--repo_id",
+    "--repository_id",
     required=True,
     help="The ID of the repository to use.",
 )
-def newdigobjs(ctx, metadata_csv, repo_id):
+def newdigobjs(ctx, metadata_csv, repository_id):
     """Creates new digital object records based on a CSV file."""
     as_ops = ctx.obj["as_ops"]
-    workflows.create_new_dig_objs(as_ops, metadata_csv, repo_id)
+    workflows.create_new_digital_objects(as_ops, metadata_csv, repository_id)
     models.elapsed_time(ctx.obj["start_time"], "Total runtime:")
-    models.create_csv_from_log("new_dig_obj", ctx.obj["log_suffix"])
+    models.create_csv_from_log("new_digital_object", ctx.obj["log_suffix"])
 
 
 @main.command()
 @click.option(
     "-i",
-    "--repo_id",
+    "--repository_id",
     required=True,
     help="The ID of the repository to use.",
 )
-@click.option("-t", "--rec_type", required=True, help="The record type to use.")
+@click.option("-t", "--record_type", required=True, help="The record type to use.")
 @click.option("-f", "--field", required=True, help="The field to extract.")
 @click.pass_context
-def report(ctx, repo_id, rec_type, field):
+def report(ctx, repository_id, record_type, field):
     """Exports a report containing minimal metadata and a specified field from
     all records of the specified type."""
     as_ops = ctx.obj["as_ops"]
 
-    endpoint = models.create_endpoint(rec_type, repo_id)
+    endpoint = models.create_endpoint(record_type, repository_id)
     ids = as_ops.get_all_records(endpoint)
     for id in ids:
         uri = f"{endpoint}/{id}"
-        rec_obj = as_ops.get_record(uri)
-        coll_id = models.concat_id(rec_obj)
-        report_dict = {"uri": rec_obj["uri"], "title": rec_obj["title"], "id": coll_id}
+        record_object = as_ops.get_record(uri)
+        collection_id = models.concat_id(record_object)
+        report_dict = {
+            "uri": record_object["uri"],
+            "title": record_object["title"],
+            "id": collection_id,
+        }
         if field in NOTE_TYPES:
-            report_dicts = models.extract_note_field(field, rec_obj, report_dict)
+            report_dicts = models.extract_note_field(field, record_object, report_dict)
             for report_dict in report_dicts:
                 logger.info(**report_dict)
         elif field in OBJECT_FIELD_DICT:
             report_dicts = models.extract_obj_field(
-                field, rec_obj, OBJECT_FIELD_DICT, report_dict
+                field, record_object, OBJECT_FIELD_DICT, report_dict
             )
             for report_dict in report_dicts:
                 logger.info(**report_dict)
         else:
-            report_dict[field] = rec_obj.get(field, "")
+            report_dict[field] = record_object.get(field, "")
             logger.info(**report_dict)
     models.elapsed_time(ctx.obj["start_time"], "Total runtime:")
-    models.create_csv_from_log(f"{rec_type}-{field}-values", ctx.obj["log_suffix"])
+    models.create_csv_from_log(f"{record_type}-{field}-values", ctx.obj["log_suffix"])
 
 
 @main.command()
@@ -436,14 +460,16 @@ def updatedigobj(ctx, modify_records, metadata_csv):
     with open(metadata_csv) as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            do_uri = row["do_uri"]
+            digital_object_uri = row["digital_object_uri"]
             link = row["link"]
-            dig_obj = as_ops.get_record(do_uri)
-            upd_dig_obj = records.update_dig_obj_link(dig_obj, link)
-            if upd_dig_obj.modified is True:
-                as_ops.save_record(upd_dig_obj, modify_records)
+            digital_object = as_ops.get_record(digital_object_uri)
+            updated_digital_object = records.update_digital_object_link(
+                digital_object, link
+            )
+            if updated_digital_object.modified is True:
+                as_ops.save_record(updated_digital_object, modify_records)
     models.elapsed_time(ctx.obj["start_time"], "Total runtime:")
-    models.create_csv_from_log("dig_obj", ctx.obj["log_suffix"])
+    models.create_csv_from_log("digital_object", ctx.obj["log_suffix"])
 
 
 @main.command()
@@ -463,25 +489,25 @@ def updatedigobj(ctx, modify_records, metadata_csv):
 @click.option("-f", "--field", help="The field to edit.")
 @click.option(
     "-r",
-    "--rpl_value_col",
+    "--replacement_value_column",
     required=True,
     help="The replacement value to be inserted.",
 )
-def updaterecords(ctx, modify_records, metadata_csv, field, rpl_value_col):
+def updaterecords(ctx, modify_records, metadata_csv, field, replacement_value_column):
     """Updates records with values listed in a CSV file."""
     as_ops = ctx.obj["as_ops"]
     with open(metadata_csv) as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             uri = row["uri"]
-            rpl_value = row[rpl_value_col]
-            rec_obj = as_ops.get_record(uri)
+            replacement_value = row[replacement_value_column]
+            record_object = as_ops.get_record(uri)
             if field in NOTE_TYPES:
-                notes = models.filter_note_type(rec_obj, field)
+                notes = models.filter_note_type(record_object, field)
                 note_found = False
                 for note in notes:
                     for subnote in note.get("subnotes", []):
-                        subnote["content"] = rpl_value
+                        subnote["content"] = replacement_value
                         note_found = True
                 if note_found is not True:
                     note = {}
@@ -491,14 +517,14 @@ def updaterecords(ctx, modify_records, metadata_csv, field, rpl_value_col):
                     note["subnotes"] = [
                         {
                             "jsonmodel_type": "note_text",
-                            "content": rpl_value,
+                            "content": replacement_value,
                             "publish": True,
                         }
                     ]
-                    rec_obj["notes"].append(note)
+                    record_object["notes"].append(note)
             else:
-                rec_obj[field] = rpl_value
-            if rec_obj.modified is True:
-                as_ops.save_record(rec_obj, modify_records)
+                record_object[field] = replacement_value
+            if record_object.modified is True:
+                as_ops.save_record(record_object, modify_records)
     models.elapsed_time(ctx.obj["start_time"], "Total runtime:")
-    models.create_csv_from_log(f"update_rec_{field}", ctx.obj["log_suffix"])
+    models.create_csv_from_log(f"update_record_{field}", ctx.obj["log_suffix"])

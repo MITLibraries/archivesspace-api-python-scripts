@@ -19,59 +19,52 @@ def as_ops():
 
 
 def test_get_all_records(as_ops):
-    """Test get_all_records method."""
     endpoint = "/repositories/0/resources"
     ids = as_ops.get_all_records(endpoint)
     assert ids == [423, 756]
 
 
-def test_get_arch_objs_for_resource(as_ops):
-    """Test get_arch_objs_for_resource method."""
+def test_get_archival_objects_for_resource(as_ops):
     resource = "/repositories/2/resources/423"
-    arch_obj_list = as_ops.get_arch_objs_for_resource(resource)
-    assert "/repositories/0/archival_objects/5678" in arch_obj_list
-    assert "/repositories/0/archival_objects/1234" in arch_obj_list
+    archival_object_list = as_ops.get_archival_objects_for_resource(resource)
+    assert "/repositories/0/archival_objects/5678" in archival_object_list
+    assert "/repositories/0/archival_objects/1234" in archival_object_list
 
 
 def test_get_record(as_ops):
-    """Test get_record method."""
     uri = "/repositories/0/resources/423"
     response = as_ops.get_record(uri)
     assert response["jsonmodel_type"] == "resource"
 
 
 def test_post_new_record(as_ops):
-    """Test post_new_record method."""
     endpoint = "/repositories/0/resources"
-    rec_obj = {"title": "Test title"}
-    resp = as_ops.post_new_record(rec_obj, endpoint)
-    assert resp["status"] == "Created"
+    record_object = {"title": "Test title"}
+    response = as_ops.post_new_record(record_object, endpoint)
+    assert response["status"] == "Created"
 
 
 def test_save_record(as_ops, caplog):
-    """Test post_record method."""
     caplog.set_level(logging.INFO)
-    rec_obj = models.Record()
+    record_object = models.Record()
     uri = "/repositories/0/resources/423"
-    rec_obj["uri"] = uri
-    as_ops.save_record(rec_obj, True)
+    record_object["uri"] = uri
+    as_ops.save_record(record_object, True)
     message = json.loads(caplog.messages[0])["event"]
     assert message == {"post": "Success"}
 
 
 def test_search(as_ops):
-    """Test search method."""
     string = "string"
-    repo_id = "0"
-    rec_type = "resource"
+    repository_id = "0"
+    record_type = "resource"
     field = "acqinfo"
-    results = as_ops.search(string, repo_id, rec_type, field)
+    results = as_ops.search(string, repository_id, record_type, field)
     for result in results:
         assert result == "/repositories/0/archival_objects/1234"
 
 
 def test_record_is_modified():
-    """Test record_is_modified method."""
     record = models.Record()
     assert not record.modified
     record["title"] = "I am different"
@@ -79,7 +72,6 @@ def test_record_is_modified():
 
 
 def test_record_flush_persists_changes():
-    """Test record_flush_persists_changes method."""
     record = models.Record()
     record["title"] = "I am a title"
     assert record.modified
@@ -88,47 +80,46 @@ def test_record_flush_persists_changes():
 
 
 def test_changes_returns_json_patch_operations():
-    """Test changes_returns_json_patch_operations method."""
     record = models.Record()
     record["title"] = "I am a title"
     assert record.changes == [{"op": "add", "path": "/title", "value": "I am a title"}]
 
 
 def test_save_record_flushes_changes(as_ops):
-    """Test save_record_flushes_changes method."""
     uri = "/repositories/0/resources/423"
-    r = models.Record({"uri": uri})
-    r["title"] = "A title"
-    assert r.modified
-    as_ops.save_record(r, True)
-    assert not r.modified
+    record = models.Record({"uri": uri})
+    record["title"] = "A title"
+    assert record.modified
+    as_ops.save_record(record, True)
+    assert not record.modified
 
 
 def test_audit():
-    """ "Test audit function."""
     sample_record = {"uri": "123"}
     change = {"op": "add", "path": "/title", "value": "I am a title"}
-    msg = models.audit(record=sample_record, **change)
-    assert msg == {"uri": "123", "field": "/title", "old": None, "new": "I am a title"}
+    message = models.audit(record=sample_record, **change)
+    assert message == {
+        "uri": "123",
+        "field": "/title",
+        "old": None,
+        "new": "I am a title",
+    }
 
 
 def test_concat_id():
-    """ "Test concat_id function."""
-    rec_obj = {"id_0": "1", "id_1": "2", "id_2": "3", "id_3": "4"}
-    coll_id = models.concat_id(rec_obj)
-    assert coll_id == "1-2-3-4"
+    record_object = {"id_0": "1", "id_1": "2", "id_2": "3", "id_3": "4"}
+    collection_id = models.concat_id(record_object)
+    assert collection_id == "1-2-3-4"
 
 
 def test_create_endpoint():
-    """Test create_endpoint method."""
-    rec_type = "resource"
-    repo_id = "0"
-    endpoint = models.create_endpoint(rec_type, repo_id)
+    record_type = "resource"
+    repository_id = "0"
+    endpoint = models.create_endpoint(record_type, repository_id)
     assert endpoint == "repositories/0/resources"
 
 
 def test_create_csv_from_log(runner):
-    """ "Test create_csv_from_log function."""
     with runner.isolated_filesystem():
         os.mkdir("logs")
         with open("logs/log-1790-01-01.log", "w") as log_file:
@@ -153,32 +144,35 @@ def test_create_csv_from_log(runner):
 
 
 def test_download_json():
-    """Test download_json function."""
-    rec_obj = models.Record()
-    rec_obj["uri"] = "/test/123"
-    path = models.download_json(rec_obj)
+    record_object = models.Record()
+    record_object["uri"] = "/test/123"
+    path = models.download_json(record_object)
     assert os.path.isfile(path)
     os.remove(path)
 
 
 def test_extract_note_field():
-    """ "Test extract_note_field function."""
     field = "acqinfo"
-    rec_obj = {"notes": [{"type": "acqinfo", "subnotes": [{"content": "test value"}]}]}
+    record_object = {
+        "notes": [{"type": "acqinfo", "subnotes": [{"content": "test value"}]}]
+    }
     report_dict = {"uri": "123", "title": "Title", "id": "456"}
-    report_dicts = models.extract_note_field(field, rec_obj, report_dict)
+    report_dicts = models.extract_note_field(field, record_object, report_dict)
     for report_dict in report_dicts:
         assert report_dict["uri"] == "123"
         assert report_dict["acqinfo"] == "test value"
 
 
 def test_extract_obj_field():
-    """ "Test extract_obj_field function."""
     field = "dates"
-    rec_obj = {"dates": [{"begin": "1900", "end": "1901", "date_type": "inclusive"}]}
+    record_object = {
+        "dates": [{"begin": "1900", "end": "1901", "date_type": "inclusive"}]
+    }
     report_dict = {"uri": "123", "title": "Title", "id": "456"}
-    obj_field_dict = {"dates": ["begin", "end", "expression", "label", "date_type"]}
-    report_dicts = models.extract_obj_field(field, rec_obj, obj_field_dict, report_dict)
+    object_field_dict = {"dates": ["begin", "end", "expression", "label", "date_type"]}
+    report_dicts = models.extract_obj_field(
+        field, record_object, object_field_dict, report_dict
+    )
     for report_dict in report_dicts:
         assert report_dict["uri"] == "123"
         assert report_dict["begin"] == "1900"
@@ -187,17 +181,15 @@ def test_extract_obj_field():
 
 
 def test_filter_note_type():
-    """Test filter_note_type function."""
-    rec_obj = {"notes": [{"note_type": "acqinfo"}, {"note_type": "bioghist"}]}
-    notes = models.filter_note_type(rec_obj, "acqinfo")
+    record_object = {"notes": [{"note_type": "acqinfo"}, {"note_type": "bioghist"}]}
+    notes = models.filter_note_type(record_object, "acqinfo")
     for note in notes:
         assert note["note_type"] == "acqinfo"
 
 
 def test_find_key():
-    """Test find_key function."""
-    nest_dict = {"children": [{"publish": True, "children": [{"publish": True}]}]}
-    keys = models.find_key(nest_dict, "children")
+    nested_dict = {"children": [{"publish": True, "children": [{"publish": True}]}]}
+    keys = models.find_key(nested_dict, "children")
     key_count = 0
     for key in keys:
         key_count += 1

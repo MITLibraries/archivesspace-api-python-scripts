@@ -29,8 +29,8 @@ Example usage
 
 Option (short) | Option (long) | Description
 ------ | ------ | -------
--i | --repo_id | The ID of the repository to use.
--t | --rec_type | The record type to use.
+-i | --repository_id | The ID of the repository to use.
+-t | --record_type | The record type to use.
 -f | --field | The field to extract.
 
 ##### Example usage
@@ -43,10 +43,10 @@ Find Enter the value to searched as an argument followed by various options to r
 Option (short) | Option (long) | Description
 ------ | ------ | -------
 -d | --dry_run | If True, performs dry run that does not modify any records.
--i | --repo_id | The ID of the repository to use.
--t | --rec_type | The record type to use.
+-i | --repository_id | The ID of the repository to use.
+-t | --record_type | The record type to use.
 -n | --note_type | The note type to edit.
--r | --rpl_value | The replacement value to be inserted.
+-r | --replacement_value | The replacement value to be inserted.
 
 ##### Example usage
 `pipenv run asaps -u <username> --url <ASpace URL> find <search string> -i 2 -t resource -n acqinfo -r <replacement string> -d True`
