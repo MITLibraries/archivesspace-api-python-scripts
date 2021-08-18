@@ -147,7 +147,13 @@ def deletefield(ctx, modify_records, metadata_csv, field):
     required=True,
     help="The ID of the repository to use.",
 )
-@click.option("-t", "--record_type", required=True, help="The record type to use.")
+@click.option(
+    "-t",
+    "--record_type",
+    required=True,
+    type=click.Choice(["accession", "archival_object", "digital_object", "resource"]),
+    help="The record type to use.",
+)
 @click.option("-f", "--field", help="The field to edit.")
 @click.option(
     "-r",
